@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Globe, ShoppingBag, X, Heart, MessageCircle, Share2, Verified, Coins, Trophy, Star, Users, Shield } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 interface Coach {
   id: string;
@@ -115,10 +116,24 @@ const getMedalBadge = (rank: number) => {
   return null;
 };
 
+// Bio-Coin Discount Calculator
+const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
+const USER_BIO_COINS = 2450; // Mock user balance
+
+const calculateMaxDiscount = (productPrice: number, userCoins: number): number => {
+  const maxPossibleDiscount = userCoins * COIN_TO_TL_RATE;
+  return Math.min(maxPossibleDiscount, productPrice - 10); // Keep minimum 10 TL price
+};
+
+const calculateCoinsNeeded = (discountAmount: number): number => {
+  return Math.ceil(discountAmount / COIN_TO_TL_RATE);
+};
+
 const Kesfet = () => {
   const navigate = useNavigate();
   const [selectedStory, setSelectedStory] = useState<Coach | null>(null);
-  const [bioCoins] = useState(1250);
+  const [bioCoins] = useState(USER_BIO_COINS);
+  const [coinDiscounts, setCoinDiscounts] = useState<Record<string, boolean>>({});
 
   // Sort coaches by score for leaderboard
   const sortedCoaches = [...eliteCoaches].sort((a, b) => (b.score || 0) - (a.score || 0));
@@ -375,52 +390,125 @@ const Kesfet = () => {
 
           {/* MAĞAZA (Shop) Tab */}
           <TabsContent value="magaza" className="mt-4">
+            {/* Balance Display */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-3 mb-4 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <Coins className="w-5 h-5 text-primary" />
+                <span className="text-foreground text-sm">Bakiyen:</span>
+              </div>
+              <span className="font-display text-lg text-primary">{bioCoins.toLocaleString()} BIO</span>
+            </motion.div>
+
             <div className="grid grid-cols-2 gap-3">
-              {shopProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                  whileHover={{ scale: 1.02 }}
-                  className="glass-card overflow-hidden"
-                >
-                  <div className="aspect-square bg-muted relative">
-                    <img 
-                      src={product.image} 
-                      alt={product.title}
-                      className="w-full h-full object-cover opacity-60"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                        {product.type === "ebook" ? "E-KİTAP" : product.type === "apparel" ? "GİYİM" : "PDF"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
-                      {product.title}
-                    </p>
-                    <p className="text-muted-foreground text-[10px] mt-1">{product.coach}</p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-primary font-display text-sm">{product.price}₺</span>
-                      {product.bioCoins && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Coins className="w-3 h-3" />
-                          <span className="text-[10px]">{product.bioCoins}</span>
+              {shopProducts.map((product, index) => {
+                const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
+                const isDiscountActive = coinDiscounts[product.id] || false;
+                const coinsNeeded = calculateCoinsNeeded(maxDiscount);
+                const discountedPrice = product.price - maxDiscount;
+                const remainingCoins = bioCoins - coinsNeeded;
+
+                return (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileHover={{ scale: 1.02 }}
+                    className="glass-card overflow-hidden"
+                  >
+                    <div className="aspect-square bg-muted relative">
+                      <img 
+                        src={product.image} 
+                        alt={product.title}
+                        className="w-full h-full object-cover opacity-60"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                          {product.type === "ebook" ? "E-KİTAP" : product.type === "apparel" ? "GİYİM" : "PDF"}
+                        </span>
+                      </div>
+                      {isDiscountActive && (
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
+                            -{Math.round(maxDiscount)}₺
+                          </span>
                         </div>
                       )}
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full mt-3 bg-primary/20 text-primary text-xs py-2 rounded-lg font-medium border border-primary/30 hover:bg-primary/30 transition-colors"
-                    >
-                      SATIN AL
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="p-3">
+                      <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
+                        {product.title}
+                      </p>
+                      <p className="text-muted-foreground text-[10px] mt-1">{product.coach}</p>
+                      
+                      {/* Price Display */}
+                      <div className="flex items-center justify-between mt-2">
+                        {isDiscountActive ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-xs line-through">{product.price}₺</span>
+                            <span className="text-primary font-display text-sm">{Math.round(discountedPrice)}₺</span>
+                          </div>
+                        ) : (
+                          <span className="text-primary font-display text-sm">{product.price}₺</span>
+                        )}
+                      </div>
+
+                      {/* Bio-Coin Toggle */}
+                      {maxDiscount > 0 && (
+                        <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <Coins className="w-3 h-3 text-primary flex-shrink-0" />
+                              <span className="text-[10px] text-muted-foreground truncate">
+                                Bio-Coin Kullan
+                              </span>
+                            </div>
+                            <Switch
+                              checked={isDiscountActive}
+                              onCheckedChange={(checked) => {
+                                setCoinDiscounts(prev => ({ ...prev, [product.id]: checked }));
+                              }}
+                              className="scale-75"
+                            />
+                          </div>
+                          {isDiscountActive && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              className="mt-1.5 pt-1.5 border-t border-white/10"
+                            >
+                              <div className="flex justify-between text-[9px]">
+                                <span className="text-muted-foreground">Kullanılacak:</span>
+                                <span className="text-primary font-medium">{coinsNeeded.toLocaleString()} BIO</span>
+                              </div>
+                              <div className="flex justify-between text-[9px]">
+                                <span className="text-muted-foreground">Kalan Bakiye:</span>
+                                <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className={`w-full mt-3 text-xs py-2 rounded-lg font-medium border transition-colors ${
+                          isDiscountActive 
+                            ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" 
+                            : "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30"
+                        }`}
+                      >
+                        SATIN AL
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </TabsContent>
         </Tabs>
