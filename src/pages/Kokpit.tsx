@@ -5,7 +5,7 @@ import { Bell, X, Trophy, Settings, MessageCircle } from "lucide-react";
 import EnergyBank from "@/components/EnergyBank";
 import CoachUplink from "@/components/CoachUplink";
 import BentoStats from "@/components/BentoStats";
-import QuickActionFAB from "@/components/QuickActionFAB";
+
 import CoachChat from "@/components/CoachChat";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications } from "@/lib/mockData";
@@ -124,9 +124,6 @@ const Kokpit = () => {
         </h2>
         <BentoStats />
       </div>
-
-      {/* Quick Action FAB */}
-      <QuickActionFAB onOpenChat={handleOpenChat} />
 
       {/* Coach Chat */}
       <CoachChat isOpen={showChat} onClose={() => setShowChat(false)} />
