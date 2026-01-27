@@ -6,7 +6,7 @@ import QuickActionFAB from "@/components/QuickActionFAB";
 
 const Kokpit = () => {
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-6 pb-24">
       {/* Header */}
       <motion.div 
         initial={{ opacity: 0, y: -10 }}

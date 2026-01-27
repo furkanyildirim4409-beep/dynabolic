@@ -3,7 +3,7 @@ import { Play, Clock, Trophy, BookOpen } from "lucide-react";
 
 const Akademi = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Header */}
       <div>
         <h1 className="font-display text-2xl text-foreground">AKADEMİ</h1>
