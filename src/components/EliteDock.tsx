@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -45,41 +45,17 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // FAB State
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [weight, setWeight] = useState("78.5");
 
   const handleNavClick = (path: string) => {
-    playClickSound();
     navigate(path);
-  };
-
-  const playClickSound = () => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.05);
-    oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
-
-    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.15);
   };
 
   // FAB Actions
   const handleAddWater = () => {
-    toast({
-      title: "250ml Su Eklendi 💧",
-      description: "Günlük hedefe yaklaşıyorsun!",
-    });
+    toast({ title: "250ml Su Eklendi 💧", description: "Günlük hedefe yaklaşıyorsun!" });
     setIsFabOpen(false);
   };
 
@@ -89,22 +65,13 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
   };
 
   const handleSaveWeight = () => {
-    toast({
-      title: "Ağırlık Kaydedildi ⚖️",
-      description: `Güncel ağırlığın: ${weight} kg`,
-    });
+    toast({ title: "Ağırlık Kaydedildi ⚖️", description: `Güncel ağırlığın: ${weight} kg` });
     setShowWeightModal(false);
   };
 
   const handleReportToCoach = () => {
-    if (onOpenChat) {
-      onOpenChat();
-    } else {
-      toast({
-        title: "Koç Bağlantısı",
-        description: "Koç sohbetine yönlendiriliyorsunuz...",
-      });
-    }
+    if (onOpenChat) onOpenChat();
+    else toast({ title: "Koç Bağlantısı", description: "Koç sohbetine yönlendiriliyorsunuz..." });
     setIsFabOpen(false);
   };
 
@@ -112,7 +79,6 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
     navigate("/akademi");
     setIsFabOpen(false);
   };
-
   const handleOpenRecipes = () => {
     navigate("/tarifler");
     setIsFabOpen(false);
@@ -128,7 +94,10 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   return (
     <>
-      {/* Main Dock Assembly */}
+      {/* MASTER CONTAINER 
+        FIX 1: z-index lowered from 9999 to 40. 
+        This ensures the Cart Drawer (usually z-50) will render ON TOP of the dock.
+      */}
       <motion.div
         initial={{ y: 100, opacity: 0, x: "-50%" }}
         animate={{
@@ -136,61 +105,48 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
           opacity: forceHide ? 0 : 1,
           x: "-50%",
         }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-8 left-1/2 z-[9999] flex items-center gap-4 w-max pointer-events-none"
+        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+        className="fixed bottom-8 left-1/2 z-[40] flex items-center gap-4 w-max pointer-events-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {/* Child 1: Navigation Pill */}
-        <nav className="pointer-events-auto bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 h-[68px] flex items-center gap-1 shadow-2xl shadow-black/40">
-          <LayoutGroup>
-            <div className="relative flex items-center gap-1">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
+        {/* NAVIGATION PILL */}
+        <nav className="pointer-events-auto relative bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 h-[68px] flex items-center gap-1 shadow-2xl shadow-black/50 overflow-hidden isolate">
+          <LayoutGroup id="dock-nav">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
 
-                return (
-                  <motion.button
-                    key={item.id}
-                    layout
-                    onClick={() => handleNavClick(item.path)}
-                    className={cn(
-                      "relative flex items-center justify-center w-12 h-12 rounded-full transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
-                    )}
-                  >
-                    {/* Liquid Lens Background */}
-                    {isActive && (
-                      <motion.div
-                        layoutId="navBubble"
-                        className="absolute inset-1 rounded-full bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] z-0"
-                        initial={false}
-                        transition={{
-                          type: "spring",
-                          stiffness: 350,
-                          damping: 35,
-                          mass: 1.5,
-                        }}
-                      />
-                    )}
-
-                    {/* Icon */}
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.path)}
+                  className={cn(
+                    "relative z-10 flex items-center justify-center w-12 h-12 rounded-full transition-colors duration-200",
+                    isActive ? "text-[#ccff00]" : "text-zinc-400 hover:text-zinc-100",
+                  )}
+                >
+                  {isActive && (
                     <motion.div
-                      className="relative z-10"
-                      animate={isActive ? { scale: 1.05 } : { scale: 1 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                    >
-                      <span className={cn(isActive && "drop-shadow-[0_0_10px_hsl(68,100%,50%)]")}>{item.icon}</span>
-                    </motion.div>
-                  </motion.button>
-                );
-              })}
-            </div>
+                      layoutId="active-bubble"
+                      className="absolute inset-0 bg-white/10 rounded-full z-[-1]"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+
+                  <motion.div
+                    animate={{ scale: isActive ? 1.1 : 1 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    {item.icon}
+                  </motion.div>
+                </button>
+              );
+            })}
           </LayoutGroup>
         </nav>
 
-        {/* Child 2: Action FAB Container */}
+        {/* FAB CONTAINER */}
         <div className="relative pointer-events-auto">
-          {/* FAB Actions Menu */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {isFabOpen && (
               <>
                 {/* Backdrop */}
@@ -198,59 +154,38 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[-1]"
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[-1]"
                   onClick={() => setIsFabOpen(false)}
                 />
 
-                {/* Action Items - DÜZELTİLDİ: Sadece Dikey Hareket */}
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                  className="absolute bottom-24 right-0 flex flex-col gap-3 items-end min-w-[180px] z-10"
-                >
+                {/* Menu Items Container
+                  FIX 2: High performance animation parameters.
+                */}
+                <motion.div className="absolute bottom-24 right-0 flex flex-col gap-3 items-end min-w-[180px] z-20">
                   {fabActions.map((action, index) => (
                     <motion.button
                       key={action.id}
-                      custom={index}
-                    variants={{
-                      hidden: {
-                        opacity: 0,
-                        scale: 0.4,
-                        y: 60,
-                        x: 20,
-                      },
-                      visible: (i) => ({
-                        opacity: 1,
-                        scale: 1,
-                        y: 0,
-                        x: 0,
-                        transition: {
-                          delay: (fabActions.length - 1 - i) * 0.03,
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 25,
-                          mass: 0.8,
-                        },
-                      }),
-                    }}
+                      // FIX 3: Snappier initial state
+                      initial={{ opacity: 0, y: 15, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      transition={{
+                        delay: (fabActions.length - 1 - index) * 0.03, // Faster zipper (0.03s)
+                        type: "spring",
+                        stiffness: 450, // Snappier
+                        damping: 25,
+                      }}
                       onClick={() => {
-                        playClickSound();
                         action.onClick();
                       }}
-                      className={cn(
-                        "flex items-center gap-3 px-4 py-3",
-                        "bg-[#121212]/95 backdrop-blur-xl rounded-full",
-                        "border border-white/10",
-                        "shadow-xl shadow-black/30",
-                        "hover:bg-[#1a1a1a] hover:border-primary/30 transition-all",
-                        "group",
-                      )}
+                      // FIX 4: REMOVED 'backdrop-blur-xl'. This was causing the LAG.
+                      // Replaced with solid semi-transparent color for 60FPS performance.
+                      className="group flex items-center gap-3 px-4 py-3 bg-[#121212] border border-white/10 rounded-full shadow-xl hover:bg-zinc-900 transition-colors"
                     >
-                      <span className="text-foreground text-sm font-medium whitespace-nowrap group-hover:text-primary transition-colors">
+                      <span className="text-white text-sm font-medium group-hover:text-[#ccff00] transition-colors">
                         {action.label}
                       </span>
-                      <span className="text-primary bg-white/5 p-1 rounded-full">{action.icon}</span>
+                      <span className="text-[#ccff00] bg-white/5 p-1.5 rounded-full">{action.icon}</span>
                     </motion.button>
                   ))}
                 </motion.div>
@@ -258,66 +193,44 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
             )}
           </AnimatePresence>
 
-          {/* Main FAB Button */}
+          {/* Main + Button */}
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            animate={{
-              boxShadow: isFabOpen
-                ? "0 0 0px rgba(0,0,0,0)"
-                : [
-                    "0 0 20px rgba(204,255,0,0.3)",
-                    "0 0 50px rgba(204,255,0,0.6)",
-                    "0 0 20px rgba(204,255,0,0.3)",
-                  ],
-            }}
-            transition={{
-              boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-            }}
-            onClick={() => {
-              playClickSound();
-              setIsFabOpen(!isFabOpen);
-            }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => setIsFabOpen(!isFabOpen)}
             className={cn(
-              "h-[68px] w-[68px] rounded-full flex items-center justify-center z-20 relative",
-              isFabOpen ? "bg-[#121212] border border-white/10" : "bg-primary",
+              "relative z-30 h-[68px] w-[68px] rounded-full flex items-center justify-center shadow-lg transition-colors",
+              isFabOpen
+                ? "bg-zinc-800 text-white border border-white/10"
+                : "bg-[#ccff00] text-black shadow-[#ccff00]/40",
             )}
           >
             <motion.div
               animate={{ rotate: isFabOpen ? 135 : 0 }}
-              transition={{ duration: 0.3, type: "spring", stiffness: 200 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <Plus className={cn("w-8 h-8 transition-colors", isFabOpen ? "text-white" : "text-black")} />
+              <Plus size={32} weight="bold" />
             </motion.div>
           </motion.button>
         </div>
       </motion.div>
 
-      {/* Weight Input Modal */}
+      {/* Weight Modal */}
       <Dialog open={showWeightModal} onOpenChange={setShowWeightModal}>
-        <DialogContent className="bg-zinc-900 border-white/10 max-w-sm">
+        <DialogContent className="bg-zinc-900 border-white/10 max-w-sm z-[100]">
           <DialogHeader>
-            <DialogTitle className="font-display text-lg text-foreground">AĞIRLIK GİRİŞİ</DialogTitle>
+            <DialogTitle className="text-white">AĞIRLIK GİRİŞİ</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="text-center">
-              <Scale className="w-12 h-12 mx-auto text-primary mb-4" />
-              <p className="text-muted-foreground text-sm">Güncel ağırlığını gir</p>
-            </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <Input
                 type="number"
-                step="0.1"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="text-center text-2xl font-display bg-zinc-800 border-white/10 h-16 text-white"
+                className="text-center text-3xl h-16 bg-zinc-800 border-white/10 text-white font-bold w-32"
               />
-              <span className="text-foreground font-display text-xl">kg</span>
+              <span className="text-xl text-zinc-400">kg</span>
             </div>
-            <Button
-              onClick={handleSaveWeight}
-              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-display"
-            >
+            <Button onClick={handleSaveWeight} className="w-full bg-[#ccff00] text-black hover:bg-[#b3e600] font-bold">
               KAYDET
             </Button>
           </div>
