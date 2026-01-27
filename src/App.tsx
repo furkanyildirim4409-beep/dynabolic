@@ -10,7 +10,7 @@ import AppShell from "./components/AppShell";
 import Kokpit from "./pages/Kokpit";
 import Antrenman from "./pages/Antrenman";
 import Beslenme from "./pages/Beslenme";
-import Akademi from "./pages/Akademi";
+import Kesfet from "./pages/Kesfet";
 import Profil from "./pages/Profil";
 import NotFound from "./pages/NotFound";
 
@@ -36,11 +36,12 @@ const App = () => (
             <Route path="/kokpit" element={<AppPage><Kokpit /></AppPage>} />
             <Route path="/antrenman" element={<AppPage><Antrenman /></AppPage>} />
             <Route path="/beslenme" element={<AppPage><Beslenme /></AppPage>} />
-            <Route path="/akademi" element={<AppPage><Akademi /></AppPage>} />
+            <Route path="/kesfet" element={<AppPage><Kesfet /></AppPage>} />
             <Route path="/profil" element={<AppPage><Profil /></AppPage>} />
             
             {/* Redirects for old routes */}
             <Route path="/index" element={<Navigate to="/" replace />} />
+            <Route path="/akademi" element={<Navigate to="/kesfet" replace />} />
             
             {/* 404 */}
             <Route path="*" element={<NotFound />} />
