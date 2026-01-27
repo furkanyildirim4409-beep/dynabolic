@@ -1,7 +1,12 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const DynabolicLogo = ({ className }: { className?: string }) => {
+// Dışarıdan className alabilmesi için interface
+interface DynabolicLogoProps {
+  className?: string;
+}
+
+const DynabolicLogo = ({ className }: DynabolicLogoProps) => {
   return (
     <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
@@ -14,7 +19,7 @@ const DynabolicLogo = ({ className }: { className?: string }) => {
         </filter>
       </defs>
       <g filter="url(#neon-glow)">
-        {/* OUTER D SHAPE - The Outline */}
+        {/* D HARFİ - DIŞ ÇİZGİ */}
         <motion.path
           d="M 50 20 L 50 180 L 100 180 C 150 180 180 150 180 100 C 180 50 150 20 100 20 Z"
           stroke="#CCFF00"
@@ -33,7 +38,7 @@ const DynabolicLogo = ({ className }: { className?: string }) => {
           }}
         />
 
-        {/* INNER TECH SEGMENTS */}
+        {/* İÇ SEGMENTLER */}
         <motion.path
           d="M 65 40 L 95 40 M 65 60 L 105 60 M 65 80 L 85 80 M 65 120 L 85 120 M 65 140 L 105 140 M 65 160 L 95 160"
           stroke="#CCFF00"
@@ -43,7 +48,7 @@ const DynabolicLogo = ({ className }: { className?: string }) => {
           transition={{ delay: 1.3, duration: 0.5 }}
         />
 
-        {/* THE LIGHTNING BOLT (Core) */}
+        {/* ŞİMŞEK ÇEKİRDEĞİ */}
         <motion.path
           d="M 110 50 L 90 95 L 115 95 L 95 150 L 135 105 L 110 105 Z"
           fill="#CCFF00"
