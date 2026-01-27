@@ -1,43 +1,163 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Settings, Bell, Shield, LogOut } from "lucide-react";
+import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target } from "lucide-react";
+import DigitalTwinAvatar from "@/components/DigitalTwinAvatar";
+import { Slider } from "@/components/ui/slider";
 
 const Profil = () => {
+  const [timelineValue, setTimelineValue] = useState([50]);
+  
+  // Calculate waist scale based on timeline (1.2 at start, 0.85 at goal)
+  const waistScale = 1.2 - (timelineValue[0] / 100) * 0.35;
+
+  const bodyStats = [
+    { label: "Boy", value: "182 cm" },
+    { label: "Kilo", value: "78.5 kg" },
+    { label: "Yağ Oranı", value: "12.4%", highlight: true },
+    { label: "Kas Kütlesi", value: "74 kg", highlight: true },
+    { label: "BMI", value: "23.7" },
+    { label: "Bazal Metabolizma", value: "1,890 kcal" },
+  ];
+
+  const recoveryZones = [
+    { zone: "Göğüs", status: "Toparlanma Gerekiyor", severity: "high" },
+    { zone: "Omuz", status: "Toparlanma Gerekiyor", severity: "high" },
+    { zone: "Bacak", status: "Hazır", severity: "ok" },
+    { zone: "Sırt", status: "Yarın Hazır", severity: "medium" },
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       {/* Header */}
       <div>
         <h1 className="font-display text-2xl text-foreground">PROFİL</h1>
-        <p className="text-muted-foreground text-sm">3D Avatar & Ayarlar</p>
+        <p className="text-muted-foreground text-sm">Dijital İkiz & Vücut Analizi</p>
       </div>
 
-      {/* Avatar Section */}
+      {/* 3D Avatar Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="glass-card p-6 flex flex-col items-center"
+        className="glass-card p-4 overflow-hidden"
       >
-        {/* 3D Avatar Placeholder */}
-        <div className="w-32 h-32 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/50 flex items-center justify-center mb-4 neon-glow">
-          <User className="w-16 h-16 text-primary" />
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="font-display text-lg text-foreground tracking-wide">
+            DİJİTAL İKİZ
+          </h2>
+          <div className="flex items-center gap-1">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-primary"
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <span className="text-[10px] text-muted-foreground">CANLI</span>
+          </div>
         </div>
-        
-        <h2 className="font-display text-xl text-foreground">SPORCU #0427</h2>
-        <p className="text-muted-foreground text-sm">Elit Seviye • 2 yıl</p>
-        
-        <div className="flex gap-6 mt-4 pt-4 border-t border-border w-full justify-center">
-          <div className="text-center">
-            <p className="font-display text-xl text-primary">847</p>
-            <p className="text-muted-foreground text-xs">Antrenman</p>
+
+        {/* 3D Avatar */}
+        <DigitalTwinAvatar waistScale={waistScale} />
+
+        {/* Recovery Alert */}
+        <div className="mt-4 bg-destructive/10 border border-destructive/30 rounded-xl p-3 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0" />
+          <div>
+            <p className="text-destructive text-xs font-medium">
+              KAS TOPARLANMASI GEREKİYOR
+            </p>
+            <p className="text-muted-foreground text-[10px]">
+              Göğüs ve Omuz bölgeleri dinlenme gerektirir
+            </p>
           </div>
-          <div className="text-center">
-            <p className="font-display text-xl text-foreground">156</p>
-            <p className="text-muted-foreground text-xs">Gün Serisi</p>
+        </div>
+      </motion.div>
+
+      {/* Timeline AI - Body Transformation */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="glass-card p-4"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <TrendingUp className="w-5 h-5 text-primary" />
+          <h2 className="font-display text-lg text-foreground tracking-wide">
+            ZAMAN YOLCULUĞU
+          </h2>
+        </div>
+
+        {/* Timeline Slider */}
+        <div className="space-y-3">
+          <div className="flex justify-between text-xs">
+            <span className="text-muted-foreground">BUGÜN</span>
+            <span className="text-primary font-medium">HEDEF (TEMMUZ 2026)</span>
           </div>
+          
+          <Slider
+            value={timelineValue}
+            onValueChange={setTimelineValue}
+            max={100}
+            step={1}
+            className="w-full"
+          />
+
+          {/* Tooltip */}
           <div className="text-center">
-            <p className="font-display text-xl text-foreground">12</p>
-            <p className="text-muted-foreground text-xs">Rozet</p>
+            <span className="inline-block bg-primary/20 text-primary text-xs px-3 py-1 rounded-full">
+              TAHMİNİ FİZİK: {Math.round(timelineValue[0])}% İlerleme
+            </span>
           </div>
+
+          {/* Projected Stats */}
+          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-white/10">
+            <div className="text-center p-2 bg-secondary/50 rounded-lg">
+              <p className="text-muted-foreground text-[10px]">TAHMİNİ YAĞ</p>
+              <p className="font-display text-lg text-stat-hrv">
+                %{(12.4 - (timelineValue[0] / 100) * 3.4).toFixed(1)}
+              </p>
+            </div>
+            <div className="text-center p-2 bg-secondary/50 rounded-lg">
+              <p className="text-muted-foreground text-[10px]">TAHMİNİ KAS</p>
+              <p className="font-display text-lg text-primary">
+                {(74 + (timelineValue[0] / 100) * 4).toFixed(1)}kg
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Recovery Zones */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="glass-card p-4"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Target className="w-5 h-5 text-primary" />
+          <h2 className="font-display text-lg text-foreground tracking-wide">
+            TOPARLANMA BÖLGELERİ
+          </h2>
+        </div>
+
+        <div className="space-y-2">
+          {recoveryZones.map((zone, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl"
+            >
+              <span className="text-foreground text-sm">{zone.zone}</span>
+              <span className={`text-xs px-2 py-1 rounded-full ${
+                zone.severity === "high" 
+                  ? "bg-destructive/20 text-destructive" 
+                  : zone.severity === "medium"
+                  ? "bg-yellow-500/20 text-yellow-500"
+                  : "bg-stat-hrv/20 text-stat-hrv"
+              }`}>
+                {zone.status}
+              </span>
+            </div>
+          ))}
         </div>
       </motion.div>
 
@@ -45,25 +165,61 @@ const Profil = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.25 }}
         className="glass-card p-4"
       >
-        <h2 className="font-display text-lg text-foreground mb-4">VÜCUT VERİLERİ</h2>
+        <h2 className="font-display text-lg text-foreground mb-4 tracking-wide">
+          VÜCUT VERİLERİ
+        </h2>
         
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { label: "Boy", value: "182 cm" },
-            { label: "Kilo", value: "78.5 kg" },
-            { label: "Yağ Oranı", value: "12.4%" },
-            { label: "Kas Kütlesi", value: "68.8 kg" },
-            { label: "BMI", value: "23.7" },
-            { label: "Bazal Metabolizma", value: "1,890 kcal" },
-          ].map((stat, index) => (
-            <div key={index} className="p-3 bg-secondary/50 rounded-xl">
+        <div className="grid grid-cols-2 gap-3">
+          {bodyStats.map((stat, index) => (
+            <div 
+              key={index} 
+              className={`p-3 rounded-xl ${
+                stat.highlight 
+                  ? "bg-primary/10 border border-primary/30" 
+                  : "bg-secondary/50"
+              }`}
+            >
               <p className="text-muted-foreground text-xs">{stat.label}</p>
-              <p className="font-display text-lg text-foreground mt-1">{stat.value}</p>
+              <p className={`font-display text-lg mt-1 ${
+                stat.highlight ? "text-primary" : "text-foreground"
+              }`}>
+                {stat.value}
+              </p>
             </div>
           ))}
+        </div>
+      </motion.div>
+
+      {/* Athlete Info */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-card p-4 flex items-center gap-4"
+      >
+        <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center neon-glow-sm">
+          <User className="w-8 h-8 text-primary" />
+        </div>
+        <div className="flex-1">
+          <h3 className="font-display text-lg text-foreground">SPORCU #0427</h3>
+          <p className="text-muted-foreground text-sm">Elit Seviye • 2 yıl</p>
+          <div className="flex gap-4 mt-2">
+            <div className="text-center">
+              <p className="font-display text-sm text-primary">847</p>
+              <p className="text-muted-foreground text-[10px]">Antrenman</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-sm text-foreground">156</p>
+              <p className="text-muted-foreground text-[10px]">Gün Serisi</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-sm text-foreground">12</p>
+              <p className="text-muted-foreground text-[10px]">Rozet</p>
+            </div>
+          </div>
         </div>
       </motion.div>
 
@@ -71,7 +227,7 @@ const Profil = () => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
+        transition={{ delay: 0.35 }}
         className="glass-card p-4 space-y-2"
       >
         {[
