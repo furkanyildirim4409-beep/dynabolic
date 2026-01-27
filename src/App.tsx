@@ -4,10 +4,9 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 
 import SplashScreen from "./components/SplashScreen";
-import BiometricLogin from "./pages/BiometricLogin";
 import AppShell from "./components/AppShell";
 import Kokpit from "./pages/Kokpit";
 import Antrenman from "./pages/Antrenman";
@@ -27,53 +26,56 @@ const AppPage = ({ children }: { children: React.ReactNode }) => (
 );
 
 const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
+  const [splashComplete, setSplashComplete] = useState(false);
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <AnimatePresence mode="wait">
-          {showSplash ? (
-            <SplashScreen 
-              key="splash" 
-              onComplete={() => setShowSplash(false)} 
-            />
-          ) : (
+        
+        {/* OVERLAY ARCHITECTURE: Both layers render simultaneously */}
+        <div className="relative w-full h-full">
+          
+          {/* LAYER 1: Main App (always mounted, z-index: 0) */}
+          <div className="relative z-0">
+            <BrowserRouter>
+              <Routes>
+                {/* Root now goes directly to Kokpit - bypass login */}
+                <Route path="/" element={<AppPage><Kokpit /></AppPage>} />
+                
+                {/* Main App Screens with Elite Dock */}
+                <Route path="/kokpit" element={<AppPage><Kokpit /></AppPage>} />
+                <Route path="/antrenman" element={<AppPage><Antrenman /></AppPage>} />
+                <Route path="/beslenme" element={<AppPage><Beslenme /></AppPage>} />
+                <Route path="/kesfet" element={<AppPage><Kesfet /></AppPage>} />
+                <Route path="/profil" element={<AppPage><Profil /></AppPage>} />
+                <Route path="/coach/:coachId" element={<CoachProfile />} />
+                <Route path="/akademi" element={<AppPage><Akademi /></AppPage>} />
+                <Route path="/tarifler" element={<AppPage><Tarifler /></AppPage>} />
+                
+                {/* Redirects for old routes */}
+                <Route path="/index" element={<Navigate to="/" replace />} />
+                
+                {/* 404 */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </div>
+
+          {/* LAYER 2: Splash Overlay (z-index: 50, fades out when complete) */}
+          {!splashComplete && (
             <motion.div
-              key="app"
-              initial={{ opacity: 0 }}
+              className="fixed inset-0 z-50"
+              initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0 }}
+              style={{ pointerEvents: splashComplete ? 'none' : 'auto' }}
             >
-              <BrowserRouter>
-                <AnimatePresence mode="wait">
-                  <Routes>
-                    {/* Login Screen */}
-                    <Route path="/" element={<BiometricLogin />} />
-                    
-                    {/* Main App Screens with Elite Dock */}
-                    <Route path="/kokpit" element={<AppPage><Kokpit /></AppPage>} />
-                    <Route path="/antrenman" element={<AppPage><Antrenman /></AppPage>} />
-                    <Route path="/beslenme" element={<AppPage><Beslenme /></AppPage>} />
-                    <Route path="/kesfet" element={<AppPage><Kesfet /></AppPage>} />
-                    <Route path="/profil" element={<AppPage><Profil /></AppPage>} />
-                    <Route path="/coach/:coachId" element={<CoachProfile />} />
-                    <Route path="/akademi" element={<AppPage><Akademi /></AppPage>} />
-                    <Route path="/tarifler" element={<AppPage><Tarifler /></AppPage>} />
-                    
-                    {/* Redirects for old routes */}
-                    <Route path="/index" element={<Navigate to="/" replace />} />
-                    
-                    {/* 404 */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </AnimatePresence>
-              </BrowserRouter>
+              <SplashScreen onComplete={() => setSplashComplete(true)} />
             </motion.div>
           )}
-        </AnimatePresence>
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );
