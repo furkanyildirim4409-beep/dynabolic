@@ -119,7 +119,7 @@ export const coaches: Coach[] = [
         type: "transformation",
         beforeImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=500&fit=crop",
         afterImage: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=500&fit=crop",
-        content: "12 haftalık dönüşüm programı sonucu. Disiplin + Bilim = Sonuç 💪 #GokalafAilesi",
+        content: "12 haftalık dönüşüm programı sonucu. Disiplin + Bilim = Sonuç 💪 #DynabolicAilesi",
         likes: 2847,
         comments: 156,
       },
@@ -152,7 +152,7 @@ export const coaches: Coach[] = [
       },
       { 
         id: "2", 
-        title: "Gokalaf Lifting Straps", 
+        title: "Dynabolic Lifting Straps", 
         price: 250, 
         image: "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=300&h=300&fit=crop", 
         type: "equipment" 
@@ -167,7 +167,7 @@ export const coaches: Coach[] = [
       },
       { 
         id: "4", 
-        title: "Gokalaf Pro Atlet (Siyah)", 
+        title: "Dynabolic Pro Atlet (Siyah)", 
         price: 450, 
         image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop", 
         type: "apparel" 

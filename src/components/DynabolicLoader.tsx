@@ -38,7 +38,7 @@ const GokalafLoader = () => {
           
           {/* Logo Text */}
           <h1 className="font-display text-4xl text-primary tracking-[0.3em] text-neon-glow">
-            GOKALAF
+            DYNABOLIC
           </h1>
         </motion.div>
 

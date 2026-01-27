@@ -92,7 +92,7 @@ const BiometricLogin = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="font-display text-6xl md:text-7xl tracking-[0.3em] text-foreground mb-2"
         >
-          GOKALAF
+          DYNABOLIC
         </motion.h1>
         
         <motion.p

@@ -129,7 +129,7 @@ const Akademi = () => {
                   Başlangıç Rehberi: Elite Atlet Yolculuğu
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Gokalaf sisteminin tüm özelliklerini keşfet ve performansını maksimize et.
+                  Dynabolic sisteminin tüm özelliklerini keşfet ve performansını maksimize et.
                 </p>
                 <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                   <Clock className="w-4 h-4" />
