@@ -59,6 +59,11 @@
     /* Custom GOKALAF Variables */
     --neon-lime: 68 100% 50%;
     --void-black: 0 0% 2%;
+    
+    /* Stat Card Colors */
+    --stat-strain: 217 91% 60%;
+    --stat-sleep: 270 70% 60%;
+    --stat-hrv: 160 84% 39%;
     --glass-white: 0 0% 100%;
     --alert-red: 0 84% 60%;
   }
