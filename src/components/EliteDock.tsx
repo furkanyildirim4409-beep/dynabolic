@@ -123,7 +123,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
           opacity: forceHide ? 0 : 1 
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-[9999]"
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-[9999]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {/* Element A: Navigation Pill - Always Full Width */}
