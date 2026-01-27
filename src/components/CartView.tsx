@@ -39,7 +39,7 @@ const CartView = ({ isOpen, onClose, items, onRemoveItem, onClearCart }: CartVie
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-[110] bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -48,29 +48,34 @@ const CartView = ({ isOpen, onClose, items, onRemoveItem, onClearCart }: CartVie
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-x-0 bottom-0 w-full max-w-[430px] mx-auto bg-background border-t border-white/10 rounded-t-3xl max-h-[85vh]"
+            className="absolute inset-x-0 bottom-0 w-full max-w-[430px] mx-auto bg-[#0a0a0a] border-t border-white/10 rounded-t-3xl max-h-[85vh] flex flex-col"
           >
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-white/20" />
+            </div>
+
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="w-5 h-5 text-primary" />
                 <h2 className="font-display text-lg text-foreground">SEPETİM</h2>
                 <span className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                  {items.length}
+                  {items.length} Ürün
                 </span>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 text-muted-foreground hover:text-foreground"
+                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Cart Content */}
-            <div className="flex flex-col h-[calc(100%-72px)]">
+            <div className="flex flex-col flex-1 overflow-hidden">
               {items.length === 0 ? (
-                <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+                <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                   <ShoppingBag className="w-16 h-16 text-muted-foreground/30 mb-4" />
                   <p className="text-foreground font-medium">Sepetiniz Boş</p>
                   <p className="text-muted-foreground text-sm mt-1">
@@ -80,14 +85,14 @@ const CartView = ({ isOpen, onClose, items, onRemoveItem, onClearCart }: CartVie
               ) : (
                 <>
                   {/* Items List */}
-                  <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  <div className="flex-1 overflow-y-auto p-4 space-y-3 overscroll-contain">
                     {items.map((item, index) => (
                       <motion.div
                         key={item.id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="glass-card p-3 flex gap-3"
+                        className="bg-white/5 border border-white/10 rounded-xl p-3 flex gap-3"
                       >
                         <img 
                           src={item.image} 
@@ -135,7 +140,7 @@ const CartView = ({ isOpen, onClose, items, onRemoveItem, onClearCart }: CartVie
                   </div>
 
                   {/* Cart Footer */}
-                  <div className="border-t border-white/10 p-4 space-y-4">
+                  <div className="border-t border-white/10 p-4 space-y-4 bg-[#0a0a0a]">
                     {/* Summary */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
@@ -161,14 +166,14 @@ const CartView = ({ isOpen, onClose, items, onRemoveItem, onClearCart }: CartVie
                     <div className="space-y-2">
                       <Button
                         onClick={handleCheckout}
-                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-display"
+                        className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-display h-12"
                       >
                         ÖDEMEYE GEÇ
                       </Button>
                       <Button
                         variant="outline"
                         onClick={onClearCart}
-                        className="w-full border-white/10 text-muted-foreground hover:text-destructive"
+                        className="w-full border-white/10 text-muted-foreground hover:text-destructive h-10"
                       >
                         Sepeti Temizle
                       </Button>

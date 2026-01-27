@@ -98,10 +98,21 @@ const CoachProfile = () => {
     });
   };
 
-  const handlePackageSelect = (packageTitle: string, price: number) => {
+  const handlePackageSelect = (pkg: { id: string; title: string; price: number; description: string }) => {
+    const cartItem: CartItem = {
+      id: `pkg-${pkg.id}-${coach.id}-${Date.now()}`,
+      title: pkg.title,
+      price: pkg.price,
+      image: coach.avatar,
+      coachName: coach.name,
+    };
+
+    setCart(prev => [...prev, cartItem]);
+    setShowCart(true);
+
     toast({
-      title: "Paket Seçildi (Demo)",
-      description: `"${packageTitle}" - ${price.toLocaleString()}₺ paketi seçildi.`,
+      title: "Paket Sepete Eklendi ✓",
+      description: `"${pkg.title}" sepetinize eklendi.`,
     });
   };
 
@@ -444,7 +455,7 @@ const CoachProfile = () => {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => handlePackageSelect(pkg.title, pkg.price)}
+                  onClick={() => handlePackageSelect(pkg)}
                   className={`w-full py-3 font-display text-sm rounded-xl ${
                     index === 0 
                       ? "bg-primary text-primary-foreground neon-glow" 
