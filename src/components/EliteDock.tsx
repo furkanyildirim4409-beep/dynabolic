@@ -1,14 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, Dumbbell, Leaf, Globe, Plus, X, Droplets, Scale, MessageSquare, BookOpen, ChefHat } from "lucide-react";
+import { LayoutGrid, Dumbbell, Leaf, Globe, User, Plus, X, Droplets, Scale, MessageSquare, BookOpen, ChefHat } from "lucide-react";
 import { cn } from "@/lib/utils";
-import useScrollDirection from "@/hooks/useScrollDirection";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface NavItem {
   id: string;
@@ -27,37 +25,17 @@ const navItems: NavItem[] = [
   { id: "antrenman", label: "Antrenman", icon: <Dumbbell className="w-6 h-6" />, path: "/antrenman" },
   { id: "beslenme", label: "Beslenme", icon: <Leaf className="w-6 h-6" />, path: "/beslenme" },
   { id: "kesfet", label: "Keşfet", icon: <Globe className="w-6 h-6" />, path: "/kesfet" },
-];
-
-// Mock Data
-const academyVideos = [
-  { id: 1, title: "Squat Tekniği", duration: "12:45", thumbnail: "🏋️" },
-  { id: 2, title: "Beslenme 101", duration: "18:30", thumbnail: "🥗" },
-  { id: 3, title: "Uyku Bilimi", duration: "15:20", thumbnail: "😴" },
-];
-
-const recipes = [
-  { id: 1, title: "Yulaf Lapası", calories: "450 kcal", emoji: "🥣" },
-  { id: 2, title: "Somon Izgara", calories: "380 kcal", emoji: "🐟" },
-  { id: 3, title: "Protein Pankek", calories: "320 kcal", emoji: "🥞" },
+  { id: "profil", label: "Profil", icon: <User className="w-6 h-6" />, path: "/profil" },
 ];
 
 const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { scrollDirection, isAtTop } = useScrollDirection({ threshold: 10 });
   
   // FAB State
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
-  const [showAcademyModal, setShowAcademyModal] = useState(false);
-  const [showRecipesModal, setShowRecipesModal] = useState(false);
   const [weight, setWeight] = useState("78.5");
-  const [waterCount, setWaterCount] = useState(0);
-
-  // Collapse when scrolling down (not at top)
-  const isCollapsed = scrollDirection === "down" && !isAtTop;
-  const shouldHide = forceHide;
 
   const handleNavClick = (path: string) => {
     playClickSound();
@@ -85,11 +63,9 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   // FAB Actions
   const handleAddWater = () => {
-    const newCount = waterCount + 1;
-    setWaterCount(newCount);
     toast({
       title: "250ml Su Eklendi 💧",
-      description: `Bugün ${newCount * 250}ml su içtin!`,
+      description: "Günlük hedefe yaklaşıyorsun!",
     });
     setIsFabOpen(false);
   };
@@ -120,12 +96,12 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
   };
 
   const handleOpenAcademy = () => {
-    setShowAcademyModal(true);
+    navigate("/akademi");
     setIsFabOpen(false);
   };
 
   const handleOpenRecipes = () => {
-    setShowRecipesModal(true);
+    navigate("/tarifler");
     setIsFabOpen(false);
   };
 
@@ -139,87 +115,71 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   return (
     <>
-      {/* Main Dock Assembly - Centered Container */}
+      {/* Main Dock Assembly - Perfectly Centered, Always Visible */}
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ 
-          y: shouldHide ? 100 : 0, 
-          opacity: shouldHide ? 0 : 1 
+          y: forceHide ? 100 : 0, 
+          opacity: forceHide ? 0 : 1 
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-[9999]"
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3 z-[9999]"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* Element A: Navigation Pill */}
+        {/* Element A: Navigation Pill - Always Full Width */}
         <motion.nav
-          layout
-          animate={{
-            width: isCollapsed ? 64 : "auto",
-          }}
-          transition={{ type: "spring", stiffness: 500, damping: 35 }}
           className={cn(
-            "relative h-16 flex items-center overflow-hidden",
-            "bg-[#121212]/90 backdrop-blur-xl",
+            "relative h-16 flex items-center px-3",
+            "bg-[#121212]/95 backdrop-blur-xl",
             "border border-white/10 rounded-full",
             "shadow-2xl shadow-black/40"
           )}
         >
           <LayoutGroup>
-            <div className="relative flex items-center px-2">
-              <AnimatePresence mode="popLayout">
-                {navItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  
-                  // In collapsed mode, only show active icon
-                  if (isCollapsed && !isActive) {
-                    return null;
-                  }
-                  
-                  return (
-                    <motion.button
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      onClick={() => handleNavClick(item.path)}
-                      className={cn(
-                        "relative flex items-center justify-center w-12 h-12 rounded-full transition-colors",
-                        isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {/* Liquid Lens Background - Active State */}
-                      {isActive && (
-                        <motion.div
-                          layoutId="navBubble"
-                          className="absolute inset-1 rounded-full bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] z-0"
-                          initial={false}
-                          transition={{ 
-                            type: "spring", 
-                            stiffness: 500, 
-                            damping: 30,
-                            mass: 0.8
-                          }}
-                        />
-                      )}
-                      
-                      {/* Icon */}
+            <div className="relative flex items-center gap-1">
+              {navItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                
+                return (
+                  <motion.button
+                    key={item.id}
+                    layout
+                    onClick={() => handleNavClick(item.path)}
+                    className={cn(
+                      "relative flex items-center justify-center w-12 h-12 rounded-full transition-colors",
+                      isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {/* Liquid Lens Background - Active State */}
+                    {isActive && (
                       <motion.div
-                        className="relative z-10"
-                        animate={isActive ? { scale: 1.05 } : { scale: 1 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                      >
-                        <span className={cn(
-                          isActive && "drop-shadow-[0_0_10px_hsl(68,100%,50%)]"
-                        )}>
-                          {item.icon}
-                        </span>
-                      </motion.div>
-                    </motion.button>
-                  );
-                })}
-              </AnimatePresence>
+                        layoutId="navBubble"
+                        className="absolute inset-1 rounded-full bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] z-0"
+                        initial={false}
+                        transition={{ 
+                          type: "spring", 
+                          stiffness: 500, 
+                          damping: 30,
+                          mass: 0.8
+                        }}
+                      />
+                    )}
+                    
+                    {/* Icon */}
+                    <motion.div
+                      className="relative z-10"
+                      animate={isActive ? { scale: 1.05 } : { scale: 1 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    >
+                      <span className={cn(
+                        isActive && "drop-shadow-[0_0_10px_hsl(68,100%,50%)]"
+                      )}>
+                        {item.icon}
+                      </span>
+                    </motion.div>
+                  </motion.button>
+                );
+              })}
             </div>
           </LayoutGroup>
         </motion.nav>
@@ -344,85 +304,6 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
               KAYDET
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Academy Modal */}
-      <Dialog open={showAcademyModal} onOpenChange={setShowAcademyModal}>
-        <DialogContent className="bg-background border-white/10 max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-display text-lg text-foreground flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-primary" />
-              AKADEMİ
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[50vh]">
-            <div className="space-y-3">
-              {academyVideos.map((video) => (
-                <motion.button
-                  key={video.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    toast({
-                      title: `${video.title} Açılıyor`,
-                      description: `Süre: ${video.duration}`,
-                    });
-                  }}
-                  className="w-full flex items-center gap-4 p-4 bg-secondary/50 rounded-xl border border-white/5 hover:border-primary/30 transition-all"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center text-2xl">
-                    {video.thumbnail}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h4 className="text-foreground font-medium">{video.title}</h4>
-                    <p className="text-muted-foreground text-sm">{video.duration}</p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-primary text-xs">▶</span>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
-
-      {/* Recipes Modal */}
-      <Dialog open={showRecipesModal} onOpenChange={setShowRecipesModal}>
-        <DialogContent className="bg-background border-white/10 max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-display text-lg text-foreground flex items-center gap-2">
-              <ChefHat className="w-5 h-5 text-primary" />
-              TARİFLER
-            </DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[50vh]">
-            <div className="space-y-3">
-              {recipes.map((recipe) => (
-                <motion.button
-                  key={recipe.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    toast({
-                      title: `${recipe.title}`,
-                      description: `Kalori: ${recipe.calories}`,
-                    });
-                  }}
-                  className="w-full flex items-center gap-4 p-4 bg-secondary/50 rounded-xl border border-white/5 hover:border-primary/30 transition-all"
-                >
-                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center text-2xl">
-                    {recipe.emoji}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <h4 className="text-foreground font-medium">{recipe.title}</h4>
-                    <p className="text-muted-foreground text-sm">{recipe.calories}</p>
-                  </div>
-                </motion.button>
-              ))}
-            </div>
-          </ScrollArea>
         </DialogContent>
       </Dialog>
     </>
