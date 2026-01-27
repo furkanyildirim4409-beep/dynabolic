@@ -38,16 +38,16 @@ const ProductDetail = ({ isOpen, onClose, product, onAddToCart }: ProductDetailP
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-end justify-center"
+          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={onClose}
         >
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-lg bg-background rounded-t-3xl max-h-[90vh] overflow-hidden"
+            className="w-[90%] max-w-md bg-zinc-900 border border-white/10 rounded-2xl max-h-[85vh] overflow-y-auto"
           >
             {/* Product Image */}
             <div className="relative aspect-square bg-muted">
@@ -70,7 +70,7 @@ const ProductDetail = ({ isOpen, onClose, product, onAddToCart }: ProductDetailP
             </div>
 
             {/* Product Info */}
-            <div className="p-6 space-y-4">
+            <div className="p-6 pb-24 space-y-4">
               <div>
                 <p className="text-muted-foreground text-sm">{product.coachName}</p>
                 <h2 className="text-foreground font-display text-xl mt-1">
