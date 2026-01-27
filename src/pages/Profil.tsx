@@ -402,8 +402,8 @@ const Profil = () => {
 
                 {/* App Version */}
                 <div className="text-center pt-4 border-t border-white/10">
-                  <p className="text-muted-foreground text-xs">GOKALAF MVP v1.0.0</p>
-                  <p className="text-muted-foreground/50 text-[10px] mt-1">© 2026 Gokalaf Labs</p>
+                  <p className="text-muted-foreground text-xs">DYNABOLIC v1.0.0</p>
+                  <p className="text-muted-foreground/50 text-[10px] mt-1">© 2026 Dynabolic Labs</p>
                 </div>
               </div>
             </motion.div>
