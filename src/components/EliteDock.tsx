@@ -165,9 +165,9 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                         initial={false}
                         transition={{
                           type: "spring",
-                          stiffness: 500,
-                          damping: 30,
-                          mass: 0.8,
+                          stiffness: 350,
+                          damping: 35,
+                          mass: 1.5,
                         }}
                       />
                     )}
@@ -213,25 +213,27 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                     <motion.button
                       key={action.id}
                       custom={index}
-                      variants={{
-                        hidden: {
-                          opacity: 0,
-                          y: 20, // Aşağıdan başla (Button hizası)
-                          scale: 0.8,
+                    variants={{
+                      hidden: {
+                        opacity: 0,
+                        scale: 0.4,
+                        y: 60,
+                        x: 20,
+                      },
+                      visible: (i) => ({
+                        opacity: 1,
+                        scale: 1,
+                        y: 0,
+                        x: 0,
+                        transition: {
+                          delay: (fabActions.length - 1 - i) * 0.03,
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                          mass: 0.8,
                         },
-                        visible: (i) => ({
-                          opacity: 1,
-                          y: 0, // Yukarı çık
-                          scale: 1,
-                          transition: {
-                            // Reverse Index Delay: En alttaki (butona en yakın) ilk açılır
-                            delay: (fabActions.length - 1 - i) * 0.04,
-                            type: "spring",
-                            stiffness: 350,
-                            damping: 20,
-                          },
-                        }),
-                      }}
+                      }),
+                    }}
                       onClick={() => {
                         playClickSound();
                         action.onClick();
@@ -260,13 +262,25 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            animate={{
+              boxShadow: isFabOpen
+                ? "0 0 0px rgba(0,0,0,0)"
+                : [
+                    "0 0 20px rgba(204,255,0,0.3)",
+                    "0 0 50px rgba(204,255,0,0.6)",
+                    "0 0 20px rgba(204,255,0,0.3)",
+                  ],
+            }}
+            transition={{
+              boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+            }}
             onClick={() => {
               playClickSound();
               setIsFabOpen(!isFabOpen);
             }}
             className={cn(
-              "h-[68px] w-[68px] rounded-full flex items-center justify-center transition-all duration-200 z-20 relative",
-              isFabOpen ? "bg-[#121212] border border-white/10" : "bg-primary shadow-[0_0_25px_rgba(204,255,0,0.4)]",
+              "h-[68px] w-[68px] rounded-full flex items-center justify-center z-20 relative",
+              isFabOpen ? "bg-[#121212] border border-white/10" : "bg-primary",
             )}
           >
             <motion.div
@@ -275,14 +289,6 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
             >
               <Plus className={cn("w-8 h-8 transition-colors", isFabOpen ? "text-white" : "text-black")} />
             </motion.div>
-
-            {!isFabOpen && (
-              <motion.div
-                className="absolute inset-0 rounded-full border-2 border-primary"
-                animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-              />
-            )}
           </motion.button>
         </div>
       </motion.div>
