@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff } from "lucide-react";
+import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
+import { toast } from "sonner";
 
 interface VisionAIExecutionProps {
   workoutTitle: string;
@@ -13,9 +14,15 @@ interface Exercise {
   targetReps: number;
   tempo: string;
   sets: number;
-  currentSet: number;
   restDuration: number;
 }
+
+const exercises: Exercise[] = [
+  { name: "BARBELL SQUAT", targetReps: 12, tempo: "3010", sets: 4, restDuration: 90 },
+  { name: "LEG PRESS", targetReps: 15, tempo: "2010", sets: 4, restDuration: 75 },
+  { name: "LEG CURL", targetReps: 12, tempo: "3011", sets: 4, restDuration: 60 },
+  { name: "CALF RAISE", targetReps: 20, tempo: "2010", sets: 4, restDuration: 45 },
+];
 
 const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) => {
   const [timer, setTimer] = useState(0);
@@ -26,15 +33,11 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [visionAIActive, setVisionAIActive] = useState(false);
   const [showRestTimer, setShowRestTimer] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
+  const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
+  const [showWorkoutSummary, setShowWorkoutSummary] = useState(false);
+  const [exerciseComplete, setExerciseComplete] = useState(false);
   
-  const exercise: Exercise = {
-    name: "BARBELL SQUAT",
-    targetReps: 12,
-    tempo: "3010",
-    sets: 4,
-    currentSet: currentSet,
-    restDuration: 90,
-  };
+  const exercise = exercises[currentExerciseIndex];
 
   // Timer effect
   useEffect(() => {
@@ -53,36 +56,84 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleConfirmSet = () => {
-    setShowComplete(true);
-    setIsRunning(false);
-    
-    // Play confirmation sound
+  const playSound = (type: 'confirm' | 'complete') => {
     try {
       const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
-      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
+      
+      if (type === 'confirm') {
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
+        gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.2);
+      } else {
+        // Victory sound for exercise complete
+        oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2);
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.4);
+      }
     } catch (e) {}
+  };
 
-    setTimeout(() => {
-      setShowComplete(false);
-      setShowRestTimer(true);
-    }, 1000);
+  const handleConfirmSet = () => {
+    setShowComplete(true);
+    setIsRunning(false);
+    playSound('confirm');
+
+    // Check if this was the last set
+    if (currentSet >= exercise.sets) {
+      // Exercise complete!
+      setExerciseComplete(true);
+      playSound('complete');
+      
+      setTimeout(() => {
+        setShowComplete(false);
+        setExerciseComplete(false);
+        
+        // Check if there are more exercises
+        if (currentExerciseIndex < exercises.length - 1) {
+          toast.success("MÜKEMMEL! HAREKET TAMAMLANDI.", {
+            description: "SIRADAKİNE GEÇİLİYOR...",
+            duration: 2000,
+          });
+          
+          // Move to next exercise
+          setTimeout(() => {
+            setCurrentExerciseIndex((prev) => prev + 1);
+            setCurrentSet(1);
+            setTimer(0);
+            setReps(0);
+            setWeight(60);
+            setIsRunning(true);
+          }, 1500);
+        } else {
+          // All exercises complete - show summary
+          setShowWorkoutSummary(true);
+        }
+      }, 1500);
+    } else {
+      // More sets remaining, show rest timer
+      setTimeout(() => {
+        setShowComplete(false);
+        setShowRestTimer(true);
+      }, 1000);
+    }
   };
 
   const handleRestComplete = () => {
     setShowRestTimer(false);
     setTimer(0);
     setReps(0);
-    setCurrentSet((prev) => Math.min(prev + 1, exercise.sets));
+    setCurrentSet((prev) => prev + 1);
     setIsRunning(true);
   };
 
@@ -90,7 +141,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
     setShowRestTimer(false);
     setTimer(0);
     setReps(0);
-    setCurrentSet((prev) => Math.min(prev + 1, exercise.sets));
+    setCurrentSet((prev) => prev + 1);
     setIsRunning(true);
   };
 
@@ -102,22 +153,112 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 bg-background flex flex-col"
       >
-        {/* Complete Flash Effect */}
+        {/* Complete Flash Effect - Enhanced for exercise complete */}
         <AnimatePresence>
           {showComplete && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 bg-primary/30 flex items-center justify-center"
+              className={`absolute inset-0 z-50 flex items-center justify-center ${
+                exerciseComplete ? 'bg-primary/50' : 'bg-primary/30'
+              }`}
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: exerciseComplete ? [0, 1.2, 1] : 1 }}
+                transition={{ duration: exerciseComplete ? 0.5 : 0.3 }}
+                className={`rounded-full flex items-center justify-center ${
+                  exerciseComplete ? 'w-32 h-32 bg-primary neon-glow' : 'w-24 h-24 bg-primary'
+                }`}
+              >
+                {exerciseComplete ? (
+                  <Trophy className="w-16 h-16 text-primary-foreground" />
+                ) : (
+                  <Check className="w-12 h-12 text-primary-foreground" />
+                )}
+              </motion.div>
+              {exerciseComplete && (
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="absolute bottom-1/3 font-display text-xl text-foreground tracking-wider"
+                >
+                  HAREKET TAMAMLANDI!
+                </motion.p>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Workout Summary Overlay */}
+        <AnimatePresence>
+          {showWorkoutSummary && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-background flex flex-col items-center justify-center p-6"
             >
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                className="w-24 h-24 rounded-full bg-primary flex items-center justify-center"
+                transition={{ type: "spring", damping: 15 }}
+                className="w-24 h-24 rounded-full bg-primary neon-glow flex items-center justify-center mb-6"
               >
-                <Check className="w-12 h-12 text-primary-foreground" />
+                <Trophy className="w-12 h-12 text-primary-foreground" />
               </motion.div>
+              
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="font-display text-3xl text-foreground mb-2"
+              >
+                ANTRENMAN TAMAMLANDI!
+              </motion.h2>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-muted-foreground text-center mb-8"
+              >
+                Harika iş çıkardın! Tüm hareketleri başarıyla tamamladın.
+              </motion.p>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="glass-card p-6 w-full max-w-sm space-y-4 mb-8"
+              >
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Toplam Hareket</span>
+                  <span className="font-display text-lg text-foreground">{exercises.length}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Toplam Set</span>
+                  <span className="font-display text-lg text-foreground">{exercises.reduce((acc, ex) => acc + ex.sets, 0)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Kazanılan Bio-Coin</span>
+                  <span className="font-display text-lg text-primary">+150</span>
+                </div>
+              </motion.div>
+
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onClose}
+                className="w-full max-w-sm py-4 bg-primary text-primary-foreground font-display text-lg tracking-wider rounded-xl neon-glow"
+              >
+                ANTRENMANI BİTİR
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>

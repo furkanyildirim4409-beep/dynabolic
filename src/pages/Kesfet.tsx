@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { Globe, ShoppingBag, X, Heart, MessageCircle, Share2, Verified, Coins } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
@@ -98,6 +99,7 @@ const BioCoinWallet = ({ balance }: BioCoinWalletProps) => (
 );
 
 const Kesfet = () => {
+  const navigate = useNavigate();
   const [selectedStory, setSelectedStory] = useState<Coach | null>(null);
   const [bioCoins] = useState(1250);
 
@@ -130,7 +132,7 @@ const Kesfet = () => {
             {eliteCoaches.map((coach) => (
               <motion.button
                 key={coach.id}
-                onClick={() => setSelectedStory(coach)}
+                onClick={() => navigate(`/coach/${coach.id}`)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col items-center gap-2 flex-shrink-0"

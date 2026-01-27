@@ -12,6 +12,7 @@ import Antrenman from "./pages/Antrenman";
 import Beslenme from "./pages/Beslenme";
 import Kesfet from "./pages/Kesfet";
 import Profil from "./pages/Profil";
+import CoachProfile from "./pages/CoachProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/beslenme" element={<AppPage><Beslenme /></AppPage>} />
             <Route path="/kesfet" element={<AppPage><Kesfet /></AppPage>} />
             <Route path="/profil" element={<AppPage><Profil /></AppPage>} />
+            <Route path="/coach/:coachId" element={<CoachProfile />} />
             
             {/* Redirects for old routes */}
             <Route path="/index" element={<Navigate to="/" replace />} />
