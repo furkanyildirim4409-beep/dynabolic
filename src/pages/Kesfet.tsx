@@ -1,98 +1,25 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Globe, ShoppingBag, X, Heart, MessageCircle, Share2, Verified, Coins, Trophy, Star, Users, Shield } from "lucide-react";
+import { Globe, X, Heart, MessageCircle, Share2, Verified, Coins, Trophy, Star, Users, Shield } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
+import { toast } from "@/hooks/use-toast";
+import { coaches, getLeaderboardCoaches, Coach } from "@/lib/mockData";
 
-interface Coach {
-  id: string;
-  name: string;
-  avatar: string;
-  specialty: string;
-  hasNewStory: boolean;
-  score?: number;
-  students?: number;
-  rating?: number;
-  level?: number;
-}
+// Bio-Coin Discount Calculator
+const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
+const USER_BIO_COINS = 2450; // Mock user balance
 
-interface Product {
-  id: string;
-  title: string;
-  coach: string;
-  price: number;
-  bioCoins?: number;
-  image: string;
-  type: "ebook" | "apparel" | "pdf";
-}
+const calculateMaxDiscount = (productPrice: number, userCoins: number): number => {
+  const maxPossibleDiscount = userCoins * COIN_TO_TL_RATE;
+  return Math.min(maxPossibleDiscount, productPrice - 10); // Keep minimum 10 TL price
+};
 
-interface FeedPost {
-  id: string;
-  coach: string;
-  coachId: string;
-  coachAvatar: string;
-  type: "transformation" | "motivation";
-  beforeImage?: string;
-  afterImage?: string;
-  content?: string;
-  likes: number;
-  comments: number;
-}
-
-const eliteCoaches: Coach[] = [
-  { id: "1", name: "Koç Serdar", avatar: "/placeholder.svg", specialty: "Hipertrofi", hasNewStory: true, score: 9850, students: 150, rating: 4.9, level: 10 },
-  { id: "2", name: "Koç Elif", avatar: "/placeholder.svg", specialty: "Beslenme", hasNewStory: true, score: 8720, students: 120, rating: 4.8, level: 9 },
-  { id: "3", name: "Koç Mert", avatar: "/placeholder.svg", specialty: "Güç", hasNewStory: false, score: 7540, students: 95, rating: 4.7, level: 9 },
-  { id: "4", name: "Koç Ayşe", avatar: "/placeholder.svg", specialty: "Mobilite", hasNewStory: true, score: 6890, students: 80, rating: 4.9, level: 8 },
-  { id: "5", name: "Koç Burak", avatar: "/placeholder.svg", specialty: "Dayanıklılık", hasNewStory: false, score: 5420, students: 65, rating: 4.6, level: 7 },
-  { id: "6", name: "Koç Deniz", avatar: "/placeholder.svg", specialty: "Fonksiyonel", hasNewStory: true, score: 4980, students: 55, rating: 4.5, level: 7 },
-];
-
-const shopProducts: Product[] = [
-  { id: "1", title: "Hipertrofi E-Kitabı", coach: "Koç Serdar", price: 150, bioCoins: 500, image: "/placeholder.svg", type: "ebook" },
-  { id: "2", title: "Gokalaf Pro Atlet (Siyah)", coach: "GOKALAF", price: 450, image: "/placeholder.svg", type: "apparel" },
-  { id: "3", title: "Diyet Tarifleri (PDF)", coach: "Koç Elif", price: 90, bioCoins: 300, image: "/placeholder.svg", type: "pdf" },
-  { id: "4", title: "Kuvvet Programı", coach: "Koç Mert", price: 200, bioCoins: 650, image: "/placeholder.svg", type: "ebook" },
-];
-
-const feedPosts: FeedPost[] = [
-  {
-    id: "1",
-    coach: "Koç Serdar",
-    coachId: "1",
-    coachAvatar: "/placeholder.svg",
-    type: "transformation",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    content: "12 haftalık dönüşüm programı sonucu. Disiplin + Bilim = Sonuç 💪",
-    likes: 2847,
-    comments: 156,
-  },
-  {
-    id: "2",
-    coach: "Koç Elif",
-    coachId: "2",
-    coachAvatar: "/placeholder.svg",
-    type: "motivation",
-    content: "\"Başarı, her gün tekrarlanan küçük çabaların toplamıdır.\" Bugün de devam! 🔥",
-    likes: 1523,
-    comments: 89,
-  },
-  {
-    id: "3",
-    coach: "Koç Mert",
-    coachId: "3",
-    coachAvatar: "/placeholder.svg",
-    type: "transformation",
-    beforeImage: "/placeholder.svg",
-    afterImage: "/placeholder.svg",
-    content: "6 ayda 25kg kas kütlesi artışı. Doğru program + beslenme = imkansız yok.",
-    likes: 3241,
-    comments: 234,
-  },
-];
+const calculateCoinsNeeded = (discountAmount: number): number => {
+  return Math.ceil(discountAmount / COIN_TO_TL_RATE);
+};
 
 interface BioCoinWalletProps {
   balance: number;
@@ -116,17 +43,27 @@ const getMedalBadge = (rank: number) => {
   return null;
 };
 
-// Bio-Coin Discount Calculator
-const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
-const USER_BIO_COINS = 2450; // Mock user balance
-
-const calculateMaxDiscount = (productPrice: number, userCoins: number): number => {
-  const maxPossibleDiscount = userCoins * COIN_TO_TL_RATE;
-  return Math.min(maxPossibleDiscount, productPrice - 10); // Keep minimum 10 TL price
+// Combine all products from all coaches for the shop
+const getAllProducts = () => {
+  return coaches.flatMap(coach => 
+    coach.products.map(product => ({
+      ...product,
+      coachName: coach.name,
+      coachId: coach.id
+    }))
+  ).slice(0, 8); // Limit to 8 products for display
 };
 
-const calculateCoinsNeeded = (discountAmount: number): number => {
-  return Math.ceil(discountAmount / COIN_TO_TL_RATE);
+// Combine all posts from all coaches for the feed
+const getAllPosts = () => {
+  return coaches.flatMap(coach => 
+    coach.posts.map(post => ({
+      ...post,
+      coachName: coach.name,
+      coachId: coach.id,
+      coachAvatar: coach.avatar
+    }))
+  );
 };
 
 const Kesfet = () => {
@@ -134,12 +71,31 @@ const Kesfet = () => {
   const [selectedStory, setSelectedStory] = useState<Coach | null>(null);
   const [bioCoins] = useState(USER_BIO_COINS);
   const [coinDiscounts, setCoinDiscounts] = useState<Record<string, boolean>>({});
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
-  // Sort coaches by score for leaderboard
-  const sortedCoaches = [...eliteCoaches].sort((a, b) => (b.score || 0) - (a.score || 0));
+  const sortedCoaches = getLeaderboardCoaches();
+  const allProducts = getAllProducts();
+  const allPosts = getAllPosts();
 
   const handleCoachClick = (coachId: string) => {
     navigate(`/coach/${coachId}`);
+  };
+
+  const handleStoryClick = (coach: Coach) => {
+    setSelectedStory(coach);
+    // Auto-close after 5 seconds
+    setTimeout(() => setSelectedStory(null), 5000);
+  };
+
+  const handleLike = (postId: string, currentLikes: number) => {
+    setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleBuy = (productTitle: string) => {
+    toast({
+      title: "Sepete Eklendi (Demo)",
+      description: `"${productTitle}" sepetinize eklendi.`,
+    });
   };
 
   return (
@@ -168,10 +124,10 @@ const Kesfet = () => {
           </div>
 
           <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
-            {eliteCoaches.map((coach) => (
+            {coaches.map((coach) => (
               <motion.button
                 key={coach.id}
-                onClick={() => handleCoachClick(coach.id)}
+                onClick={() => handleStoryClick(coach)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col items-center gap-2 flex-shrink-0"
@@ -183,9 +139,9 @@ const Kesfet = () => {
                 }`}>
                   <div className="p-0.5 rounded-full bg-background">
                     <Avatar className="w-16 h-16">
-                      <AvatarImage src={coach.avatar} alt={coach.name} />
+                      <AvatarImage src={coach.avatar} alt={coach.name} className="object-cover" />
                       <AvatarFallback className="bg-secondary text-foreground">
-                        {coach.name.charAt(0)}
+                        {coach.name.charAt(4)}
                       </AvatarFallback>
                     </Avatar>
                   </div>
@@ -194,7 +150,7 @@ const Kesfet = () => {
                   <p className="text-foreground text-xs font-medium truncate w-16">
                     {coach.name}
                   </p>
-                  <p className="text-muted-foreground text-[10px]">{coach.specialty}</p>
+                  <p className="text-muted-foreground text-[10px]">{coach.specialty.split(" ")[0]}</p>
                 </div>
               </motion.button>
             ))}
@@ -218,73 +174,98 @@ const Kesfet = () => {
           {/* AKIŞ (Feed) Tab */}
           <TabsContent value="akis" className="mt-4">
             <div className="space-y-4">
-              {feedPosts.map((post, index) => (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="glass-card overflow-hidden"
-                >
-                  {/* Post Header - Clickable */}
-                  <button
-                    onClick={() => handleCoachClick(post.coachId)}
-                    className="w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors"
+              {allPosts.map((post, index) => {
+                const isLiked = likedPosts[post.id + post.coachId];
+                const displayLikes = isLiked ? post.likes + 1 : post.likes;
+                
+                return (
+                  <motion.div
+                    key={`${post.id}-${post.coachId}`}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="glass-card overflow-hidden"
                   >
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={post.coachAvatar} alt={post.coach} />
-                      <AvatarFallback className="bg-primary/20 text-primary">
-                        {post.coach.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center gap-1">
-                        <span className="text-foreground text-sm font-medium">{post.coach}</span>
-                        <Verified className="w-4 h-4 text-primary fill-primary" />
+                    {/* Post Header - Clickable */}
+                    <button
+                      onClick={() => handleCoachClick(post.coachId)}
+                      className="w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors"
+                    >
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={post.coachAvatar} alt={post.coachName} className="object-cover" />
+                        <AvatarFallback className="bg-primary/20 text-primary">
+                          {post.coachName.charAt(4)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center gap-1">
+                          <span className="text-foreground text-sm font-medium">{post.coachName}</span>
+                          <Verified className="w-4 h-4 text-primary fill-primary" />
+                        </div>
+                        <span className="text-muted-foreground text-xs">Elit Koç</span>
                       </div>
-                      <span className="text-muted-foreground text-xs">Elit Koç</span>
+                    </button>
+
+                    {/* Transformation Images */}
+                    {post.type === "transformation" && (
+                      <div className="grid grid-cols-2 gap-1 px-4">
+                        <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden">
+                          <img src={post.beforeImage} alt="Önce" className="w-full h-full object-cover" />
+                          <span className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded">
+                            ÖNCE
+                          </span>
+                        </div>
+                        <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden border-2 border-primary/50">
+                          <img src={post.afterImage} alt="Sonra" className="w-full h-full object-cover" />
+                          <span className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
+                            SONRA
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Video Thumbnail */}
+                    {post.type === "video" && post.videoThumbnail && (
+                      <div className="relative aspect-video mx-4 bg-muted rounded-lg overflow-hidden">
+                        <img src={post.videoThumbnail} alt="Video" className="w-full h-full object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                            <div className="w-0 h-0 border-l-[20px] border-l-white border-t-[12px] border-t-transparent border-b-[12px] border-b-transparent ml-1" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Content */}
+                    <div className="p-4">
+                      <p className="text-foreground text-sm">{post.content}</p>
                     </div>
-                  </button>
 
-                  {/* Transformation Images */}
-                  {post.type === "transformation" && (
-                    <div className="grid grid-cols-2 gap-1 px-4">
-                      <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden">
-                        <img src={post.beforeImage} alt="Önce" className="w-full h-full object-cover opacity-60" />
-                        <span className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded">
-                          ÖNCE
-                        </span>
-                      </div>
-                      <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden border-2 border-primary/50">
-                        <img src={post.afterImage} alt="Sonra" className="w-full h-full object-cover opacity-60" />
-                        <span className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
-                          SONRA
-                        </span>
-                      </div>
+                    {/* Actions */}
+                    <div className="px-4 pb-4 flex items-center gap-6">
+                      <button 
+                        onClick={() => handleLike(post.id + post.coachId, post.likes)}
+                        className={`flex items-center gap-2 transition-colors ${
+                          isLiked ? "text-destructive" : "text-muted-foreground hover:text-destructive"
+                        }`}
+                      >
+                        <Heart className={`w-5 h-5 ${isLiked ? "fill-destructive" : ""}`} />
+                        <span className="text-xs">{displayLikes.toLocaleString()}</span>
+                      </button>
+                      <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="text-xs">{post.comments}</span>
+                      </button>
+                      <button 
+                        onClick={() => toast({ title: "Link Kopyalandı (Demo)" })}
+                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ml-auto"
+                      >
+                        <Share2 className="w-5 h-5" />
+                      </button>
                     </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="p-4">
-                    <p className="text-foreground text-sm">{post.content}</p>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="px-4 pb-4 flex items-center gap-6">
-                    <button className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors">
-                      <Heart className="w-5 h-5" />
-                      <span className="text-xs">{post.likes.toLocaleString()}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="text-xs">{post.comments}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ml-auto">
-                      <Share2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -337,7 +318,7 @@ const Kesfet = () => {
                         rank === 2 ? "ring-2 ring-offset-2 ring-offset-background ring-gray-400" :
                         rank === 3 ? "ring-2 ring-offset-2 ring-offset-background ring-amber-600" : ""
                       }`}>
-                        <AvatarImage src={coach.avatar} alt={coach.name} />
+                        <AvatarImage src={coach.avatar} alt={coach.name} className="object-cover" />
                         <AvatarFallback className="bg-primary/20 text-primary font-display">
                           {coach.name.split(" ")[1]?.charAt(0) || coach.name.charAt(0)}
                         </AvatarFallback>
@@ -355,7 +336,7 @@ const Kesfet = () => {
                         <span className="text-foreground font-display text-sm">{coach.name}</span>
                         <Verified className="w-4 h-4 text-primary fill-primary" />
                       </div>
-                      <p className="text-primary text-xs">{coach.specialty} Uzmanı</p>
+                      <p className="text-primary text-xs">{coach.specialty}</p>
                       <div className="flex items-center gap-3 mt-1">
                         <div className="flex items-center gap-1">
                           <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
@@ -372,7 +353,7 @@ const Kesfet = () => {
                     <div className="text-right">
                       {rank <= 3 ? (
                         <div className="text-center">
-                          <p className="font-display text-lg text-primary">{coach.score?.toLocaleString()}</p>
+                          <p className="font-display text-lg text-primary">{coach.score.toLocaleString()}</p>
                           <p className="text-muted-foreground text-[10px]">PUAN</p>
                         </div>
                       ) : (
@@ -404,19 +385,19 @@ const Kesfet = () => {
             </motion.div>
 
             <div className="grid grid-cols-2 gap-3">
-              {shopProducts.map((product, index) => {
+              {allProducts.map((product, index) => {
                 const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
-                const isDiscountActive = coinDiscounts[product.id] || false;
+                const isDiscountActive = coinDiscounts[product.id + product.coachId] || false;
                 const coinsNeeded = calculateCoinsNeeded(maxDiscount);
                 const discountedPrice = product.price - maxDiscount;
                 const remainingCoins = bioCoins - coinsNeeded;
 
                 return (
                   <motion.div
-                    key={product.id}
+                    key={`${product.id}-${product.coachId}`}
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.1 }}
+                    transition={{ delay: index * 0.05 }}
                     whileHover={{ scale: 1.02 }}
                     className="glass-card overflow-hidden"
                   >
@@ -424,11 +405,11 @@ const Kesfet = () => {
                       <img 
                         src={product.image} 
                         alt={product.title}
-                        className="w-full h-full object-cover opacity-60"
+                        className="w-full h-full object-cover"
                       />
                       <div className="absolute top-2 right-2">
                         <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                          {product.type === "ebook" ? "E-KİTAP" : product.type === "apparel" ? "GİYİM" : "PDF"}
+                          {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
                         </span>
                       </div>
                       {isDiscountActive && (
@@ -443,7 +424,7 @@ const Kesfet = () => {
                       <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
                         {product.title}
                       </p>
-                      <p className="text-muted-foreground text-[10px] mt-1">{product.coach}</p>
+                      <p className="text-muted-foreground text-[10px] mt-1">{product.coachName}</p>
                       
                       {/* Price Display */}
                       <div className="flex items-center justify-between mt-2">
@@ -458,7 +439,7 @@ const Kesfet = () => {
                       </div>
 
                       {/* Bio-Coin Toggle */}
-                      {maxDiscount > 0 && (
+                      {maxDiscount > 0 && product.bioCoins && (
                         <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -470,7 +451,7 @@ const Kesfet = () => {
                             <Switch
                               checked={isDiscountActive}
                               onCheckedChange={(checked) => {
-                                setCoinDiscounts(prev => ({ ...prev, [product.id]: checked }));
+                                setCoinDiscounts(prev => ({ ...prev, [product.id + product.coachId]: checked }));
                               }}
                               className="scale-75"
                             />
@@ -497,6 +478,7 @@ const Kesfet = () => {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => handleBuy(product.title)}
                         className={`w-full mt-3 text-xs py-2 rounded-lg font-medium border transition-colors ${
                           isDiscountActive 
                             ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" 
@@ -522,6 +504,7 @@ const Kesfet = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-black"
+            onClick={() => setSelectedStory(null)}
           >
             {/* Story Progress Bars */}
             <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
@@ -541,12 +524,12 @@ const Kesfet = () => {
             <div className="absolute top-8 left-4 right-4 flex items-center justify-between z-10">
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10 border-2 border-primary">
-                  <AvatarImage src={selectedStory.avatar} />
-                  <AvatarFallback>{selectedStory.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={selectedStory.avatar} className="object-cover" />
+                  <AvatarFallback>{selectedStory.name.charAt(4)}</AvatarFallback>
                 </Avatar>
                 <div>
                   <p className="text-white text-sm font-medium">{selectedStory.name}</p>
-                  <p className="text-white/60 text-xs">{selectedStory.specialty} Uzmanı</p>
+                  <p className="text-white/60 text-xs">{selectedStory.specialty}</p>
                 </div>
               </div>
               <button
@@ -557,46 +540,45 @@ const Kesfet = () => {
               </button>
             </div>
 
-            {/* Story Content */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center p-8">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="space-y-4"
-                >
-                  <div className="w-24 h-24 mx-auto rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center">
-                    <span className="font-display text-3xl text-primary">
-                      {selectedStory.name.charAt(5)}
-                    </span>
-                  </div>
-                  <h3 className="font-display text-2xl text-white">{selectedStory.name}</h3>
-                  <p className="text-white/70 text-sm max-w-xs mx-auto">
-                    Bugünkü ipucu: Protein alımınızı antrenman sonrası 30 dakika içinde yapın! 💪
-                  </p>
-                  <div className="pt-4">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="bg-primary text-primary-foreground px-6 py-3 rounded-xl font-display text-sm"
-                    >
-                      KOÇA MESAJ GÖNDER
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </div>
+            {/* Story Content - Full Screen Image */}
+            <div className="absolute inset-0">
+              <img 
+                src={selectedStory.storyContent.image} 
+                alt="Story"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
             </div>
 
-            {/* Tap Areas */}
-            <button
-              onClick={() => setSelectedStory(null)}
-              className="absolute left-0 top-0 bottom-0 w-1/3"
-            />
-            <button
-              onClick={() => setSelectedStory(null)}
-              className="absolute right-0 top-0 bottom-0 w-1/3"
-            />
+            {/* Story Text */}
+            <div className="absolute bottom-24 left-4 right-4 z-10">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-black/50 backdrop-blur-sm rounded-xl p-4"
+              >
+                <p className="text-white text-sm leading-relaxed">
+                  {selectedStory.storyContent.text}
+                </p>
+              </motion.div>
+              
+              <motion.button
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedStory(null);
+                  navigate(`/coach/${selectedStory.id}`);
+                }}
+                className="w-full mt-4 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-display text-sm"
+              >
+                PROFİLE GİT
+              </motion.button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

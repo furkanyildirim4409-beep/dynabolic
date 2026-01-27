@@ -1,0 +1,815 @@
+// Central Mock Data for GOKALAF MVP
+// All data is in Turkish as per requirements
+
+export interface Coach {
+  id: string;
+  name: string;
+  avatar: string;
+  bio: string;
+  specialty: string;
+  followers: string;
+  students: number;
+  rating: number;
+  score: number;
+  level: number;
+  hasNewStory: boolean;
+  highlights: { id: string; title: string; thumbnail: string }[];
+  posts: {
+    id: string;
+    type: "transformation" | "video" | "motivation";
+    beforeImage?: string;
+    afterImage?: string;
+    videoThumbnail?: string;
+    content?: string;
+    likes: number;
+    comments: number;
+  }[];
+  products: {
+    id: string;
+    title: string;
+    price: number;
+    bioCoins?: number;
+    image: string;
+    type: "ebook" | "pdf" | "apparel" | "equipment";
+  }[];
+  packages: {
+    id: string;
+    title: string;
+    price: number;
+    description: string;
+    features: string[];
+  }[];
+  storyContent: {
+    image: string;
+    text: string;
+  };
+}
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  portion: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+export interface WorkoutHistoryEntry {
+  id: string;
+  date: string;
+  dateShort: string;
+  name: string;
+  duration: string;
+  tonnage: string;
+  exercises: number;
+  bioCoins: number;
+  completed: boolean;
+  details: {
+    exerciseName: string;
+    sets: {
+      weight: number;
+      reps: number;
+      isFailure?: boolean;
+    }[];
+  }[];
+}
+
+export interface Notification {
+  id: string;
+  type: "coach" | "system" | "achievement";
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  coachId?: string;
+}
+
+// ============================================
+// COACHES DATABASE
+// ============================================
+
+export const coaches: Coach[] = [
+  // COACH 1: KOÇ SERDAR - The Boss (Hipertrofi)
+  {
+    id: "1",
+    name: "Koç Serdar",
+    avatar: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=400&h=400&fit=crop&crop=face",
+    bio: "Elit Performans Koçu | Bio-Hacker 🧬 | 10+ Yıl Deneyim | 500+ Başarılı Dönüşüm",
+    specialty: "Hipertrofi & Vücut Geliştirme",
+    followers: "12.4K",
+    students: 150,
+    rating: 4.9,
+    score: 9850,
+    level: 10,
+    hasNewStory: true,
+    storyContent: {
+      image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=1200&fit=crop",
+      text: "Bugünkü ipucu: Kas büyümesi için uyku kalitesi kritik! Günde minimum 7-8 saat uyku hedefle. 💪"
+    },
+    highlights: [
+      { id: "1", title: "Değişimler", thumbnail: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=100&h=100&fit=crop" },
+      { id: "2", title: "Soru-Cevap", thumbnail: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=100&h=100&fit=crop" },
+      { id: "3", title: "Yemekler", thumbnail: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100&h=100&fit=crop" },
+      { id: "4", title: "Motivasyon", thumbnail: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=100&h=100&fit=crop" },
+    ],
+    posts: [
+      {
+        id: "1",
+        type: "transformation",
+        beforeImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=500&fit=crop",
+        afterImage: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=500&fit=crop",
+        content: "12 haftalık dönüşüm programı sonucu. Disiplin + Bilim = Sonuç 💪 #GokalafAilesi",
+        likes: 2847,
+        comments: 156,
+      },
+      {
+        id: "2",
+        type: "video",
+        videoThumbnail: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=400&fit=crop",
+        content: "Squat formunda dikkat etmeniz gereken 3 kritik nokta! 🎯",
+        likes: 1892,
+        comments: 89,
+      },
+      {
+        id: "3",
+        type: "transformation",
+        beforeImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=500&fit=crop",
+        afterImage: "https://images.unsplash.com/photo-1581009146145-b5ef050c149a?w=400&h=500&fit=crop",
+        content: "6 ayda 25kg kas kütlesi artışı. Doğru program + beslenme = imkansız yok.",
+        likes: 3241,
+        comments: 234,
+      },
+    ],
+    products: [
+      { 
+        id: "1", 
+        title: "Kol İnşa Rehberi (E-Kitap)", 
+        price: 150, 
+        bioCoins: 500,
+        image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=300&h=300&fit=crop", 
+        type: "ebook" 
+      },
+      { 
+        id: "2", 
+        title: "Gokalaf Lifting Straps", 
+        price: 250, 
+        image: "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=300&h=300&fit=crop", 
+        type: "equipment" 
+      },
+      { 
+        id: "3", 
+        title: "Hipertrofi Beslenme Planı", 
+        price: 200, 
+        bioCoins: 650,
+        image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=300&h=300&fit=crop", 
+        type: "pdf" 
+      },
+      { 
+        id: "4", 
+        title: "Gokalaf Pro Atlet (Siyah)", 
+        price: 450, 
+        image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop", 
+        type: "apparel" 
+      },
+    ],
+    packages: [
+      {
+        id: "1",
+        title: "Online Koçluk (Aylık)",
+        price: 1500,
+        description: "Kişiselleştirilmiş antrenman ve beslenme programı",
+        features: ["Haftalık program güncelleme", "7/24 mesaj desteği", "Video form analizi", "Haftalık check-in"]
+      },
+      {
+        id: "2",
+        title: "Yarışma Hazırlık",
+        price: 3000,
+        description: "Vücut geliştirme yarışmalarına tam hazırlık paketi",
+        features: ["Günlük takip", "Posing eğitimi", "Peak week stratejisi", "Sahne hazırlığı", "Mental koçluk"]
+      },
+      {
+        id: "3",
+        title: "VIP Birebir Koçluk",
+        price: 5000,
+        description: "Premium birebir koçluk deneyimi",
+        features: ["Sınırsız iletişim", "Günlük program ayarı", "Yüz yüze görüşme (aylık)", "Özel supleman planı"]
+      }
+    ]
+  },
+
+  // COACH 2: KOÇ ELİF - The Specialist (Mobilite)
+  {
+    id: "2",
+    name: "Koç Elif",
+    avatar: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&h=400&fit=crop&crop=face",
+    bio: "Mobilite & Fonksiyonel Antrenör 🧘‍♀️ | Fizik Tedavi Uzmanı | Yoga & Pilates Sertifikalı",
+    specialty: "Mobilite & Fonksiyonel Güç",
+    followers: "8.7K",
+    students: 120,
+    rating: 4.8,
+    score: 8720,
+    level: 9,
+    hasNewStory: true,
+    storyContent: {
+      image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=1200&fit=crop",
+      text: "Sabah 10 dakika esneme, gününüze enerji katar! Omurga sağlığınızı koruyun 🧘‍♀️"
+    },
+    highlights: [
+      { id: "1", title: "Esneme", thumbnail: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=100&h=100&fit=crop" },
+      { id: "2", title: "Yoga", thumbnail: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=100&h=100&fit=crop" },
+      { id: "3", title: "Pilates", thumbnail: "https://images.unsplash.com/photo-1518310383802-640c2de311b2?w=100&h=100&fit=crop" },
+      { id: "4", title: "Rehab", thumbnail: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=100&h=100&fit=crop" },
+    ],
+    posts: [
+      {
+        id: "1",
+        type: "video",
+        videoThumbnail: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=400&fit=crop",
+        content: "Günlük 5 dakikada omuz mobilitesini artır! İşte en etkili 3 hareket 🎯",
+        likes: 1523,
+        comments: 89,
+      },
+      {
+        id: "2",
+        type: "motivation",
+        content: "\"Esneklik, gücün temelidir. Esnek olmadan güçlü olamazsın.\" Bugün esneme yaptın mı? 🧘‍♀️",
+        likes: 982,
+        comments: 45,
+      },
+      {
+        id: "3",
+        type: "video",
+        videoThumbnail: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop",
+        content: "Full split hedefine 30 günde ulaş! İşte günlük program detayları 📋",
+        likes: 2156,
+        comments: 178,
+      },
+    ],
+    products: [
+      { 
+        id: "1", 
+        title: "Evde Mobilite Planı", 
+        price: 200, 
+        bioCoins: 650,
+        image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=300&fit=crop", 
+        type: "pdf" 
+      },
+      { 
+        id: "2", 
+        title: "Direnç Bandı Seti", 
+        price: 120, 
+        image: "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=300&h=300&fit=crop", 
+        type: "equipment" 
+      },
+      { 
+        id: "3", 
+        title: "Yoga Başlangıç E-Kitap", 
+        price: 90, 
+        bioCoins: 300,
+        image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=300&fit=crop", 
+        type: "ebook" 
+      },
+      { 
+        id: "4", 
+        title: "Foam Roller Pro", 
+        price: 280, 
+        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop", 
+        type: "equipment" 
+      },
+    ],
+    packages: [
+      {
+        id: "1",
+        title: "Mobilite Koçluğu (Aylık)",
+        price: 1200,
+        description: "Kişisel esneklik ve hareket kalitesi programı",
+        features: ["Haftalık esneme rutini", "Video analiz", "Postür düzeltme", "Ağrı yönetimi"]
+      },
+      {
+        id: "2",
+        title: "Rehabilitasyon Programı",
+        price: 2000,
+        description: "Sakatlık sonrası toparlanma ve güçlendirme",
+        features: ["Fizyoterapist işbirliği", "Günlük takip", "Özel egzersizler", "İlerleme raporları"]
+      }
+    ]
+  },
+
+  // COACH 3: KOÇ MEHMET - The Powerlifter (Güç)
+  {
+    id: "3",
+    name: "Koç Mehmet",
+    avatar: "https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=400&h=400&fit=crop&crop=face",
+    bio: "Powerlifting Antrenörü 🏋️ | Türkiye Şampiyonu | IPF Hakemi | 15+ Yıl Tecrübe",
+    specialty: "Güç & Powerlifting",
+    followers: "15.2K",
+    students: 95,
+    rating: 4.7,
+    score: 7540,
+    level: 9,
+    hasNewStory: false,
+    storyContent: {
+      image: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&h=1200&fit=crop",
+      text: "Bugün deadlift günü! Form her şeyden önemli. Ağırlık ikinci planda kalmalı 🏋️"
+    },
+    highlights: [
+      { id: "1", title: "PR'lar", thumbnail: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=100&h=100&fit=crop" },
+      { id: "2", title: "Teknik", thumbnail: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop" },
+      { id: "3", title: "Yarışma", thumbnail: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=100&h=100&fit=crop" },
+      { id: "4", title: "Beslenme", thumbnail: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=100&h=100&fit=crop" },
+    ],
+    posts: [
+      {
+        id: "1",
+        type: "video",
+        videoThumbnail: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=400&h=400&fit=crop",
+        content: "300kg Deadlift PR! 🔥 2 yıllık çalışmanın karşılığı. Asla pes etme!",
+        likes: 4521,
+        comments: 312,
+      },
+      {
+        id: "2",
+        type: "transformation",
+        beforeImage: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=500&fit=crop",
+        afterImage: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=500&fit=crop",
+        content: "Öğrencimin 1 yıllık güç artışı: Squat 100kg → 200kg. Sabır + Disiplin 💪",
+        likes: 3892,
+        comments: 256,
+      },
+      {
+        id: "3",
+        type: "motivation",
+        content: "\"Ağırlık seni ezmeden önce, sen onu ez.\" Bugün hangi PR'ı kıracaksın? 🏋️",
+        likes: 1756,
+        comments: 98,
+      },
+    ],
+    products: [
+      { 
+        id: "1", 
+        title: "S.B.D. Programı (12 Hafta)", 
+        price: 300, 
+        bioCoins: 1000,
+        image: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=300&h=300&fit=crop", 
+        type: "ebook" 
+      },
+      { 
+        id: "2", 
+        title: "Powerlifting Kemeri", 
+        price: 1200, 
+        image: "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=300&h=300&fit=crop", 
+        type: "equipment" 
+      },
+      { 
+        id: "3", 
+        title: "Güç Periodizasyonu (PDF)", 
+        price: 180, 
+        bioCoins: 600,
+        image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=300&h=300&fit=crop", 
+        type: "pdf" 
+      },
+      { 
+        id: "4", 
+        title: "Wrist Wraps Pro", 
+        price: 150, 
+        image: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=300&h=300&fit=crop", 
+        type: "equipment" 
+      },
+    ],
+    packages: [
+      {
+        id: "1",
+        title: "Powerlifting Koçluğu (Aylık)",
+        price: 1800,
+        description: "Squat, Bench, Deadlift odaklı güç programı",
+        features: ["Kişisel program", "Haftalık video analiz", "PR takibi", "Yarışma stratejisi"]
+      },
+      {
+        id: "2",
+        title: "Yarışma Hazırlık Elite",
+        price: 3500,
+        description: "IPF/WRPF yarışmalarına hazırlık paketi",
+        features: ["12 haftalık peak program", "Kilo kontrolü", "Attempt seçimi", "Mental hazırlık", "Yarışma günü koçluk"]
+      }
+    ]
+  }
+];
+
+// Helper function to get coach by ID
+export const getCoachById = (id: string): Coach | undefined => {
+  return coaches.find(coach => coach.id === id);
+};
+
+// Get sorted coaches for leaderboard
+export const getLeaderboardCoaches = (): Coach[] => {
+  return [...coaches].sort((a, b) => b.score - a.score);
+};
+
+// ============================================
+// FOOD DATABASE
+// ============================================
+
+export const foodDatabase: FoodItem[] = [
+  { id: "1", name: "Haşlanmış Yumurta", portion: "1 adet", calories: 70, protein: 6, carbs: 0.5, fat: 5 },
+  { id: "2", name: "Tavuk Göğsü (Pişmiş)", portion: "100g", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
+  { id: "3", name: "Basmati Pirinç (Lapa)", portion: "100g", calories: 130, protein: 2.5, carbs: 28, fat: 0.3 },
+  { id: "4", name: "Yulaf Ezmesi", portion: "50g", calories: 180, protein: 6, carbs: 30, fat: 3 },
+  { id: "5", name: "Whey Protein", portion: "1 ölçek", calories: 120, protein: 24, carbs: 3, fat: 1.5 },
+  { id: "6", name: "Muz", portion: "1 orta boy", calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
+  { id: "7", name: "Yoğurt (Tam Yağlı)", portion: "200g", calories: 130, protein: 8, carbs: 10, fat: 6 },
+  { id: "8", name: "Zeytinyağı", portion: "1 yemek kaşığı", calories: 119, protein: 0, carbs: 0, fat: 13.5 },
+  { id: "9", name: "Tam Buğday Ekmek", portion: "1 dilim", calories: 80, protein: 4, carbs: 15, fat: 1 },
+  { id: "10", name: "Badem", portion: "30g", calories: 170, protein: 6, carbs: 6, fat: 15 },
+  { id: "11", name: "Somon (Izgara)", portion: "150g", calories: 280, protein: 39, carbs: 0, fat: 13 },
+  { id: "12", name: "Biftek (Izgara)", portion: "150g", calories: 320, protein: 42, carbs: 0, fat: 16 },
+  { id: "13", name: "Brokoli (Haşlanmış)", portion: "100g", calories: 35, protein: 2.4, carbs: 7, fat: 0.4 },
+  { id: "14", name: "Tatlı Patates", portion: "150g", calories: 130, protein: 2, carbs: 30, fat: 0.1 },
+  { id: "15", name: "Avokado", portion: "1/2 adet", calories: 160, protein: 2, carbs: 9, fat: 15 },
+  { id: "16", name: "Lor Peyniri", portion: "100g", calories: 98, protein: 11, carbs: 3, fat: 4.3 },
+  { id: "17", name: "Makarna (Pişmiş)", portion: "100g", calories: 131, protein: 5, carbs: 25, fat: 1.1 },
+  { id: "18", name: "Mercimek Çorbası", portion: "1 kase", calories: 180, protein: 12, carbs: 28, fat: 3 },
+  { id: "19", name: "Fıstık Ezmesi", portion: "2 yemek kaşığı", calories: 190, protein: 7, carbs: 7, fat: 16 },
+  { id: "20", name: "Süt (%1.5 Yağlı)", portion: "200ml", calories: 90, protein: 6, carbs: 10, fat: 3 },
+];
+
+// ============================================
+// WORKOUT HISTORY WITH DETAILS
+// ============================================
+
+export const workoutHistory: WorkoutHistoryEntry[] = [
+  { 
+    id: "1", 
+    date: "27 Ocak 2026", 
+    dateShort: "27 Oca", 
+    name: "Göğüs & Arka Kol", 
+    duration: "55dk", 
+    tonnage: "4.2 Ton", 
+    exercises: 6, 
+    bioCoins: 75, 
+    completed: true,
+    details: [
+      { 
+        exerciseName: "Bench Press", 
+        sets: [
+          { weight: 100, reps: 12 },
+          { weight: 100, reps: 10 },
+          { weight: 100, reps: 8, isFailure: true },
+          { weight: 90, reps: 10 }
+        ] 
+      },
+      { 
+        exerciseName: "Incline Dumbbell Press", 
+        sets: [
+          { weight: 35, reps: 12 },
+          { weight: 35, reps: 10 },
+          { weight: 32, reps: 10 },
+          { weight: 30, reps: 12 }
+        ] 
+      },
+      { 
+        exerciseName: "Cable Fly", 
+        sets: [
+          { weight: 20, reps: 15 },
+          { weight: 22.5, reps: 12 },
+          { weight: 25, reps: 10, isFailure: true }
+        ] 
+      },
+      { 
+        exerciseName: "Triceps Pushdown", 
+        sets: [
+          { weight: 30, reps: 15 },
+          { weight: 35, reps: 12 },
+          { weight: 40, reps: 10 }
+        ] 
+      },
+      { 
+        exerciseName: "Overhead Triceps Extension", 
+        sets: [
+          { weight: 25, reps: 12 },
+          { weight: 27.5, reps: 10 },
+          { weight: 30, reps: 8, isFailure: true }
+        ] 
+      },
+      { 
+        exerciseName: "Dips", 
+        sets: [
+          { weight: 0, reps: 15 },
+          { weight: 10, reps: 12 },
+          { weight: 15, reps: 8 }
+        ] 
+      }
+    ]
+  },
+  { 
+    id: "2", 
+    date: "25 Ocak 2026", 
+    dateShort: "25 Oca", 
+    name: "Bacak & Core", 
+    duration: "48dk", 
+    tonnage: "5.8 Ton", 
+    exercises: 5, 
+    bioCoins: 80, 
+    completed: true,
+    details: [
+      { 
+        exerciseName: "Squat", 
+        sets: [
+          { weight: 140, reps: 8 },
+          { weight: 150, reps: 6 },
+          { weight: 160, reps: 4 },
+          { weight: 140, reps: 8 }
+        ] 
+      },
+      { 
+        exerciseName: "Leg Press", 
+        sets: [
+          { weight: 250, reps: 12 },
+          { weight: 280, reps: 10 },
+          { weight: 300, reps: 8, isFailure: true }
+        ] 
+      },
+      { 
+        exerciseName: "Romanian Deadlift", 
+        sets: [
+          { weight: 100, reps: 10 },
+          { weight: 110, reps: 8 },
+          { weight: 120, reps: 6 }
+        ] 
+      },
+      { 
+        exerciseName: "Leg Curl", 
+        sets: [
+          { weight: 50, reps: 12 },
+          { weight: 55, reps: 10 },
+          { weight: 60, reps: 8 }
+        ] 
+      },
+      { 
+        exerciseName: "Plank", 
+        sets: [
+          { weight: 0, reps: 60 },
+          { weight: 0, reps: 45 },
+          { weight: 0, reps: 30 }
+        ] 
+      }
+    ]
+  },
+  { 
+    id: "3", 
+    date: "23 Ocak 2026", 
+    dateShort: "23 Oca", 
+    name: "Sırt & Biceps", 
+    duration: "52dk", 
+    tonnage: "3.9 Ton", 
+    exercises: 7, 
+    bioCoins: 70, 
+    completed: true,
+    details: [
+      { 
+        exerciseName: "Deadlift", 
+        sets: [
+          { weight: 180, reps: 5 },
+          { weight: 200, reps: 3 },
+          { weight: 180, reps: 5 }
+        ] 
+      },
+      { 
+        exerciseName: "Lat Pulldown", 
+        sets: [
+          { weight: 70, reps: 12 },
+          { weight: 80, reps: 10 },
+          { weight: 85, reps: 8 }
+        ] 
+      },
+      { 
+        exerciseName: "Bent Over Row", 
+        sets: [
+          { weight: 80, reps: 10 },
+          { weight: 85, reps: 8 },
+          { weight: 90, reps: 6, isFailure: true }
+        ] 
+      },
+      { 
+        exerciseName: "Cable Row", 
+        sets: [
+          { weight: 60, reps: 12 },
+          { weight: 65, reps: 10 },
+          { weight: 70, reps: 10 }
+        ] 
+      },
+      { 
+        exerciseName: "Barbell Curl", 
+        sets: [
+          { weight: 30, reps: 12 },
+          { weight: 35, reps: 10 },
+          { weight: 40, reps: 8, isFailure: true }
+        ] 
+      },
+      { 
+        exerciseName: "Hammer Curl", 
+        sets: [
+          { weight: 14, reps: 12 },
+          { weight: 16, reps: 10 },
+          { weight: 18, reps: 8 }
+        ] 
+      },
+      { 
+        exerciseName: "Face Pull", 
+        sets: [
+          { weight: 25, reps: 15 },
+          { weight: 30, reps: 12 },
+          { weight: 30, reps: 12 }
+        ] 
+      }
+    ]
+  },
+  { 
+    id: "4", 
+    date: "21 Ocak 2026", 
+    dateShort: "21 Oca", 
+    name: "Omuz & Trapez", 
+    duration: "42dk", 
+    tonnage: "2.8 Ton", 
+    exercises: 5, 
+    bioCoins: 60, 
+    completed: true,
+    details: [
+      { 
+        exerciseName: "Overhead Press", 
+        sets: [
+          { weight: 60, reps: 8 },
+          { weight: 65, reps: 6 },
+          { weight: 55, reps: 10 }
+        ] 
+      },
+      { 
+        exerciseName: "Lateral Raise", 
+        sets: [
+          { weight: 12, reps: 15 },
+          { weight: 14, reps: 12 },
+          { weight: 14, reps: 12 }
+        ] 
+      },
+      { 
+        exerciseName: "Front Raise", 
+        sets: [
+          { weight: 10, reps: 12 },
+          { weight: 12, reps: 10 },
+          { weight: 12, reps: 10 }
+        ] 
+      },
+      { 
+        exerciseName: "Shrugs", 
+        sets: [
+          { weight: 100, reps: 15 },
+          { weight: 120, reps: 12 },
+          { weight: 140, reps: 10 }
+        ] 
+      },
+      { 
+        exerciseName: "Rear Delt Fly", 
+        sets: [
+          { weight: 10, reps: 15 },
+          { weight: 12, reps: 12 },
+          { weight: 12, reps: 12 }
+        ] 
+      }
+    ]
+  },
+  { 
+    id: "5", 
+    date: "19 Ocak 2026", 
+    dateShort: "19 Oca", 
+    name: "Full Body", 
+    duration: "65dk", 
+    tonnage: "6.1 Ton", 
+    exercises: 8, 
+    bioCoins: 95, 
+    completed: true,
+    details: [
+      { exerciseName: "Squat", sets: [{ weight: 120, reps: 10 }, { weight: 130, reps: 8 }, { weight: 140, reps: 6 }] },
+      { exerciseName: "Bench Press", sets: [{ weight: 90, reps: 10 }, { weight: 95, reps: 8 }, { weight: 100, reps: 6 }] },
+      { exerciseName: "Deadlift", sets: [{ weight: 160, reps: 6 }, { weight: 170, reps: 5 }, { weight: 180, reps: 3 }] },
+      { exerciseName: "Pull-ups", sets: [{ weight: 0, reps: 12 }, { weight: 0, reps: 10 }, { weight: 0, reps: 8 }] },
+      { exerciseName: "Overhead Press", sets: [{ weight: 50, reps: 10 }, { weight: 55, reps: 8 }, { weight: 60, reps: 6 }] },
+      { exerciseName: "Barbell Row", sets: [{ weight: 70, reps: 10 }, { weight: 75, reps: 8 }, { weight: 80, reps: 8 }] },
+      { exerciseName: "Lunges", sets: [{ weight: 40, reps: 12 }, { weight: 45, reps: 10 }, { weight: 50, reps: 8 }] },
+      { exerciseName: "Plank", sets: [{ weight: 0, reps: 60 }, { weight: 0, reps: 45 }] }
+    ]
+  },
+  { 
+    id: "6", 
+    date: "17 Ocak 2026", 
+    dateShort: "17 Oca", 
+    name: "Göğüs & Arka Kol", 
+    duration: "50dk", 
+    tonnage: "4.0 Ton", 
+    exercises: 6, 
+    bioCoins: 72, 
+    completed: true,
+    details: [
+      { exerciseName: "Bench Press", sets: [{ weight: 95, reps: 10 }, { weight: 95, reps: 10 }, { weight: 90, reps: 10 }] },
+      { exerciseName: "Incline Press", sets: [{ weight: 32, reps: 12 }, { weight: 35, reps: 10 }, { weight: 35, reps: 8 }] },
+      { exerciseName: "Cable Fly", sets: [{ weight: 18, reps: 15 }, { weight: 20, reps: 12 }, { weight: 22, reps: 10 }] },
+      { exerciseName: "Triceps Dips", sets: [{ weight: 0, reps: 15 }, { weight: 0, reps: 12 }, { weight: 0, reps: 10 }] },
+      { exerciseName: "Skull Crushers", sets: [{ weight: 25, reps: 12 }, { weight: 27.5, reps: 10 }, { weight: 30, reps: 8 }] },
+      { exerciseName: "Triceps Kickback", sets: [{ weight: 10, reps: 15 }, { weight: 12, reps: 12 }, { weight: 12, reps: 12 }] }
+    ]
+  }
+];
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+export const notifications: Notification[] = [
+  {
+    id: "1",
+    type: "coach",
+    title: "Koç Serdar",
+    message: "Programını güncelledi. Yeni haftanın antrenmanlarını kontrol et!",
+    time: "5dk önce",
+    read: false,
+    coachId: "1"
+  },
+  {
+    id: "2",
+    type: "achievement",
+    title: "Yeni Rozet!",
+    message: "\"150 Antrenman\" rozetini kazandın! +50 Bio-Coin 🎉",
+    time: "2sa önce",
+    read: false
+  },
+  {
+    id: "3",
+    type: "system",
+    title: "Haftalık Özet",
+    message: "Bu hafta 5 antrenman tamamladın ve 380 Bio-Coin kazandın.",
+    time: "1 gün önce",
+    read: true
+  },
+  {
+    id: "4",
+    type: "coach",
+    title: "Koç Elif",
+    message: "Yeni mobilite videosu yükledi. Kaçırma!",
+    time: "2 gün önce",
+    read: true,
+    coachId: "2"
+  }
+];
+
+// ============================================
+// ASSIGNED WORKOUTS
+// ============================================
+
+export const assignedWorkouts = [
+  {
+    id: "1",
+    title: "GÖĞÜS & SIRT",
+    day: "GÜN 1 - PAZARTESİ",
+    exercises: 8,
+    duration: "55 dk",
+    intensity: "Yüksek" as const,
+    coachNote: "Tempoya dikkat et. Göğüs açıklığını koru.",
+  },
+  {
+    id: "2",
+    title: "BACAK & KOR",
+    day: "GÜN 2 - ÇARŞAMBA",
+    exercises: 6,
+    duration: "45 dk",
+    intensity: "Yüksek" as const,
+    coachNote: "Squat derinliğini Vision AI ile kontrol et.",
+  },
+  {
+    id: "3",
+    title: "OMUZ & KOL",
+    day: "GÜN 3 - CUMA",
+    exercises: 7,
+    duration: "50 dk",
+    intensity: "Orta" as const,
+  },
+  {
+    id: "4",
+    title: "AKTİF DİNLENME",
+    day: "GÜN 4 - PAZAR",
+    exercises: 4,
+    duration: "30 dk",
+    intensity: "Düşük" as const,
+    coachNote: "Esneme hareketlerine odaklan.",
+  },
+  {
+    id: "5",
+    title: "FULL BODY",
+    day: "GÜN 5 - SALI",
+    exercises: 8,
+    duration: "60 dk",
+    intensity: "Yüksek" as const,
+    coachNote: "Tüm kas gruplarını çalıştıracağız. Enerji seviyeni yüksek tut.",
+  },
+];
+
+// User's assigned coach
+export const assignedCoach = coaches[0]; // Koç Serdar

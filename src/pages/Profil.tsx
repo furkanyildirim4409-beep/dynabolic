@@ -1,13 +1,18 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Moon, Smartphone, Lock, HelpCircle, X } from "lucide-react";
 import RealisticBodyAvatar from "@/components/RealisticBodyAvatar";
 import BioCoinWallet from "@/components/BioCoinWallet";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "@/hooks/use-toast";
 
 const Profil = () => {
   const [timelineValue, setTimelineValue] = useState([50]);
-  const [bioCoins] = useState(1250);
+  const [bioCoins] = useState(2450);
+  const [showSettings, setShowSettings] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+  const [notifications, setNotifications] = useState(true);
   
   // Calculate waist scale based on timeline (1.2 at start, 0.85 at goal)
   const waistScale = 1.2 - (timelineValue[0] / 100) * 0.35;
@@ -26,6 +31,27 @@ const Profil = () => {
     { zone: "Omuz", status: "Toparlanma Gerekiyor", severity: "high" },
     { zone: "Bacak", status: "Hazır", severity: "ok" },
     { zone: "Sırt", status: "Yarın Hazır", severity: "medium" },
+  ];
+
+  const handleSettingsAction = (action: string) => {
+    if (action === "logout") {
+      toast({
+        title: "Çıkış Yapılıyor (Demo)",
+        description: "Hesabınızdan çıkış yapılıyor...",
+      });
+    } else {
+      toast({
+        title: `${action} (Demo)`,
+        description: "Bu özellik yakında aktif olacak!",
+      });
+    }
+  };
+
+  const menuItems = [
+    { icon: Settings, label: "Ayarlar", description: "Uygulama tercihlerini düzenle", action: "settings" },
+    { icon: Bell, label: "Bildirimler", description: "Hatırlatıcıları yönet", action: "notifications" },
+    { icon: Shield, label: "Gizlilik", description: "Veri paylaşım ayarları", action: "privacy" },
+    { icon: LogOut, label: "Çıkış Yap", description: "Hesabından çık", danger: true, action: "logout" },
   ];
 
   return (
@@ -183,7 +209,7 @@ const Profil = () => {
 
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center p-3 bg-primary/10 border border-primary/30 rounded-xl">
-            <p className="font-display text-2xl text-primary">{bioCoins}</p>
+            <p className="font-display text-2xl text-primary">{bioCoins.toLocaleString()}</p>
             <p className="text-muted-foreground text-[10px]">TOPLAM</p>
           </div>
           <div className="text-center p-3 bg-secondary/50 rounded-xl">
@@ -275,14 +301,10 @@ const Profil = () => {
         transition={{ delay: 0.35 }}
         className="glass-card p-4 space-y-2"
       >
-        {[
-          { icon: Settings, label: "Ayarlar", description: "Uygulama tercihlerini düzenle" },
-          { icon: Bell, label: "Bildirimler", description: "Hatırlatıcıları yönet" },
-          { icon: Shield, label: "Gizlilik", description: "Veri paylaşım ayarları" },
-          { icon: LogOut, label: "Çıkış Yap", description: "Hesabından çık", danger: true },
-        ].map((item, index) => (
+        {menuItems.map((item, index) => (
           <button
             key={index}
+            onClick={() => item.action === "settings" ? setShowSettings(true) : handleSettingsAction(item.action)}
             className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-secondary/50 transition-colors text-left"
           >
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
@@ -290,15 +312,104 @@ const Profil = () => {
             }`}>
               <item.icon className={`w-5 h-5 ${item.danger ? "text-destructive" : "text-primary"}`} />
             </div>
-            <div>
+            <div className="flex-1">
               <p className={`font-medium text-sm ${item.danger ? "text-destructive" : "text-foreground"}`}>
                 {item.label}
               </p>
               <p className="text-muted-foreground text-xs">{item.description}</p>
             </div>
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
           </button>
         ))}
       </motion.div>
+
+      {/* Settings Panel */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowSettings(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-background border-l border-white/10"
+            >
+              {/* Header */}
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <h2 className="font-display text-lg text-foreground">AYARLAR</h2>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Settings Options */}
+              <div className="p-4 space-y-4">
+                {/* Dark Mode */}
+                <div className="flex items-center justify-between p-4 glass-card">
+                  <div className="flex items-center gap-3">
+                    <Moon className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-foreground text-sm font-medium">Karanlık Mod</p>
+                      <p className="text-muted-foreground text-xs">Koyu tema kullan</p>
+                    </div>
+                  </div>
+                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+                </div>
+
+                {/* Notifications */}
+                <div className="flex items-center justify-between p-4 glass-card">
+                  <div className="flex items-center gap-3">
+                    <Bell className="w-5 h-5 text-primary" />
+                    <div>
+                      <p className="text-foreground text-sm font-medium">Bildirimler</p>
+                      <p className="text-muted-foreground text-xs">Push bildirimleri al</p>
+                    </div>
+                  </div>
+                  <Switch checked={notifications} onCheckedChange={setNotifications} />
+                </div>
+
+                {/* Other Options */}
+                {[
+                  { icon: Smartphone, label: "Cihaz Bağlantısı", desc: "Akıllı saat ve bantlar" },
+                  { icon: Lock, label: "Gizlilik", desc: "Veri paylaşım ayarları" },
+                  { icon: HelpCircle, label: "Yardım & Destek", desc: "SSS ve iletişim" },
+                ].map((item, index) => (
+                  <button
+                    key={index}
+                    onClick={() => toast({ title: `${item.label} (Demo)` })}
+                    className="w-full flex items-center justify-between p-4 glass-card hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5 text-primary" />
+                      <div className="text-left">
+                        <p className="text-foreground text-sm font-medium">{item.label}</p>
+                        <p className="text-muted-foreground text-xs">{item.desc}</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                ))}
+
+                {/* App Version */}
+                <div className="text-center pt-4 border-t border-white/10">
+                  <p className="text-muted-foreground text-xs">GOKALAF MVP v1.0.0</p>
+                  <p className="text-muted-foreground/50 text-[10px] mt-1">© 2026 Gokalaf Labs</p>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
