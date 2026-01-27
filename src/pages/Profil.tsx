@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target } from "lucide-react";
-import DigitalTwinAvatar from "@/components/DigitalTwinAvatar";
+import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins } from "lucide-react";
+import RealisticBodyAvatar from "@/components/RealisticBodyAvatar";
+import BioCoinWallet from "@/components/BioCoinWallet";
 import { Slider } from "@/components/ui/slider";
 
 const Profil = () => {
   const [timelineValue, setTimelineValue] = useState([50]);
+  const [bioCoins] = useState(1250);
   
   // Calculate waist scale based on timeline (1.2 at start, 0.85 at goal)
   const waistScale = 1.2 - (timelineValue[0] / 100) * 0.35;
@@ -28,13 +30,16 @@ const Profil = () => {
 
   return (
     <div className="space-y-6 pb-24">
-      {/* Header */}
-      <div>
-        <h1 className="font-display text-2xl text-foreground">PROFİL</h1>
-        <p className="text-muted-foreground text-sm">Dijital İkiz & Vücut Analizi</p>
+      {/* Header with Bio-Coins */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl text-foreground">PROFİL</h1>
+          <p className="text-muted-foreground text-sm">Dijital İkiz & Vücut Analizi</p>
+        </div>
+        <BioCoinWallet balance={bioCoins} showLabel />
       </div>
 
-      {/* 3D Avatar Section */}
+      {/* 3D Avatar Section - Now Realistic */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -55,8 +60,8 @@ const Profil = () => {
           </div>
         </div>
 
-        {/* 3D Avatar */}
-        <DigitalTwinAvatar waistScale={waistScale} />
+        {/* Realistic 3D Avatar */}
+        <RealisticBodyAvatar waistScale={waistScale} />
 
         {/* Recovery Alert */}
         <div className="mt-4 bg-destructive/10 border border-destructive/30 rounded-xl p-3 flex items-center gap-3">
@@ -124,6 +129,40 @@ const Profil = () => {
             </div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Bio-Coins Earned Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.17 }}
+        className="glass-card p-4"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Coins className="w-5 h-5 text-primary" />
+          <h2 className="font-display text-lg text-foreground tracking-wide">
+            BIO-COIN CÜZDANI
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-3 bg-primary/10 border border-primary/30 rounded-xl">
+            <p className="font-display text-2xl text-primary">{bioCoins}</p>
+            <p className="text-muted-foreground text-[10px]">TOPLAM</p>
+          </div>
+          <div className="text-center p-3 bg-secondary/50 rounded-xl">
+            <p className="font-display text-2xl text-foreground">+125</p>
+            <p className="text-muted-foreground text-[10px]">BU HAFTA</p>
+          </div>
+          <div className="text-center p-3 bg-secondary/50 rounded-xl">
+            <p className="font-display text-2xl text-foreground">3</p>
+            <p className="text-muted-foreground text-[10px]">SATIN ALIM</p>
+          </div>
+        </div>
+
+        <p className="text-muted-foreground text-xs mt-3 text-center">
+          Her tamamlanan antrenman = Bio-Coin kazanırsın! 💪
+        </p>
       </motion.div>
 
       {/* Recovery Zones */}

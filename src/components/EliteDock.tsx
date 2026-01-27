@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, Dumbbell, Leaf, Play, User } from "lucide-react";
+import { LayoutGrid, Dumbbell, Leaf, Globe, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -14,7 +14,7 @@ const navItems: NavItem[] = [
   { id: "kokpit", label: "Kokpit", icon: <LayoutGrid className="w-5 h-5" />, path: "/kokpit" },
   { id: "antrenman", label: "Antrenman", icon: <Dumbbell className="w-5 h-5" />, path: "/antrenman" },
   { id: "beslenme", label: "Beslenme", icon: <Leaf className="w-5 h-5" />, path: "/beslenme" },
-  { id: "akademi", label: "Akademi", icon: <Play className="w-5 h-5" />, path: "/akademi" },
+  { id: "kesfet", label: "Keşfet", icon: <Globe className="w-5 h-5" />, path: "/kesfet" },
   { id: "profil", label: "Profil", icon: <User className="w-5 h-5" />, path: "/profil" },
 ];
 
