@@ -1,102 +1,160 @@
-import { motion } from "framer-motion";
-import { Dumbbell, Eye, Timer, Zap } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Dumbbell, Calendar, TrendingUp, Clock, Target } from "lucide-react";
+import WorkoutCard from "@/components/WorkoutCard";
+import VisionAIExecution from "@/components/VisionAIExecution";
 
 const Antrenman = () => {
+  const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
+
+  const assignedWorkouts = [
+    {
+      id: "1",
+      title: "GÖĞÜS & SIRT",
+      day: "GÜN 1 - PAZARTES",
+      exercises: 8,
+      duration: "55 dk",
+      intensity: "Yüksek" as const,
+      coachNote: "Tempoya dikkat et. Göğüs açıklığını koru.",
+    },
+    {
+      id: "2",
+      title: "BACAK & KOR",
+      day: "GÜN 2 - ÇARŞAMBA",
+      exercises: 6,
+      duration: "45 dk",
+      intensity: "Yüksek" as const,
+      coachNote: "Squat derinliğini Vision AI ile kontrol et.",
+    },
+    {
+      id: "3",
+      title: "OMUZ & KOL",
+      day: "GÜN 3 - CUMA",
+      exercises: 7,
+      duration: "50 dk",
+      intensity: "Orta" as const,
+    },
+    {
+      id: "4",
+      title: "AKTİF DİNLENME",
+      day: "GÜN 4 - PAZAR",
+      exercises: 4,
+      duration: "30 dk",
+      intensity: "Düşük" as const,
+      coachNote: "Esneme hareketlerine odaklan.",
+    },
+  ];
+
+  const weeklyStats = [
+    { label: "Tamamlanan", value: "5", icon: Target },
+    { label: "Toplam Süre", value: "4.2sa", icon: Clock },
+    { label: "Yakılan Kalori", value: "2,450", icon: TrendingUp },
+  ];
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="font-display text-2xl text-foreground">ANTRENMAN</h1>
-        <p className="text-muted-foreground text-sm">Vision AI Eğitim Sistemi</p>
+    <>
+      <div className="space-y-6 pb-24">
+        {/* Header */}
+        <div>
+          <h1 className="font-display text-2xl text-foreground">ANTRENMAN</h1>
+          <p className="text-muted-foreground text-sm">Vision AI Eğitim Merkezi</p>
+        </div>
+
+        {/* Vision AI Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card p-4 relative overflow-hidden"
+        >
+          <div className="absolute inset-0 grid-pattern opacity-30" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-primary/20 flex items-center justify-center neon-glow-sm">
+              <Dumbbell className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <h2 className="font-display text-lg text-foreground tracking-wide">
+                VİZYON AI AKTİF
+              </h2>
+              <p className="text-muted-foreground text-xs">
+                Hareket analizi ve gerçek zamanlı geri bildirim
+              </p>
+            </div>
+            <motion.div
+              className="absolute top-4 right-4 w-2 h-2 rounded-full bg-primary"
+              animate={{ opacity: [1, 0.5, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+          </div>
+        </motion.div>
+
+        {/* Weekly Stats */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="glass-card p-4"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="w-4 h-4 text-primary" />
+            <h2 className="font-display text-sm text-foreground tracking-wide">
+              BU HAFTA
+            </h2>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {weeklyStats.map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="w-10 h-10 rounded-lg bg-secondary mx-auto mb-2 flex items-center justify-center">
+                  <stat.icon className="w-5 h-5 text-primary" />
+                </div>
+                <p className="font-display text-lg text-foreground">{stat.value}</p>
+                <p className="text-muted-foreground text-[10px]">{stat.label}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Assigned Workouts */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-display text-lg text-foreground tracking-wide">
+              ATANAN ANTRENMANLAR
+            </h2>
+            <span className="text-xs text-primary">4 Görev</span>
+          </div>
+          
+          <div className="space-y-4">
+            {assignedWorkouts.map((workout, index) => (
+              <motion.div
+                key={workout.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
+              >
+                <WorkoutCard
+                  title={workout.title}
+                  day={workout.day}
+                  exercises={workout.exercises}
+                  duration={workout.duration}
+                  intensity={workout.intensity}
+                  coachNote={workout.coachNote}
+                  onStart={() => setActiveWorkout(workout.title)}
+                />
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Quick Start */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="glass-card p-6"
-      >
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-            <Eye className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="font-display text-lg text-foreground">VİZYON AI</h2>
-            <p className="text-muted-foreground text-xs">Hareket analizi başlat</p>
-          </div>
-        </div>
-        
-        <button className="w-full py-4 bg-primary/10 border border-primary/50 rounded-xl font-display text-primary tracking-wider hover:bg-primary/20 transition-all neon-glow-sm">
-          ANTRENMAN BAŞLAT
-        </button>
-      </motion.div>
-
-      {/* Today's Plan */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="glass-card p-4"
-      >
-        <h2 className="font-display text-lg text-foreground mb-4">BUGÜNKÜ PLAN</h2>
-        
-        <div className="space-y-3">
-          {[
-            { name: "Üst Vücut Güç", duration: "45 dk", intensity: "Yüksek", icon: Dumbbell },
-            { name: "Kor Stabilite", duration: "20 dk", intensity: "Orta", icon: Zap },
-            { name: "Esneme & Toparlanma", duration: "15 dk", intensity: "Düşük", icon: Timer },
-          ].map((workout, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between p-3 bg-secondary/50 rounded-xl"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <workout.icon className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="font-medium text-foreground text-sm">{workout.name}</p>
-                  <p className="text-muted-foreground text-xs">{workout.duration}</p>
-                </div>
-              </div>
-              <span className={`text-xs px-2 py-1 rounded-full ${
-                workout.intensity === "Yüksek" ? "bg-destructive/20 text-destructive" :
-                workout.intensity === "Orta" ? "bg-primary/20 text-primary" :
-                "bg-muted text-muted-foreground"
-              }`}>
-                {workout.intensity}
-              </span>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Weekly Stats */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="glass-card p-4"
-      >
-        <h2 className="font-display text-lg text-foreground mb-4">HAFTALIK İSTATİSTİK</h2>
-        
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <p className="font-display text-2xl text-primary">5</p>
-            <p className="text-muted-foreground text-xs">Antrenman</p>
-          </div>
-          <div className="text-center">
-            <p className="font-display text-2xl text-foreground">4.2<span className="text-sm">sa</span></p>
-            <p className="text-muted-foreground text-xs">Toplam Süre</p>
-          </div>
-          <div className="text-center">
-            <p className="font-display text-2xl text-foreground">12,450</p>
-            <p className="text-muted-foreground text-xs">kcal</p>
-          </div>
-        </div>
-      </motion.div>
-    </div>
+      {/* Vision AI Execution Overlay */}
+      <AnimatePresence>
+        {activeWorkout && (
+          <VisionAIExecution
+            workoutTitle={activeWorkout}
+            onClose={() => setActiveWorkout(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
