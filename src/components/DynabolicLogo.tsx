@@ -1,20 +1,9 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-// HATA ÇÖZÜMÜ: className özelliğini burada tanımlıyoruz
-interface DynabolicLogoProps {
-  className?: string;
-}
-
-const DynabolicLogo = ({ className }: DynabolicLogoProps) => {
+const DynabolicLogo = ({ className }: { className?: string }) => {
   return (
-    <svg
-      viewBox="0 0 200 200"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      // Gelen className'i buraya uyguluyoruz
-      className={className}
-    >
+    <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
       <defs>
         <filter id="neon-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="5" result="coloredBlur" />
