@@ -10,6 +10,7 @@ import {
   X,
   Focus,
   ScanBarcode,
+  Trash2, // Yeni eklenen ikon
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Progress } from "@/components/ui/progress";
 
 // --- TİP TANIMLAMALARI ---
 interface FoodItem {
@@ -48,7 +48,7 @@ const macroGoals = {
   calories: 2200,
 };
 
-// --- ÖRNEK YİYECEK VERİTABANI (MOCK DATABASE) ---
+// --- ÖRNEK YİYECEK VERİTABANI ---
 const foodDatabase = [
   { name: "Muz (Orta Boy)", amount: "1 Adet", cal: 105, macros: { p: 1, c: 27, f: 0 }, baseGrams: 120 },
   { name: "Haşlanmış Pirinç", amount: "100g", cal: 130, macros: { p: 2, c: 28, f: 0 }, baseGrams: 100 },
@@ -125,7 +125,7 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
         fat: acc.fat + meal.totalMacros.f,
         calories: acc.calories + meal.totalCal,
       }),
-      { protein: 0, carbs: 0, fat: 0, calories: 0 }
+      { protein: 0, carbs: 0, fat: 0, calories: 0 },
     );
   }, [meals]);
 
@@ -180,9 +180,7 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
                 />
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className={cn("font-display font-bold text-lg", macro.textColor)}>
-                  {macro.current}g
-                </span>
+                <span className={cn("font-display font-bold text-lg", macro.textColor)}>{macro.current}g</span>
                 <span className="text-zinc-600 text-xs">/ {macro.goal}g</span>
               </div>
             </div>
@@ -345,10 +343,7 @@ const CameraScanner = ({
                 />
                 {/* Center */}
                 <div className="absolute inset-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
+                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
                     {mode === "barcode" ? (
                       <ScanBarcode className="w-12 h-12 text-primary" />
                     ) : (
@@ -385,11 +380,12 @@ const CameraScanner = ({
 };
 
 // --- FOOD ITEM ROW COMPONENT ---
-const FoodItemRow = ({ food, onToggle }: { food: FoodItem; onToggle: () => void }) => {
+// YENİ ÖZELLİK: onRemove fonksiyonu eklendi
+const FoodItemRow = ({ food, onToggle, onRemove }: { food: FoodItem; onToggle: () => void; onRemove: () => void }) => {
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-3 rounded-xl border border-white/5 transition-all",
+        "flex items-center justify-between p-3 rounded-xl border border-white/5 transition-all group",
         food.isEaten ? "bg-primary/5 border-primary/20" : "bg-white/5",
       )}
     >
@@ -417,24 +413,39 @@ const FoodItemRow = ({ food, onToggle }: { food: FoodItem; onToggle: () => void 
           <p className="text-xs text-zinc-500">{food.amount}</p>
         </div>
       </div>
-      <div className="text-right flex-shrink-0">
-        <p className="text-sm font-bold text-white">{food.cal} kcal</p>
-        <div className="flex gap-2 text-[10px] text-zinc-400 justify-end">
-          <span className="text-yellow-500/80">P:{food.macros.p}</span>
-          <span className="text-blue-500/80">K:{food.macros.c}</span>
+      <div className="flex items-center gap-3">
+        <div className="text-right flex-shrink-0">
+          <p className="text-sm font-bold text-white">{food.cal} kcal</p>
+          <div className="flex gap-2 text-[10px] text-zinc-400 justify-end">
+            <span className="text-yellow-500/80">P:{food.macros.p}</span>
+            <span className="text-blue-500/80">K:{food.macros.c}</span>
+          </div>
         </div>
+        {/* SİLME BUTONU */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="w-8 h-8 flex items-center justify-center rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 transition-colors"
+        >
+          <Trash2 size={16} />
+        </button>
       </div>
     </div>
   );
 };
 
 // --- EXPANDABLE MEAL CARD COMPONENT ---
+// YENİ ÖZELLİK: onRemoveFood prop'u eklendi
 const ExpandableMealCard = ({
   meal,
   onUpdateFood,
+  onRemoveFood,
 }: {
   meal: Meal;
   onUpdateFood: (mealId: string, foodIndex: number) => void;
+  onRemoveFood: (mealId: string, foodIndex: number) => void;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const allEaten = meal.foods.length > 0 && meal.foods.every((f) => f.isEaten);
@@ -461,7 +472,7 @@ const ExpandableMealCard = ({
             {meal.icon}
             {allEaten && (
               <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border-2 border-[#1a1a1a]">
-                <Check size={10} className="text-primary-foreground" />
+                <Check size={10} className="text-black" />
               </div>
             )}
           </div>
@@ -496,7 +507,12 @@ const ExpandableMealCard = ({
                 <p className="text-xs text-zinc-500 text-center py-2">Bu öğünde henüz yiyecek yok.</p>
               ) : (
                 meal.foods.map((food, idx) => (
-                  <FoodItemRow key={idx} food={food} onToggle={() => onUpdateFood(meal.id, idx)} />
+                  <FoodItemRow
+                    key={idx}
+                    food={food}
+                    onToggle={() => onUpdateFood(meal.id, idx)}
+                    onRemove={() => onRemoveFood(meal.id, idx)}
+                  />
                 ))
               )}
             </div>
@@ -558,9 +574,7 @@ const FoodDetailWizard = ({
 
       {/* Amount Input */}
       <div className="bg-black/30 rounded-xl p-4">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">
-          MİKTAR (GRAM)
-        </label>
+        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">MİKTAR (GRAM)</label>
         <Input
           type="number"
           value={grams}
@@ -571,9 +585,7 @@ const FoodDetailWizard = ({
 
       {/* Target Meal Select */}
       <div className="bg-black/30 rounded-xl p-4">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">
-          HEDEF ÖĞÜN
-        </label>
+        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">HEDEF ÖĞÜN</label>
         <Select value={targetMeal} onValueChange={setTargetMeal}>
           <SelectTrigger className="bg-zinc-900 border-white/10 text-white h-12">
             <SelectValue />
@@ -590,9 +602,7 @@ const FoodDetailWizard = ({
 
       {/* Calculated Macros Preview */}
       <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
-        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">
-          HESAPLANAN DEĞERLER
-        </p>
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">HESAPLANAN DEĞERLER</p>
         <div className="grid grid-cols-4 gap-2 text-center">
           <div>
             <p className="text-lg font-display font-bold text-primary">{calculatedValues.cal}</p>
@@ -666,6 +676,37 @@ const Beslenme = () => {
     );
   };
 
+  // YENİ ÖZELLİK: Yiyecek Silme ve Kalori Hesaplama
+  const handleRemoveFood = (mealId: string, foodIndex: number) => {
+    setMeals((currentMeals) =>
+      currentMeals.map((meal) => {
+        if (meal.id !== mealId) return meal;
+
+        // Silinecek yiyeceği çıkar
+        const newFoods = meal.foods.filter((_, idx) => idx !== foodIndex);
+
+        // Kalan yiyeceklere göre toplamları yeniden hesapla
+        const newTotalCal = newFoods.reduce((acc, f) => acc + f.cal, 0);
+        const newTotalMacros = newFoods.reduce(
+          (acc, f) => ({
+            p: acc.p + f.macros.p,
+            c: acc.c + f.macros.c,
+            f: acc.f + f.macros.f,
+          }),
+          { p: 0, c: 0, f: 0 },
+        );
+
+        return {
+          ...meal,
+          foods: newFoods,
+          totalCal: newTotalCal,
+          totalMacros: newTotalMacros,
+        };
+      }),
+    );
+    toast({ title: "Silindi 🗑️", description: "Yiyecek listeden kaldırıldı ve değerler güncellendi." });
+  };
+
   // Select food for editing
   const handleSelectFood = (food: (typeof foodDatabase)[0]) => {
     setSelectedFood(food);
@@ -725,7 +766,7 @@ const Beslenme = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground uppercase font-display">Beslenme Planı</h1>
             <p className="text-muted-foreground text-sm">
-              Hedefine {macroGoals.calories - meals.reduce((acc, m) => acc + m.totalCal, 0)} kcal kaldı
+              Hedefine {Math.max(0, macroGoals.calories - meals.reduce((acc, m) => acc + m.totalCal, 0))} kcal kaldı
             </p>
           </div>
           <div className="flex gap-2">
@@ -812,7 +853,12 @@ const Beslenme = () => {
       </div>
       <div className="space-y-3 mb-6">
         {meals.map((meal) => (
-          <ExpandableMealCard key={meal.id} meal={meal} onUpdateFood={handleToggleFood} />
+          <ExpandableMealCard
+            key={meal.id}
+            meal={meal}
+            onUpdateFood={handleToggleFood}
+            onRemoveFood={handleRemoveFood}
+          />
         ))}
       </div>
 
@@ -820,10 +866,13 @@ const Beslenme = () => {
       <CameraScanner isOpen={showCamera} onClose={() => setShowCamera(false)} mode={scannerMode} />
 
       {/* MANUAL ADD MODAL */}
-      <Dialog open={showManualAdd} onOpenChange={(open) => {
-        setShowManualAdd(open);
-        if (!open) setSelectedFood(null);
-      }}>
+      <Dialog
+        open={showManualAdd}
+        onOpenChange={(open) => {
+          setShowManualAdd(open);
+          if (!open) setSelectedFood(null);
+        }}
+      >
         <DialogContent className="bg-[#121212] border-white/10 text-white max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{selectedFood ? "Detayları Düzenle" : "Yiyecek Ekle"}</DialogTitle>
