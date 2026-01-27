@@ -2,12 +2,17 @@ import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
 import { LayoutGrid, Dumbbell, Leaf, Globe, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import useScrollDirection from "@/hooks/useScrollDirection";
 
 interface NavItem {
   id: string;
   label: string;
   icon: React.ReactNode;
   path: string;
+}
+
+interface EliteDockProps {
+  forceHide?: boolean;
 }
 
 const navItems: NavItem[] = [
@@ -18,9 +23,12 @@ const navItems: NavItem[] = [
   { id: "profil", label: "Profil", icon: <User className="w-5 h-5" />, path: "/profil" },
 ];
 
-const EliteDock = () => {
+const EliteDock = ({ forceHide = false }: EliteDockProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { scrollDirection, isAtTop } = useScrollDirection({ threshold: 10 });
+
+  const shouldHide = forceHide || (scrollDirection === "down" && !isAtTop);
 
   const handleNavClick = (path: string) => {
     // Play sci-fi click sound
@@ -47,7 +55,10 @@ const EliteDock = () => {
   return (
     <motion.nav
       initial={{ y: 100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+      animate={{ 
+        y: shouldHide ? 100 : 0, 
+        opacity: shouldHide ? 0 : 1 
+      }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
       className="fixed bottom-0 left-0 right-0 z-50"
     >

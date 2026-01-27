@@ -6,12 +6,14 @@ import EnergyBank from "@/components/EnergyBank";
 import CoachUplink from "@/components/CoachUplink";
 import BentoStats from "@/components/BentoStats";
 import QuickActionFAB from "@/components/QuickActionFAB";
+import CoachChat from "@/components/CoachChat";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications } from "@/lib/mockData";
 
 const Kokpit = () => {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
 
   const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
@@ -22,6 +24,10 @@ const Kokpit = () => {
       setShowNotifications(false);
       navigate(`/coach/${coachId}`);
     }
+  };
+
+  const handleOpenChat = () => {
+    setShowChat(true);
   };
 
   return (
@@ -37,6 +43,16 @@ const Kokpit = () => {
           <p className="text-muted-foreground text-sm">Misyon Kontrol Merkezi</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Chat Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowChat(true)}
+            className="relative p-2"
+          >
+            <MessageCircle className="w-5 h-5 text-muted-foreground" />
+          </motion.button>
+
           {/* Notifications Bell */}
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -97,6 +113,7 @@ const Kokpit = () => {
         coachName="KOÇ SERDAR"
         status="online"
         message="Bugün bacak antrenmanında tempoyu düşürme. Vision AI sonuçlarını bekliyorum."
+        onMessageClick={() => setShowChat(true)}
       />
 
       {/* Bento Grid Stats */}
@@ -109,7 +126,10 @@ const Kokpit = () => {
       </div>
 
       {/* Quick Action FAB */}
-      <QuickActionFAB />
+      <QuickActionFAB onOpenChat={handleOpenChat} />
+
+      {/* Coach Chat */}
+      <CoachChat isOpen={showChat} onClose={() => setShowChat(false)} />
 
       {/* Notifications Panel */}
       <AnimatePresence>

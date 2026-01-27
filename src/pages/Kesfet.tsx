@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Globe, X, Heart, MessageCircle, Share2, Verified, Coins, Trophy, Star, Users, Shield } from "lucide-react";
+import { Globe, X, Heart, MessageCircle, Share2, Verified, Coins, Trophy, Star, Users, Shield, ShoppingBag } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { coaches, getLeaderboardCoaches, Coach } from "@/lib/mockData";
+import CartView, { CartItem } from "@/components/CartView";
+import ProductDetail from "@/components/ProductDetail";
 
 // Bio-Coin Discount Calculator
 const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
@@ -69,9 +71,13 @@ const getAllPosts = () => {
 const Kesfet = () => {
   const navigate = useNavigate();
   const [selectedStory, setSelectedStory] = useState<Coach | null>(null);
-  const [bioCoins] = useState(USER_BIO_COINS);
+  const [bioCoins, setBioCoins] = useState(USER_BIO_COINS);
   const [coinDiscounts, setCoinDiscounts] = useState<Record<string, boolean>>({});
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showProductDetail, setShowProductDetail] = useState(false);
 
   const sortedCoaches = getLeaderboardCoaches();
   const allProducts = getAllProducts();
@@ -91,10 +97,53 @@ const Kesfet = () => {
     setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  const handleBuy = (productTitle: string) => {
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product);
+    setShowProductDetail(true);
+  };
+
+  const handleAddToCart = (product: any) => {
+    const isDiscountActive = coinDiscounts[product.id + product.coachId] || false;
+    const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
+    const coinsNeeded = calculateCoinsNeeded(maxDiscount);
+
+    const cartItem: CartItem = {
+      id: `${product.id}-${product.coachId}-${Date.now()}`,
+      title: product.title,
+      price: product.price,
+      discountedPrice: isDiscountActive ? Math.round(product.price - maxDiscount) : undefined,
+      coinsUsed: isDiscountActive ? coinsNeeded : undefined,
+      image: product.image,
+      coachName: product.coachName,
+    };
+
+    setCart(prev => [...prev, cartItem]);
+    
+    if (isDiscountActive) {
+      setBioCoins(prev => prev - coinsNeeded);
+    }
+
     toast({
-      title: "Sepete Eklendi (Demo)",
-      description: `"${productTitle}" sepetinize eklendi.`,
+      title: "Sepete Eklendi ✓",
+      description: `"${product.title}" sepetinize eklendi.`,
+    });
+  };
+
+  const handleRemoveFromCart = (itemId: string) => {
+    const item = cart.find(i => i.id === itemId);
+    if (item?.coinsUsed) {
+      setBioCoins(prev => prev + item.coinsUsed!);
+    }
+    setCart(prev => prev.filter(i => i.id !== itemId));
+  };
+
+  const handleClearCart = () => {
+    const totalCoinsToReturn = cart.reduce((acc, item) => acc + (item.coinsUsed || 0), 0);
+    setBioCoins(prev => prev + totalCoinsToReturn);
+    setCart([]);
+    toast({
+      title: "Sepet Temizlendi",
+      description: "Tüm ürünler sepetten kaldırıldı.",
     });
   };
 
@@ -107,7 +156,23 @@ const Kesfet = () => {
             <h1 className="font-display text-2xl text-foreground">KEŞFET</h1>
             <p className="text-muted-foreground text-sm">Pazar Yeri & Sosyal Ağ</p>
           </div>
-          <BioCoinWallet balance={bioCoins} />
+          <div className="flex items-center gap-3">
+            {/* Cart Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowCart(true)}
+              className="relative p-2"
+            >
+              <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+              {cart.length > 0 && (
+                <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                  <span className="text-primary-foreground text-[10px] font-bold">{cart.length}</span>
+                </div>
+              )}
+            </motion.button>
+            <BioCoinWallet balance={bioCoins} />
+          </div>
         </div>
 
         {/* Elite Coaches Stories */}
@@ -401,25 +466,30 @@ const Kesfet = () => {
                     whileHover={{ scale: 1.02 }}
                     className="glass-card overflow-hidden"
                   >
-                    <div className="aspect-square bg-muted relative">
-                      <img 
-                        src={product.image} 
-                        alt={product.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-2 right-2">
-                        <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                          {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
-                        </span>
-                      </div>
-                      {isDiscountActive && (
-                        <div className="absolute top-2 left-2">
-                          <span className="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded-full font-medium">
-                            -{Math.round(maxDiscount)}₺
+                    <button
+                      onClick={() => handleProductClick(product)}
+                      className="w-full text-left"
+                    >
+                      <div className="aspect-square bg-muted relative">
+                        <img 
+                          src={product.image} 
+                          alt={product.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                            {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
                           </span>
                         </div>
-                      )}
-                    </div>
+                        {isDiscountActive && (
+                          <div className="absolute top-2 left-2">
+                            <span className="bg-stat-hrv text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                              -{Math.round(maxDiscount)}₺
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </button>
                     <div className="p-3">
                       <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
                         {product.title}
@@ -478,14 +548,14 @@ const Kesfet = () => {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => handleBuy(product.title)}
+                        onClick={() => handleAddToCart(product)}
                         className={`w-full mt-3 text-xs py-2 rounded-lg font-medium border transition-colors ${
                           isDiscountActive 
                             ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" 
                             : "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30"
                         }`}
                       >
-                        SATIN AL
+                        SEPETE EKLE
                       </motion.button>
                     </div>
                   </motion.div>
@@ -520,25 +590,32 @@ const Kesfet = () => {
               ))}
             </div>
 
-            {/* Story Header */}
-            <div className="absolute top-8 left-4 right-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10 border-2 border-primary">
-                  <AvatarImage src={selectedStory.avatar} className="object-cover" />
-                  <AvatarFallback>{selectedStory.name.charAt(4)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-white text-sm font-medium">{selectedStory.name}</p>
-                  <p className="text-white/60 text-xs">{selectedStory.specialty}</p>
-                </div>
+            {/* Story Header - Clickable to navigate to profile */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedStory(null);
+                navigate(`/coach/${selectedStory.id}`);
+              }}
+              className="absolute top-8 left-4 right-16 flex items-center gap-3 z-10"
+            >
+              <Avatar className="w-10 h-10 border-2 border-primary">
+                <AvatarImage src={selectedStory.avatar} className="object-cover" />
+                <AvatarFallback>{selectedStory.name.charAt(4)}</AvatarFallback>
+              </Avatar>
+              <div className="text-left">
+                <p className="text-white text-sm font-medium">{selectedStory.name}</p>
+                <p className="text-white/60 text-xs">{selectedStory.specialty}</p>
               </div>
-              <button
-                onClick={() => setSelectedStory(null)}
-                className="p-2 text-white/80 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
+            </button>
+            
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedStory(null)}
+              className="absolute top-8 right-4 p-2 text-white/80 hover:text-white transition-colors z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
 
             {/* Story Content - Full Screen Image */}
             <div className="absolute inset-0">
@@ -582,6 +659,23 @@ const Kesfet = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Cart View */}
+      <CartView
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
+        items={cart}
+        onRemoveItem={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+      />
+
+      {/* Product Detail */}
+      <ProductDetail
+        isOpen={showProductDetail}
+        onClose={() => setShowProductDetail(false)}
+        product={selectedProduct}
+        onAddToCart={handleAddToCart}
+      />
     </>
   );
 };

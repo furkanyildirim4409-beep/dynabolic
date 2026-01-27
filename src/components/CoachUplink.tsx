@@ -8,9 +8,10 @@ interface CoachUplinkProps {
   status: "online" | "offline" | "busy";
   message: string;
   avatarUrl?: string;
+  onMessageClick?: () => void;
 }
 
-const CoachUplink = ({ coachName, coachId = "1", status, message }: CoachUplinkProps) => {
+const CoachUplink = ({ coachName, coachId = "1", status, message, onMessageClick }: CoachUplinkProps) => {
   const navigate = useNavigate();
   const statusConfig = {
     online: { text: "ÇEVRİMİÇİ", color: "bg-primary", pulse: true },
@@ -123,6 +124,7 @@ const CoachUplink = ({ coachName, coachId = "1", status, message }: CoachUplinkP
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
+          onClick={onMessageClick}
           className="flex-shrink-0 w-12 h-12 rounded-xl bg-primary/10 border border-primary/30 flex items-center justify-center hover:bg-primary/20 transition-colors"
         >
           <MessageCircle className="w-5 h-5 text-primary" />
