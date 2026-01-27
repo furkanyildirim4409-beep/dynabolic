@@ -62,12 +62,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
         {/* progress prop'unu kaldırdık, Framer Motion kendi içinde hallediyor */}
         <div className="relative">
           <DynabolicLogo
-            // Logo bileşenine prop göndererek içindeki animasyonu kontrol ediyoruz
-            // Eğer senin DynabolicLogo bileşenin prop almıyorsa burayı düzenlememiz gerekebilir
-            // Ancak standart SVG animasyonlarında class kontrolü yeterlidir.
-            className={`w-48 h-48 md:w-64 md:h-64 drop-shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all duration-700 ${
-              phase !== "drawing" ? "drop-shadow-[0_0_50px_rgba(204,255,0,0.8)]" : ""
-            }`}
+            progress={phase === "drawing" ? 1 : 1}
+            isFilled={phase !== "drawing"}
           />
 
           {/* Şimşek Efekti (Logo ortasında ekstra parlama) */}
