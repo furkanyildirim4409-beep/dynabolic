@@ -1,11 +1,23 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Check, Search, Plus, Droplets, Zap, Camera, X, Focus } from "lucide-react";
+import {
+  ChevronDown,
+  Check,
+  Search,
+  Plus,
+  Droplets,
+  Zap,
+  Camera,
+  X,
+  Focus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Progress } from "@/components/ui/progress";
 
 // --- TİP TANIMLAMALARI ---
 interface FoodItem {
@@ -36,7 +48,7 @@ const macroGoals = {
   calories: 2200,
 };
 
-// --- YİYECEK VERİTABANI (Porsiyon Hesaplama için 'baseGrams' eklendi) ---
+// --- ÖRNEK YİYECEK VERİTABANI (MOCK DATABASE) ---
 const foodDatabase = [
   { name: "Muz (Orta Boy)", amount: "1 Adet", cal: 105, macros: { p: 1, c: 27, f: 0 }, baseGrams: 120 },
   { name: "Haşlanmış Pirinç", amount: "100g", cal: 130, macros: { p: 2, c: 28, f: 0 }, baseGrams: 100 },
@@ -113,7 +125,7 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
         fat: acc.fat + meal.totalMacros.f,
         calories: acc.calories + meal.totalCal,
       }),
-      { protein: 0, carbs: 0, fat: 0, calories: 0 },
+      { protein: 0, carbs: 0, fat: 0, calories: 0 }
     );
   }, [meals]);
 
@@ -143,6 +155,7 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
 
   return (
     <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-4 mb-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">MAKRO ÖZETİ</h2>
         <div className="flex items-baseline gap-1">
@@ -151,6 +164,7 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
         </div>
       </div>
 
+      {/* Macro Grid */}
       <div className="grid grid-cols-3 gap-3">
         {macros.map((macro) => {
           const percentage = Math.min((macro.current / macro.goal) * 100, 100);
@@ -166,7 +180,9 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
                 />
               </div>
               <div className="flex items-baseline gap-0.5">
-                <span className={cn("font-display font-bold text-lg", macro.textColor)}>{macro.current}g</span>
+                <span className={cn("font-display font-bold text-lg", macro.textColor)}>
+                  {macro.current}g
+                </span>
                 <span className="text-zinc-600 text-xs">/ {macro.goal}g</span>
               </div>
             </div>
@@ -215,7 +231,9 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 animate={{ opacity: [1, 0.3, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
               />
-              <span className="font-display text-sm text-white tracking-wider uppercase">NUTRİ-SCAN AI</span>
+              <span className="font-display text-sm text-white tracking-wider uppercase">
+                NUTRİ-SCAN AI
+              </span>
             </div>
             <button
               onClick={handleClose}
@@ -229,6 +247,7 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             <>
               {/* Mock Camera Feed */}
               <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 to-black">
+                {/* Grid Pattern */}
                 <div
                   className="absolute inset-0 opacity-10"
                   style={{
@@ -237,19 +256,26 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                     backgroundSize: "40px 40px",
                   }}
                 />
+
+                {/* Focus Frame */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="relative w-72 h-72"
                   >
+                    {/* Corner Brackets */}
                     <div className="absolute top-0 left-0 w-12 h-12 border-t-2 border-l-2 border-primary rounded-tl-lg" />
                     <div className="absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 border-primary rounded-tr-lg" />
                     <div className="absolute bottom-0 left-0 w-12 h-12 border-b-2 border-l-2 border-primary rounded-bl-lg" />
                     <div className="absolute bottom-0 right-0 w-12 h-12 border-b-2 border-r-2 border-primary rounded-br-lg" />
+
+                    {/* Center Focus Icon */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Focus className="w-12 h-12 text-primary/30" />
                     </div>
+
+                    {/* Animated Corners Pulse */}
                     <motion.div
                       className="absolute inset-0 border-2 border-primary/20 rounded-xl"
                       animate={{ scale: [1, 1.02, 1], opacity: [0.5, 0.8, 0.5] }}
@@ -257,10 +283,14 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                     />
                   </motion.div>
                 </div>
+
+                {/* Instructions */}
                 <div className="absolute bottom-40 left-0 right-0 text-center">
                   <p className="text-zinc-400 text-sm">Yiyeceği çerçeve içine alın</p>
                 </div>
               </div>
+
+              {/* Shutter Button */}
               <div className="absolute bottom-12 left-0 right-0 flex justify-center">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -278,23 +308,39 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
           {phase === "processing" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black">
+              {/* Scanning Animation */}
               <div className="relative w-48 h-48 mb-8">
+                {/* Outer Ring */}
                 <motion.div
                   className="absolute inset-0 border-2 border-primary/30 rounded-full"
                   animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
+                {/* Inner Ring */}
                 <motion.div
                   className="absolute inset-4 border-2 border-primary/50 rounded-full"
                   animate={{ rotate: 360 }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
+                {/* Center */}
                 <div className="absolute inset-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <motion.div animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 1.5, repeat: Infinity }}>
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
                     <Zap className="w-12 h-12 text-primary" />
                   </motion.div>
                 </div>
+
+                {/* Scanning Line */}
+                <motion.div
+                  className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent"
+                  initial={{ top: "0%" }}
+                  animate={{ top: ["0%", "100%", "0%"] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                />
               </div>
+
               <motion.p
                 className="font-display text-lg text-primary tracking-widest"
                 animate={{ opacity: [1, 0.5, 1] }}
@@ -388,7 +434,7 @@ const ExpandableMealCard = ({
             {meal.icon}
             {allEaten && (
               <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border-2 border-[#1a1a1a]">
-                <Check size={10} className="text-black" />
+                <Check size={10} className="text-primary-foreground" />
               </div>
             )}
           </div>
@@ -434,7 +480,7 @@ const ExpandableMealCard = ({
   );
 };
 
-// --- FOOD DETAIL WIZARD (MANUEL EKLEME & PORSİYON AYARI) ---
+// --- FOOD DETAIL WIZARD (for Manual Add) ---
 interface SelectedFood {
   name: string;
   amount: string;
@@ -457,7 +503,7 @@ const FoodDetailWizard = ({
   const [targetMeal, setTargetMeal] = useState("ogle");
   const [grams, setGrams] = useState(food.baseGrams.toString());
 
-  const gramsNum = parseFloat(grams) || 0;
+  const gramsNum = parseInt(grams) || 0;
   const ratio = gramsNum / food.baseGrams;
 
   const calculatedValues = {
@@ -485,7 +531,9 @@ const FoodDetailWizard = ({
 
       {/* Amount Input */}
       <div className="bg-black/30 rounded-xl p-4">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">MİKTAR (GRAM)</label>
+        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">
+          MİKTAR (GRAM)
+        </label>
         <Input
           type="number"
           value={grams}
@@ -494,25 +542,30 @@ const FoodDetailWizard = ({
         />
       </div>
 
-      {/* Target Meal Select (Custom Styling) */}
+      {/* Target Meal Select */}
       <div className="bg-black/30 rounded-xl p-4">
-        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">HEDEF ÖĞÜN</label>
-        <select
-          value={targetMeal}
-          onChange={(e) => setTargetMeal(e.target.value)}
-          className="w-full bg-zinc-900 border border-white/10 rounded-md text-white h-12 px-3 focus:outline-none focus:border-primary"
-        >
-          {meals.map((meal) => (
-            <option key={meal.id} value={meal.id} className="bg-zinc-900 text-white">
-              {meal.icon} {meal.title}
-            </option>
-          ))}
-        </select>
+        <label className="text-xs font-bold text-zinc-500 uppercase tracking-wide mb-2 block">
+          HEDEF ÖĞÜN
+        </label>
+        <Select value={targetMeal} onValueChange={setTargetMeal}>
+          <SelectTrigger className="bg-zinc-900 border-white/10 text-white h-12">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-zinc-900 border-white/10">
+            {meals.map((meal) => (
+              <SelectItem key={meal.id} value={meal.id} className="text-white hover:bg-white/10">
+                {meal.icon} {meal.title}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Calculated Macros Preview */}
       <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
-        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">HESAPLANAN DEĞERLER</p>
+        <p className="text-xs font-bold text-zinc-400 uppercase tracking-wide mb-3">
+          HESAPLANAN DEĞERLER
+        </p>
         <div className="grid grid-cols-4 gap-2 text-center">
           <div>
             <p className="text-lg font-display font-bold text-primary">{calculatedValues.cal}</p>
@@ -584,9 +637,7 @@ const Beslenme = () => {
   const handleConfirmAddFood = (targetMealId: string, grams: number) => {
     if (!selectedFood) return;
 
-    // Oran Hesapla: Yeni Gram / Baz Gram (Örn: 60g / 120g = 0.5)
     const ratio = grams / selectedFood.baseGrams;
-
     const newFood: FoodItem = {
       name: selectedFood.name,
       amount: `${grams}g`,
@@ -619,7 +670,7 @@ const Beslenme = () => {
     const targetMeal = meals.find((m) => m.id === targetMealId);
     toast({
       title: "Eklendi ✅",
-      description: `${newFood.name} (${newFood.amount}) ${targetMeal?.title || "öğüne"} eklendi.`,
+      description: `${selectedFood.name} ${targetMeal?.title || "öğüne"} eklendi.`,
     });
 
     setSelectedFood(null);
@@ -639,7 +690,7 @@ const Beslenme = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground uppercase font-display">Beslenme Planı</h1>
             <p className="text-muted-foreground text-sm">
-              Hedefine {Math.max(0, macroGoals.calories - meals.reduce((acc, m) => acc + m.totalCal, 0))} kcal kaldı
+              Hedefine {macroGoals.calories - meals.reduce((acc, m) => acc + m.totalCal, 0)} kcal kaldı
             </p>
           </div>
           <div className="flex gap-2">
@@ -660,7 +711,7 @@ const Beslenme = () => {
             className="flex items-center justify-center gap-2 bg-secondary border border-white/5 p-3 rounded-xl text-sm font-medium text-muted-foreground hover:border-primary/50 active:scale-95 transition-all"
           >
             <Zap className="w-4 h-4 text-primary" />
-            Öğün Tara
+            Yapay Zeka Analizi
           </button>
           <button
             onClick={() => setShowManualAdd(true)}
@@ -731,13 +782,10 @@ const Beslenme = () => {
       <CameraScanner isOpen={showCamera} onClose={() => setShowCamera(false)} />
 
       {/* MANUAL ADD MODAL */}
-      <Dialog
-        open={showManualAdd}
-        onOpenChange={(open) => {
-          setShowManualAdd(open);
-          if (!open) setSelectedFood(null);
-        }}
-      >
+      <Dialog open={showManualAdd} onOpenChange={(open) => {
+        setShowManualAdd(open);
+        if (!open) setSelectedFood(null);
+      }}>
         <DialogContent className="bg-[#121212] border-white/10 text-white max-w-sm max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{selectedFood ? "Detayları Düzenle" : "Yiyecek Ekle"}</DialogTitle>
@@ -765,7 +813,7 @@ const Beslenme = () => {
                     <div>
                       <p className="font-medium text-sm text-white">{food.name}</p>
                       <p className="text-xs text-zinc-500">
-                        {food.baseGrams}g • {food.cal} kcal
+                        {food.amount} • {food.cal} kcal
                       </p>
                     </div>
                     <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary transition-colors">
