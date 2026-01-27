@@ -1,7 +1,46 @@
-import { motion } from "framer-motion";
-import { Coffee, Sun, Moon, Apple, Droplets, Plus } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Coffee, Sun, Moon, Apple, Droplets, Plus, List, Search, X, Check } from "lucide-react";
 import MacroDashboard from "@/components/MacroDashboard";
 import NutriScanner from "@/components/NutriScanner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+interface FoodItem {
+  id: string;
+  name: string;
+  portion: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
+
+interface AddedFood extends FoodItem {
+  quantity: number;
+  meal: string;
+}
+
+const foodDatabase: FoodItem[] = [
+  { id: "1", name: "Haşlanmış Yumurta", portion: "1 adet", calories: 70, protein: 6, carbs: 0.5, fat: 5 },
+  { id: "2", name: "Tavuk Göğsü (Pişmiş)", portion: "100g", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
+  { id: "3", name: "Basmati Pirinç (Lapa)", portion: "100g", calories: 130, protein: 2.5, carbs: 28, fat: 0.3 },
+  { id: "4", name: "Yulaf Ezmesi", portion: "50g", calories: 180, protein: 6, carbs: 30, fat: 3 },
+  { id: "5", name: "Whey Protein", portion: "1 ölçek", calories: 120, protein: 24, carbs: 3, fat: 1.5 },
+  { id: "6", name: "Muz", portion: "1 orta boy", calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
+  { id: "7", name: "Yoğurt (Tam Yağlı)", portion: "200g", calories: 130, protein: 8, carbs: 10, fat: 6 },
+  { id: "8", name: "Zeytinyağı", portion: "1 yemek kaşığı", calories: 119, protein: 0, carbs: 0, fat: 13.5 },
+  { id: "9", name: "Tam Buğday Ekmek", portion: "1 dilim", calories: 80, protein: 4, carbs: 15, fat: 1 },
+  { id: "10", name: "Badem", portion: "30g", calories: 170, protein: 6, carbs: 6, fat: 15 },
+];
+
+const mealOptions = [
+  { id: "breakfast", label: "Kahvaltı", icon: Coffee },
+  { id: "lunch", label: "Öğle", icon: Sun },
+  { id: "dinner", label: "Akşam", icon: Moon },
+  { id: "snack", label: "Ara Öğün", icon: Apple },
+];
 
 interface MealEntry {
   id: string;
@@ -14,6 +53,42 @@ interface MealEntry {
 }
 
 const Beslenme = () => {
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMeal, setSelectedMeal] = useState("breakfast");
+  const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [addedFoods, setAddedFoods] = useState<AddedFood[]>([]);
+
+  const filteredFoods = foodDatabase.filter(food =>
+    food.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleAddFood = () => {
+    if (selectedFood) {
+      const newFood: AddedFood = {
+        ...selectedFood,
+        quantity,
+        meal: selectedMeal,
+      };
+      setAddedFoods(prev => [...prev, newFood]);
+      setSelectedFood(null);
+      setQuantity(1);
+      setSearchQuery("");
+    }
+  };
+
+  // Calculate total added macros
+  const totalAddedMacros = addedFoods.reduce(
+    (acc, food) => ({
+      calories: acc.calories + food.calories * food.quantity,
+      protein: acc.protein + food.protein * food.quantity,
+      carbs: acc.carbs + food.carbs * food.quantity,
+      fat: acc.fat + food.fat * food.quantity,
+    }),
+    { calories: 0, protein: 0, carbs: 0, fat: 0 }
+  );
+
   const meals: MealEntry[] = [
     {
       id: "1",
@@ -70,8 +145,214 @@ const Beslenme = () => {
       {/* Macro Dashboard */}
       <MacroDashboard />
 
-      {/* Nutri Scanner Button */}
-      <NutriScanner />
+      {/* Scanner Buttons */}
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <NutriScanner />
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => setIsManualModalOpen(true)}
+          className="glass-card p-4 flex items-center justify-center gap-2 border border-primary/30 hover:bg-primary/10 transition-colors"
+        >
+          <List className="w-5 h-5 text-primary" />
+          <span className="text-foreground text-sm font-medium">MANUEL EKLE</span>
+        </motion.button>
+      </div>
+
+      {/* Added Foods Today */}
+      {addedFoods.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass-card p-4"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-display text-sm text-foreground tracking-wide">
+              GÜNLÜK LİSTE
+            </h3>
+            <div className="flex items-center gap-2 text-primary text-xs">
+              <span>{totalAddedMacros.calories} kcal</span>
+              <span>|</span>
+              <span>{totalAddedMacros.protein.toFixed(1)}g P</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {addedFoods.map((food, index) => (
+              <motion.div
+                key={`${food.id}-${index}`}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center justify-between p-2 bg-secondary/50 rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded bg-primary/20 flex items-center justify-center">
+                    <Check className="w-3 h-3 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-foreground text-xs font-medium">{food.name}</p>
+                    <p className="text-muted-foreground text-[10px]">
+                      {food.quantity}x {food.portion} • {mealOptions.find(m => m.id === food.meal)?.label}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-foreground text-xs">{food.calories * food.quantity} kcal</p>
+                  <p className="text-muted-foreground text-[10px]">{(food.protein * food.quantity).toFixed(1)}g prot</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Manual Food Entry Modal */}
+      <Dialog open={isManualModalOpen} onOpenChange={setIsManualModalOpen}>
+        <DialogContent className="bg-background border-white/10 max-w-md max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="font-display text-lg text-foreground">MANUEL BESİN EKLE</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4 flex-1 overflow-hidden flex flex-col">
+            {/* Meal Selector */}
+            <div className="flex gap-2">
+              {mealOptions.map((meal) => (
+                <button
+                  key={meal.id}
+                  onClick={() => setSelectedMeal(meal.id)}
+                  className={`flex-1 p-2 rounded-lg border transition-colors ${
+                    selectedMeal === meal.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-secondary/50 text-muted-foreground border-white/10 hover:bg-secondary"
+                  }`}
+                >
+                  <meal.icon className="w-4 h-4 mx-auto mb-1" />
+                  <span className="text-[10px] block">{meal.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Besin ara... (örn: Tavuk Göğsü)"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-secondary/50 border-white/10"
+              />
+            </div>
+
+            {/* Food List or Selected Food */}
+            {selectedFood ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="glass-card p-4 space-y-4"
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-foreground font-medium">{selectedFood.name}</h4>
+                    <p className="text-muted-foreground text-xs">{selectedFood.portion}</p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedFood(null)}
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Macro Preview */}
+                <div className="grid grid-cols-4 gap-2 text-center">
+                  <div className="bg-secondary/50 p-2 rounded-lg">
+                    <p className="text-foreground font-display text-sm">{selectedFood.calories * quantity}</p>
+                    <p className="text-muted-foreground text-[10px]">kcal</p>
+                  </div>
+                  <div className="bg-secondary/50 p-2 rounded-lg">
+                    <p className="text-stat-recovery font-display text-sm">{(selectedFood.protein * quantity).toFixed(1)}</p>
+                    <p className="text-muted-foreground text-[10px]">Protein</p>
+                  </div>
+                  <div className="bg-secondary/50 p-2 rounded-lg">
+                    <p className="text-stat-hrv font-display text-sm">{(selectedFood.carbs * quantity).toFixed(1)}</p>
+                    <p className="text-muted-foreground text-[10px]">Karb</p>
+                  </div>
+                  <div className="bg-secondary/50 p-2 rounded-lg">
+                    <p className="text-stat-strain font-display text-sm">{(selectedFood.fat * quantity).toFixed(1)}</p>
+                    <p className="text-muted-foreground text-[10px]">Yağ</p>
+                  </div>
+                </div>
+
+                {/* Quantity Input */}
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground text-sm">Miktar:</span>
+                  <div className="flex items-center gap-2 flex-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-10 h-10"
+                    >
+                      -
+                    </Button>
+                    <Input
+                      type="number"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="text-center w-16 bg-secondary/50 border-white/10"
+                    />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-10 h-10"
+                    >
+                      +
+                    </Button>
+                  </div>
+                  <span className="text-muted-foreground text-sm">{selectedFood.portion}</span>
+                </div>
+
+                <Button
+                  onClick={handleAddFood}
+                  className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  LİSTEYE EKLE
+                </Button>
+              </motion.div>
+            ) : (
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+                {filteredFoods.map((food) => (
+                  <motion.button
+                    key={food.id}
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
+                    onClick={() => setSelectedFood(food)}
+                    className="w-full glass-card p-3 flex items-center justify-between hover:bg-white/5 transition-colors"
+                  >
+                    <div className="text-left">
+                      <p className="text-foreground text-sm font-medium">{food.name}</p>
+                      <p className="text-muted-foreground text-xs">{food.portion}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-foreground text-sm">{food.calories} kcal</p>
+                      <p className="text-primary text-xs">{food.protein}g prot</p>
+                    </div>
+                  </motion.button>
+                ))}
+                {filteredFoods.length === 0 && searchQuery && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">"{searchQuery}" bulunamadı</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Water Tracker */}
       <motion.div
