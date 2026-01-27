@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-const DynabolicLoader = () => {
+const GokalafLoader = () => {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -35,9 +35,11 @@ const DynabolicLoader = () => {
             }}
             className="absolute inset-0 w-24 h-24 mx-auto rounded-full bg-primary/20 blur-xl"
           />
-
-          {/* Logo Text - GÜNCELLENDİ */}
-          <h1 className="font-display text-4xl text-primary tracking-[0.3em] text-neon-glow">DYNABOLIC</h1>
+          
+          {/* Logo Text */}
+          <h1 className="font-display text-4xl text-primary tracking-[0.3em] text-neon-glow">
+            DYNABOLIC
+          </h1>
         </motion.div>
 
         {/* Loading Text */}
@@ -62,4 +64,4 @@ const DynabolicLoader = () => {
   );
 };
 
-export default DynabolicLoader;
+export default GokalafLoader;
