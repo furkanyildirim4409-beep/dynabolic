@@ -1,14 +1,17 @@
 import { motion } from "framer-motion";
 import { MessageCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface CoachUplinkProps {
   coachName: string;
+  coachId?: string;
   status: "online" | "offline" | "busy";
   message: string;
   avatarUrl?: string;
 }
 
-const CoachUplink = ({ coachName, status, message }: CoachUplinkProps) => {
+const CoachUplink = ({ coachName, coachId = "1", status, message }: CoachUplinkProps) => {
+  const navigate = useNavigate();
   const statusConfig = {
     online: { text: "ÇEVRİMİÇİ", color: "bg-primary", pulse: true },
     offline: { text: "ÇEVRİMDIŞI", color: "bg-muted-foreground", pulse: false },
@@ -42,8 +45,13 @@ const CoachUplink = ({ coachName, status, message }: CoachUplinkProps) => {
       </div>
 
       <div className="flex items-start gap-4">
-        {/* Hexagon Avatar */}
-        <div className="relative flex-shrink-0">
+        {/* Hexagon Avatar - Clickable */}
+        <motion.button
+          onClick={() => navigate(`/coach/${coachId}`)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative flex-shrink-0"
+        >
           <svg width="56" height="64" viewBox="0 0 56 64" className="drop-shadow-lg">
             <defs>
               <clipPath id="hexagon-clip">
@@ -90,7 +98,7 @@ const CoachUplink = ({ coachName, status, message }: CoachUplinkProps) => {
               />
             )}
           </div>
-        </div>
+        </motion.button>
 
         {/* Coach Info & Message */}
         <div className="flex-1 min-w-0">
