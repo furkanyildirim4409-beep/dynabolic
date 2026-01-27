@@ -208,7 +208,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
               animate={{ rotate: isFabOpen ? 135 : 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             >
-              <Plus size={32} weight="bold" />
+              <Plus size={32} strokeWidth={2.5} />
             </motion.div>
           </motion.button>
         </div>
