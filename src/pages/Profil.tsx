@@ -39,6 +39,42 @@ const Profil = () => {
         <BioCoinWallet balance={bioCoins} showLabel />
       </div>
 
+      {/* User ID Card Header - MOVED TO TOP */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        className="glass-card p-4 flex items-center gap-4 border border-primary/30"
+      >
+        <div className="w-20 h-20 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center neon-glow-sm relative">
+          <User className="w-10 h-10 text-primary" />
+          <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] px-1.5 py-0.5 rounded-full font-bold">
+            ELİT
+          </div>
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <h3 className="font-display text-xl text-foreground">SPORCU #0427</h3>
+            <Shield className="w-4 h-4 text-primary" />
+          </div>
+          <p className="text-primary text-sm font-medium">Elit Seviye • 2 yıl</p>
+          <div className="flex gap-6 mt-3">
+            <div className="text-center">
+              <p className="font-display text-lg text-primary">847</p>
+              <p className="text-muted-foreground text-[10px]">Antrenman</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-lg text-foreground">156</p>
+              <p className="text-muted-foreground text-[10px]">Gün Serisi</p>
+            </div>
+            <div className="text-center">
+              <p className="font-display text-lg text-foreground">12</p>
+              <p className="text-muted-foreground text-[10px]">Rozet</p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
       {/* 3D Avatar Section - Now Realistic */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -229,36 +265,6 @@ const Profil = () => {
               </p>
             </div>
           ))}
-        </div>
-      </motion.div>
-
-      {/* Athlete Info */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="glass-card p-4 flex items-center gap-4"
-      >
-        <div className="w-16 h-16 rounded-full bg-primary/20 border-2 border-primary/50 flex items-center justify-center neon-glow-sm">
-          <User className="w-8 h-8 text-primary" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-display text-lg text-foreground">SPORCU #0427</h3>
-          <p className="text-muted-foreground text-sm">Elit Seviye • 2 yıl</p>
-          <div className="flex gap-4 mt-2">
-            <div className="text-center">
-              <p className="font-display text-sm text-primary">847</p>
-              <p className="text-muted-foreground text-[10px]">Antrenman</p>
-            </div>
-            <div className="text-center">
-              <p className="font-display text-sm text-foreground">156</p>
-              <p className="text-muted-foreground text-[10px]">Gün Serisi</p>
-            </div>
-            <div className="text-center">
-              <p className="font-display text-sm text-foreground">12</p>
-              <p className="text-muted-foreground text-[10px]">Rozet</p>
-            </div>
-          </div>
         </div>
       </motion.div>
 

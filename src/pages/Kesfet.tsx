@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Globe, ShoppingBag, X, Heart, MessageCircle, Share2, Verified, Coins } from "lucide-react";
+import { Globe, ShoppingBag, X, Heart, MessageCircle, Share2, Verified, Coins, Trophy, Star, Users, Shield } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Coach {
   id: string;
@@ -10,6 +11,10 @@ interface Coach {
   avatar: string;
   specialty: string;
   hasNewStory: boolean;
+  score?: number;
+  students?: number;
+  rating?: number;
+  level?: number;
 }
 
 interface Product {
@@ -25,6 +30,7 @@ interface Product {
 interface FeedPost {
   id: string;
   coach: string;
+  coachId: string;
   coachAvatar: string;
   type: "transformation" | "motivation";
   beforeImage?: string;
@@ -35,11 +41,12 @@ interface FeedPost {
 }
 
 const eliteCoaches: Coach[] = [
-  { id: "1", name: "Koç Serdar", avatar: "/placeholder.svg", specialty: "Hipertrofi", hasNewStory: true },
-  { id: "2", name: "Koç Elif", avatar: "/placeholder.svg", specialty: "Beslenme", hasNewStory: true },
-  { id: "3", name: "Koç Mert", avatar: "/placeholder.svg", specialty: "Güç", hasNewStory: false },
-  { id: "4", name: "Koç Ayşe", avatar: "/placeholder.svg", specialty: "Mobilite", hasNewStory: true },
-  { id: "5", name: "Koç Burak", avatar: "/placeholder.svg", specialty: "Dayanıklılık", hasNewStory: false },
+  { id: "1", name: "Koç Serdar", avatar: "/placeholder.svg", specialty: "Hipertrofi", hasNewStory: true, score: 9850, students: 150, rating: 4.9, level: 10 },
+  { id: "2", name: "Koç Elif", avatar: "/placeholder.svg", specialty: "Beslenme", hasNewStory: true, score: 8720, students: 120, rating: 4.8, level: 9 },
+  { id: "3", name: "Koç Mert", avatar: "/placeholder.svg", specialty: "Güç", hasNewStory: false, score: 7540, students: 95, rating: 4.7, level: 9 },
+  { id: "4", name: "Koç Ayşe", avatar: "/placeholder.svg", specialty: "Mobilite", hasNewStory: true, score: 6890, students: 80, rating: 4.9, level: 8 },
+  { id: "5", name: "Koç Burak", avatar: "/placeholder.svg", specialty: "Dayanıklılık", hasNewStory: false, score: 5420, students: 65, rating: 4.6, level: 7 },
+  { id: "6", name: "Koç Deniz", avatar: "/placeholder.svg", specialty: "Fonksiyonel", hasNewStory: true, score: 4980, students: 55, rating: 4.5, level: 7 },
 ];
 
 const shopProducts: Product[] = [
@@ -53,6 +60,7 @@ const feedPosts: FeedPost[] = [
   {
     id: "1",
     coach: "Koç Serdar",
+    coachId: "1",
     coachAvatar: "/placeholder.svg",
     type: "transformation",
     beforeImage: "/placeholder.svg",
@@ -64,6 +72,7 @@ const feedPosts: FeedPost[] = [
   {
     id: "2",
     coach: "Koç Elif",
+    coachId: "2",
     coachAvatar: "/placeholder.svg",
     type: "motivation",
     content: "\"Başarı, her gün tekrarlanan küçük çabaların toplamıdır.\" Bugün de devam! 🔥",
@@ -73,6 +82,7 @@ const feedPosts: FeedPost[] = [
   {
     id: "3",
     coach: "Koç Mert",
+    coachId: "3",
     coachAvatar: "/placeholder.svg",
     type: "transformation",
     beforeImage: "/placeholder.svg",
@@ -98,10 +108,24 @@ const BioCoinWallet = ({ balance }: BioCoinWalletProps) => (
   </motion.div>
 );
 
+const getMedalBadge = (rank: number) => {
+  if (rank === 1) return { emoji: "🥇", color: "from-yellow-400 to-yellow-600", glow: "shadow-[0_0_20px_rgba(250,204,21,0.5)]" };
+  if (rank === 2) return { emoji: "🥈", color: "from-gray-300 to-gray-400", glow: "shadow-[0_0_15px_rgba(156,163,175,0.4)]" };
+  if (rank === 3) return { emoji: "🥉", color: "from-amber-600 to-amber-700", glow: "shadow-[0_0_15px_rgba(217,119,6,0.4)]" };
+  return null;
+};
+
 const Kesfet = () => {
   const navigate = useNavigate();
   const [selectedStory, setSelectedStory] = useState<Coach | null>(null);
   const [bioCoins] = useState(1250);
+
+  // Sort coaches by score for leaderboard
+  const sortedCoaches = [...eliteCoaches].sort((a, b) => (b.score || 0) - (a.score || 0));
+
+  const handleCoachClick = (coachId: string) => {
+    navigate(`/coach/${coachId}`);
+  };
 
   return (
     <>
@@ -132,7 +156,7 @@ const Kesfet = () => {
             {eliteCoaches.map((coach) => (
               <motion.button
                 key={coach.id}
-                onClick={() => navigate(`/coach/${coach.id}`)}
+                onClick={() => handleCoachClick(coach.id)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col items-center gap-2 flex-shrink-0"
@@ -162,135 +186,244 @@ const Kesfet = () => {
           </div>
         </motion.div>
 
-        {/* Shop Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="glass-card p-4"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <ShoppingBag className="w-5 h-5 text-primary" />
-              <h2 className="font-display text-sm text-foreground tracking-wide">
-                MAĞAZA
-              </h2>
-            </div>
-            <span className="text-xs text-primary">Tümünü Gör</span>
-          </div>
+        {/* Tab Navigation */}
+        <Tabs defaultValue="akis" className="w-full">
+          <TabsList className="w-full grid grid-cols-3 bg-secondary/50 border border-white/5">
+            <TabsTrigger value="akis" className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              AKIŞ
+            </TabsTrigger>
+            <TabsTrigger value="koclar" className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              KOÇLAR
+            </TabsTrigger>
+            <TabsTrigger value="magaza" className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              MAĞAZA
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {shopProducts.map((product) => (
-              <motion.div
-                key={product.id}
-                whileHover={{ scale: 1.02 }}
-                className="flex-shrink-0 w-40 bg-secondary/50 rounded-xl overflow-hidden border border-white/5"
-              >
-                <div className="aspect-square bg-muted relative">
-                  <img 
-                    src={product.image} 
-                    alt={product.title}
-                    className="w-full h-full object-cover opacity-60"
-                  />
-                  <div className="absolute top-2 right-2">
-                    <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                      {product.type === "ebook" ? "E-KİTAP" : product.type === "apparel" ? "GİYİM" : "PDF"}
-                    </span>
-                  </div>
-                </div>
-                <div className="p-3">
-                  <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
-                    {product.title}
-                  </p>
-                  <p className="text-muted-foreground text-[10px] mt-1">{product.coach}</p>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-primary font-display text-sm">{product.price}₺</span>
-                    {product.bioCoins && (
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Coins className="w-3 h-3" />
-                        <span className="text-[10px]">{product.bioCoins}</span>
+          {/* AKIŞ (Feed) Tab */}
+          <TabsContent value="akis" className="mt-4">
+            <div className="space-y-4">
+              {feedPosts.map((post, index) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="glass-card overflow-hidden"
+                >
+                  {/* Post Header - Clickable */}
+                  <button
+                    onClick={() => handleCoachClick(post.coachId)}
+                    className="w-full p-4 flex items-center gap-3 hover:bg-white/5 transition-colors"
+                  >
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={post.coachAvatar} alt={post.coach} />
+                      <AvatarFallback className="bg-primary/20 text-primary">
+                        {post.coach.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center gap-1">
+                        <span className="text-foreground text-sm font-medium">{post.coach}</span>
+                        <Verified className="w-4 h-4 text-primary fill-primary" />
                       </div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* Feed Section */}
-        <div>
-          <h2 className="font-display text-lg text-foreground mb-4 tracking-wide">
-            AKIŞ
-          </h2>
-
-          <div className="space-y-4">
-            {feedPosts.map((post, index) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-                className="glass-card overflow-hidden"
-              >
-                {/* Post Header */}
-                <div className="p-4 flex items-center gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={post.coachAvatar} alt={post.coach} />
-                    <AvatarFallback className="bg-primary/20 text-primary">
-                      {post.coach.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-1">
-                      <span className="text-foreground text-sm font-medium">{post.coach}</span>
-                      <Verified className="w-4 h-4 text-primary fill-primary" />
+                      <span className="text-muted-foreground text-xs">Elit Koç</span>
                     </div>
-                    <span className="text-muted-foreground text-xs">Elit Koç</span>
-                  </div>
-                </div>
+                  </button>
 
-                {/* Transformation Images */}
-                {post.type === "transformation" && (
-                  <div className="grid grid-cols-2 gap-1 px-4">
-                    <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden">
-                      <img src={post.beforeImage} alt="Önce" className="w-full h-full object-cover opacity-60" />
-                      <span className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded">
-                        ÖNCE
+                  {/* Transformation Images */}
+                  {post.type === "transformation" && (
+                    <div className="grid grid-cols-2 gap-1 px-4">
+                      <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden">
+                        <img src={post.beforeImage} alt="Önce" className="w-full h-full object-cover opacity-60" />
+                        <span className="absolute bottom-2 left-2 bg-black/70 text-white text-[10px] px-2 py-0.5 rounded">
+                          ÖNCE
+                        </span>
+                      </div>
+                      <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden border-2 border-primary/50">
+                        <img src={post.afterImage} alt="Sonra" className="w-full h-full object-cover opacity-60" />
+                        <span className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
+                          SONRA
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="p-4">
+                    <p className="text-foreground text-sm">{post.content}</p>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="px-4 pb-4 flex items-center gap-6">
+                    <button className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors">
+                      <Heart className="w-5 h-5" />
+                      <span className="text-xs">{post.likes.toLocaleString()}</span>
+                    </button>
+                    <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                      <MessageCircle className="w-5 h-5" />
+                      <span className="text-xs">{post.comments}</span>
+                    </button>
+                    <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ml-auto">
+                      <Share2 className="w-5 h-5" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+
+          {/* KOÇLAR (Leaderboard) Tab */}
+          <TabsContent value="koclar" className="mt-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-3"
+            >
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="w-5 h-5 text-primary" />
+                <h2 className="font-display text-sm text-foreground tracking-wide">
+                  KOÇLAR LİGİ
+                </h2>
+              </div>
+
+              {sortedCoaches.map((coach, index) => {
+                const rank = index + 1;
+                const medal = getMedalBadge(rank);
+                
+                return (
+                  <motion.button
+                    key={coach.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    onClick={() => handleCoachClick(coach.id)}
+                    className={`w-full glass-card p-4 flex items-center gap-4 hover:bg-white/5 transition-all ${
+                      medal ? medal.glow : ""
+                    }`}
+                  >
+                    {/* Rank Badge */}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      medal 
+                        ? `bg-gradient-to-br ${medal.color}` 
+                        : "bg-secondary"
+                    }`}>
+                      {medal ? (
+                        <span className="text-xl">{medal.emoji}</span>
+                      ) : (
+                        <span className="font-display text-sm text-foreground">#{rank}</span>
+                      )}
+                    </div>
+
+                    {/* Coach Avatar */}
+                    <div className="relative">
+                      <Avatar className={`w-14 h-14 ${
+                        rank === 1 ? "ring-2 ring-offset-2 ring-offset-background ring-yellow-500" :
+                        rank === 2 ? "ring-2 ring-offset-2 ring-offset-background ring-gray-400" :
+                        rank === 3 ? "ring-2 ring-offset-2 ring-offset-background ring-amber-600" : ""
+                      }`}>
+                        <AvatarImage src={coach.avatar} alt={coach.name} />
+                        <AvatarFallback className="bg-primary/20 text-primary font-display">
+                          {coach.name.split(" ")[1]?.charAt(0) || coach.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {rank <= 3 && (
+                        <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[8px] px-1.5 py-0.5 rounded-full font-bold">
+                          TOP{rank}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Coach Info */}
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground font-display text-sm">{coach.name}</span>
+                        <Verified className="w-4 h-4 text-primary fill-primary" />
+                      </div>
+                      <p className="text-primary text-xs">{coach.specialty} Uzmanı</p>
+                      <div className="flex items-center gap-3 mt-1">
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                          <span className="text-muted-foreground text-[10px]">{coach.rating}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Users className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-muted-foreground text-[10px]">{coach.students} Öğrenci</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score/Level Badge */}
+                    <div className="text-right">
+                      {rank <= 3 ? (
+                        <div className="text-center">
+                          <p className="font-display text-lg text-primary">{coach.score?.toLocaleString()}</p>
+                          <p className="text-muted-foreground text-[10px]">PUAN</p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1 bg-secondary/80 px-2 py-1 rounded-full">
+                          <Shield className="w-3 h-3 text-primary" />
+                          <span className="text-xs text-foreground">Lv. {coach.level}</span>
+                        </div>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })}
+            </motion.div>
+          </TabsContent>
+
+          {/* MAĞAZA (Shop) Tab */}
+          <TabsContent value="magaza" className="mt-4">
+            <div className="grid grid-cols-2 gap-3">
+              {shopProducts.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
+                  className="glass-card overflow-hidden"
+                >
+                  <div className="aspect-square bg-muted relative">
+                    <img 
+                      src={product.image} 
+                      alt={product.title}
+                      className="w-full h-full object-cover opacity-60"
+                    />
+                    <div className="absolute top-2 right-2">
+                      <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                        {product.type === "ebook" ? "E-KİTAP" : product.type === "apparel" ? "GİYİM" : "PDF"}
                       </span>
                     </div>
-                    <div className="relative aspect-[3/4] bg-muted rounded-lg overflow-hidden border-2 border-primary/50">
-                      <img src={post.afterImage} alt="Sonra" className="w-full h-full object-cover opacity-60" />
-                      <span className="absolute bottom-2 left-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded">
-                        SONRA
-                      </span>
-                    </div>
                   </div>
-                )}
-
-                {/* Content */}
-                <div className="p-4">
-                  <p className="text-foreground text-sm">{post.content}</p>
-                </div>
-
-                {/* Actions */}
-                <div className="px-4 pb-4 flex items-center gap-6">
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-destructive transition-colors">
-                    <Heart className="w-5 h-5" />
-                    <span className="text-xs">{post.likes.toLocaleString()}</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
-                    <MessageCircle className="w-5 h-5" />
-                    <span className="text-xs">{post.comments}</span>
-                  </button>
-                  <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors ml-auto">
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+                  <div className="p-3">
+                    <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
+                      {product.title}
+                    </p>
+                    <p className="text-muted-foreground text-[10px] mt-1">{product.coach}</p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-primary font-display text-sm">{product.price}₺</span>
+                      {product.bioCoins && (
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          <Coins className="w-3 h-3" />
+                          <span className="text-[10px]">{product.bioCoins}</span>
+                        </div>
+                      )}
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="w-full mt-3 bg-primary/20 text-primary text-xs py-2 rounded-lg font-medium border border-primary/30 hover:bg-primary/30 transition-colors"
+                    >
+                      SATIN AL
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Story Viewer Overlay */}
