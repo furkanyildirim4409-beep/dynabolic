@@ -70,6 +70,11 @@ export default {
         alert: {
           red: "hsl(var(--alert-red))",
         },
+        stat: {
+          strain: "hsl(var(--stat-strain))",
+          sleep: "hsl(var(--stat-sleep))",
+          hrv: "hsl(var(--stat-hrv))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
