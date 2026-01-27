@@ -14,13 +14,14 @@ const AppShell = ({ children }: AppShellProps) => {
       
       {/* Mobile-first container */}
       <div className="relative mx-auto max-w-[430px] min-h-screen">
-        {/* Page content with padding for dock */}
+        {/* Page content with padding for dock and safe area */}
         <motion.main
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.3 }}
-          className="pb-28 px-4 pt-6"
+          className="px-4 pt-6 pb-32 min-h-screen no-scrollbar"
+          style={{ paddingBottom: 'calc(120px + env(safe-area-inset-bottom))' }}
         >
           {children}
         </motion.main>
