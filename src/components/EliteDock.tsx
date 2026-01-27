@@ -1,7 +1,20 @@
 import { useState } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
-import { LayoutGrid, Dumbbell, Leaf, Globe, User, Plus, X, Droplets, Scale, MessageSquare, BookOpen, ChefHat } from "lucide-react";
+import {
+  LayoutGrid,
+  Dumbbell,
+  Leaf,
+  Globe,
+  User,
+  Plus,
+  X,
+  Droplets,
+  Scale,
+  MessageSquare,
+  BookOpen,
+  ChefHat,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,7 +44,7 @@ const navItems: NavItem[] = [
 const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // FAB State
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
@@ -46,17 +59,17 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.05);
     oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.1);
-    
+
     gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
-    
+
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.15);
   };
@@ -115,24 +128,27 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   return (
     <>
-      {/* Main Dock Assembly - SINGLE Fixed Parent for Perfect Centering */}
+      {/* Main Dock Assembly - FIXED CENTERING BUG */}
       <motion.div
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ 
-          y: forceHide ? 100 : 0, 
-          opacity: forceHide ? 0 : 1 
+        // KRİTİK DÜZELTME: x: "-50%" buraya eklendi.
+        // Framer Motion artık CSS'i ezmeyecek, ortalamayı koruyacak.
+        initial={{ y: 100, opacity: 0, x: "-50%" }}
+        animate={{
+          y: forceHide ? 100 : 0,
+          opacity: forceHide ? 0 : 1,
+          x: "-50%", // Bu satır sayesinde her zaman ortada kalacak
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-4 w-max"
-        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        className="fixed bottom-8 left-1/2 z-[9999] flex items-center gap-4 w-max pointer-events-auto"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        {/* Child 1: Navigation Pill - NO fixed positioning, relative to parent */}
+        {/* Child 1: Navigation Pill */}
         <nav className="bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 h-[68px] flex items-center gap-1 shadow-2xl shadow-black/40">
           <LayoutGroup>
             <div className="relative flex items-center gap-1">
               {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
-                
+
                 return (
                   <motion.button
                     key={item.id}
@@ -140,7 +156,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                     onClick={() => handleNavClick(item.path)}
                     className={cn(
                       "relative flex items-center justify-center w-12 h-12 rounded-full transition-colors",
-                      isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                      isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
                     )}
                   >
                     {/* Liquid Lens Background - Active State */}
@@ -149,26 +165,22 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                         layoutId="navBubble"
                         className="absolute inset-1 rounded-full bg-white/15 shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] z-0"
                         initial={false}
-                        transition={{ 
-                          type: "spring", 
-                          stiffness: 500, 
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
                           damping: 30,
-                          mass: 0.8
+                          mass: 0.8,
                         }}
                       />
                     )}
-                    
+
                     {/* Icon */}
                     <motion.div
                       className="relative z-10"
                       animate={isActive ? { scale: 1.05 } : { scale: 1 }}
                       transition={{ type: "spring", stiffness: 400, damping: 25 }}
                     >
-                      <span className={cn(
-                        isActive && "drop-shadow-[0_0_10px_hsl(68,100%,50%)]"
-                      )}>
-                        {item.icon}
-                      </span>
+                      <span className={cn(isActive && "drop-shadow-[0_0_10px_hsl(68,100%,50%)]")}>{item.icon}</span>
                     </motion.div>
                   </motion.button>
                 );
@@ -177,7 +189,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
           </LayoutGroup>
         </nav>
 
-        {/* Child 2: Action FAB - NO fixed positioning, sits in flex gap */}
+        {/* Child 2: Action FAB */}
         <div className="relative">
           {/* FAB Actions Menu */}
           <AnimatePresence>
@@ -191,14 +203,14 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                   className="fixed inset-0 bg-background/60 backdrop-blur-sm z-[-1]"
                   onClick={() => setIsFabOpen(false)}
                 />
-                
+
                 {/* Action Items - Positioned Above FAB */}
                 <motion.div
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 20, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                  className="absolute bottom-20 right-0 flex flex-col gap-3"
+                  className="absolute bottom-20 right-0 flex flex-col gap-3 min-w-[160px]"
                 >
                   {fabActions.map((action, index) => (
                     <motion.button
@@ -216,13 +228,12 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                         "bg-[#121212]/95 backdrop-blur-xl rounded-full",
                         "border border-white/10",
                         "shadow-xl shadow-black/30",
-                        "hover:bg-[#1a1a1a] hover:border-primary/30 transition-all"
+                        "hover:bg-[#1a1a1a] hover:border-primary/30 transition-all",
+                        "justify-end",
                       )}
                     >
+                      <span className="text-foreground text-sm font-medium whitespace-nowrap">{action.label}</span>
                       <span className="text-primary">{action.icon}</span>
-                      <span className="text-foreground text-sm font-medium whitespace-nowrap">
-                        {action.label}
-                      </span>
                     </motion.button>
                   ))}
                 </motion.div>
@@ -240,22 +251,19 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
             }}
             className={cn(
               "h-[68px] w-[68px] rounded-full flex items-center justify-center transition-all duration-200",
-              isFabOpen 
-                ? "bg-[#121212]/90 backdrop-blur-xl border border-white/10" 
-                : "bg-primary shadow-[0_0_25px_rgba(204,255,0,0.4)]"
+              isFabOpen
+                ? "bg-[#121212]/90 backdrop-blur-xl border border-white/10"
+                : "bg-primary shadow-[0_0_25px_rgba(204,255,0,0.4)]",
             )}
           >
-            <motion.div
-              animate={{ rotate: isFabOpen ? 45 : 0 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
-            >
+            <motion.div animate={{ rotate: isFabOpen ? 45 : 0 }} transition={{ duration: 0.2, ease: "easeOut" }}>
               {isFabOpen ? (
                 <X className="w-7 h-7 text-foreground" />
               ) : (
                 <Plus className="w-7 h-7 text-primary-foreground" />
               )}
             </motion.div>
-            
+
             {/* Pulse ring when closed */}
             {!isFabOpen && (
               <motion.div
@@ -270,7 +278,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
       {/* Weight Input Modal */}
       <Dialog open={showWeightModal} onOpenChange={setShowWeightModal}>
-        <DialogContent className="bg-background border-white/10 max-w-sm">
+        <DialogContent className="bg-zinc-900 border-white/10 max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-display text-lg text-foreground">AĞIRLIK GİRİŞİ</DialogTitle>
           </DialogHeader>
@@ -285,7 +293,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                 step="0.1"
                 value={weight}
                 onChange={(e) => setWeight(e.target.value)}
-                className="text-center text-2xl font-display bg-secondary/50 border-white/10 h-16"
+                className="text-center text-2xl font-display bg-zinc-800 border-white/10 h-16 text-white"
               />
               <span className="text-foreground font-display text-xl">kg</span>
             </div>
