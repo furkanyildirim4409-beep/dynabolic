@@ -123,6 +123,9 @@ const Kesfet = () => {
       setBioCoins(prev => prev - coinsNeeded);
     }
 
+    // Auto-open cart immediately
+    setShowCart(true);
+
     toast({
       title: "Sepete Eklendi ✓",
       description: `"${product.title}" sepetinize eklendi.`,

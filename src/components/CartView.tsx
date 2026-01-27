@@ -39,16 +39,16 @@ const CartView = ({ isOpen, onClose, items, onRemoveItem, onClearCart }: CartVie
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-background border-l border-white/10"
+            className="absolute inset-x-0 bottom-0 w-full max-w-[430px] mx-auto bg-background border-t border-white/10 rounded-t-3xl max-h-[85vh]"
           >
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between">

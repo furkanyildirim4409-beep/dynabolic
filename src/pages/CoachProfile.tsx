@@ -22,6 +22,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
 import { getCoachById, coaches } from "@/lib/mockData";
+import ProductDetail from "@/components/ProductDetail";
+import CartView, { CartItem } from "@/components/CartView";
 
 const CoachProfile = () => {
   const navigate = useNavigate();
@@ -30,6 +32,10 @@ const CoachProfile = () => {
   const [activeTab, setActiveTab] = useState("feed");
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [isFollowing, setIsFollowing] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [showCart, setShowCart] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showProductDetail, setShowProductDetail] = useState(false);
 
   // Get coach by ID - fallback to first coach if not found
   const coach = getCoachById(coachId || "1") || coaches[0];
@@ -38,10 +44,42 @@ const CoachProfile = () => {
     setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
   };
 
-  const handleBuy = (productTitle: string) => {
+  const handleProductClick = (product: any) => {
+    setSelectedProduct({
+      ...product,
+      coachName: coach.name,
+      coachId: coach.id
+    });
+    setShowProductDetail(true);
+  };
+
+  const handleAddToCart = (product: any) => {
+    const cartItem: CartItem = {
+      id: `${product.id}-${coach.id}-${Date.now()}`,
+      title: product.title,
+      price: product.price,
+      image: product.image,
+      coachName: coach.name,
+    };
+
+    setCart(prev => [...prev, cartItem]);
+    setShowCart(true);
+
     toast({
-      title: "Sepete Eklendi (Demo)",
-      description: `"${productTitle}" sepetinize eklendi.`,
+      title: "Sepete Eklendi ✓",
+      description: `"${product.title}" sepetinize eklendi.`,
+    });
+  };
+
+  const handleRemoveFromCart = (itemId: string) => {
+    setCart(prev => prev.filter(i => i.id !== itemId));
+  };
+
+  const handleClearCart = () => {
+    setCart([]);
+    toast({
+      title: "Sepet Temizlendi",
+      description: "Tüm ürünler sepetten kaldırıldı.",
     });
   };
 
@@ -299,12 +337,30 @@ const CoachProfile = () => {
 
           {/* Shop Tab */}
           <TabsContent value="shop" className="mt-0 p-4">
+            {/* Cart Button */}
+            <div className="flex justify-end mb-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCart(true)}
+                className="relative p-2 glass-card"
+              >
+                <ShoppingBag className="w-5 h-5 text-muted-foreground" />
+                {cart.length > 0 && (
+                  <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
+                    <span className="text-primary-foreground text-[10px] font-bold">{cart.length}</span>
+                  </div>
+                )}
+              </motion.button>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               {coach.products.map((product) => (
                 <motion.div
                   key={product.id}
                   whileHover={{ scale: 1.02 }}
-                  className="glass-card overflow-hidden"
+                  className="glass-card overflow-hidden cursor-pointer"
+                  onClick={() => handleProductClick(product)}
                 >
                   <div className="aspect-square bg-muted relative overflow-hidden">
                     <img 
@@ -334,10 +390,13 @@ const CoachProfile = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => handleBuy(product.title)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddToCart(product);
+                      }}
                       className="w-full mt-3 py-2 bg-primary text-primary-foreground font-display text-xs rounded-lg"
                     >
-                      SATIN AL
+                      SEPETE EKLE
                     </motion.button>
                   </div>
                 </motion.div>
@@ -468,6 +527,23 @@ const CoachProfile = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Product Detail Modal */}
+      <ProductDetail
+        isOpen={showProductDetail}
+        onClose={() => setShowProductDetail(false)}
+        product={selectedProduct}
+        onAddToCart={handleAddToCart}
+      />
+
+      {/* Cart View */}
+      <CartView
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
+        items={cart}
+        onRemoveItem={handleRemoveFromCart}
+        onClearCart={handleClearCart}
+      />
     </>
   );
 };
