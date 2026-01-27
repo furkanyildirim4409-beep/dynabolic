@@ -115,7 +115,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   return (
     <>
-      {/* Main Dock Assembly - Perfectly Centered, Always Visible */}
+      {/* Main Dock Assembly - SINGLE Fixed Parent for Perfect Centering */}
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ 
@@ -123,18 +123,11 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
           opacity: forceHide ? 0 : 1 
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 z-[9999]"
+        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999] flex items-center gap-4 w-max"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* Element A: Navigation Pill - Always Full Width */}
-        <motion.nav
-          className={cn(
-            "relative h-16 flex items-center px-3",
-            "bg-[#121212]/95 backdrop-blur-xl",
-            "border border-white/10 rounded-full",
-            "shadow-2xl shadow-black/40"
-          )}
-        >
+        {/* Child 1: Navigation Pill - NO fixed positioning, relative to parent */}
+        <nav className="bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 h-[68px] flex items-center gap-1 shadow-2xl shadow-black/40">
           <LayoutGroup>
             <div className="relative flex items-center gap-1">
               {navItems.map((item) => {
@@ -182,10 +175,10 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
               })}
             </div>
           </LayoutGroup>
-        </motion.nav>
+        </nav>
 
-        {/* Element B: Floating Action Button */}
-        <motion.div className="relative">
+        {/* Child 2: Action FAB - NO fixed positioning, sits in flex gap */}
+        <div className="relative">
           {/* FAB Actions Menu */}
           <AnimatePresence>
             {isFabOpen && (
@@ -246,8 +239,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
               setIsFabOpen(!isFabOpen);
             }}
             className={cn(
-              "relative h-16 w-16 rounded-full flex items-center justify-center",
-              "transition-all duration-200",
+              "h-[68px] w-[68px] rounded-full flex items-center justify-center transition-all duration-200",
               isFabOpen 
                 ? "bg-[#121212]/90 backdrop-blur-xl border border-white/10" 
                 : "bg-primary shadow-[0_0_25px_rgba(204,255,0,0.4)]"
@@ -273,7 +265,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
               />
             )}
           </motion.button>
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* Weight Input Modal */}
