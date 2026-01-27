@@ -49,69 +49,72 @@ const EliteDock = () => {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-40px)] max-w-[400px]"
+      className="fixed bottom-0 left-0 right-0 z-50"
     >
-      <div className="relative bg-black/60 backdrop-blur-2xl rounded-2xl border-t border-white/10 px-2 py-3">
-        {/* Subtle top glow line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-        
-        <div className="flex items-center justify-around">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
-            
-            return (
-              <motion.button
-                key={item.id}
-                onClick={() => handleNavClick(item.path)}
-                whileTap={{ scale: 0.9 }}
-                whileHover={{ scale: 1.05 }}
-                className={cn(
-                  "relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {/* Active glow reflection */}
-                {isActive && (
-                  <motion.div
-                    layoutId="dock-glow"
-                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-4 dock-reflection rounded-full blur-sm"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  />
-                )}
-                
-                {/* Icon with glow effect when active */}
-                <motion.div
-                  animate={isActive ? { scale: 1.1 } : { scale: 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 25 }}
+      {/* Constrained inner container */}
+      <div className="w-full max-w-[430px] mx-auto">
+        <div className="relative bg-black/80 backdrop-blur-2xl border-t border-white/10 px-2 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          {/* Subtle top glow line */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          
+          <div className="flex items-center justify-around">
+            {navItems.map((item) => {
+              const isActive = location.pathname === item.path;
+              
+              return (
+                <motion.button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.path)}
+                  whileTap={{ scale: 0.9 }}
+                  whileHover={{ scale: 1.05 }}
                   className={cn(
-                    "relative z-10",
-                    isActive && "drop-shadow-[0_0_8px_hsl(68,100%,50%)]"
+                    "relative flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-colors",
+                    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  {item.icon}
-                </motion.div>
-                
-                {/* Label */}
-                <span className={cn(
-                  "text-[10px] font-medium uppercase tracking-wider",
-                  isActive && "text-neon-glow"
-                )}>
-                  {item.label}
-                </span>
-                
-                {/* Active indicator dot */}
-                {isActive && (
+                  {/* Active glow reflection */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="dock-glow"
+                      className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-4 dock-reflection rounded-full blur-sm"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                  
+                  {/* Icon with glow effect when active */}
                   <motion.div
-                    layoutId="active-dot"
-                    className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary neon-glow-sm"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
-                  />
-                )}
-              </motion.button>
-            );
-          })}
+                    animate={isActive ? { scale: 1.1 } : { scale: 1 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    className={cn(
+                      "relative z-10",
+                      isActive && "drop-shadow-[0_0_8px_hsl(68,100%,50%)]"
+                    )}
+                  >
+                    {item.icon}
+                  </motion.div>
+                  
+                  {/* Label */}
+                  <span className={cn(
+                    "text-[10px] font-medium uppercase tracking-wider",
+                    isActive && "text-neon-glow"
+                  )}>
+                    {item.label}
+                  </span>
+                  
+                  {/* Active indicator dot */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-dot"
+                      className="absolute -top-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary neon-glow-sm"
+                      initial={false}
+                      transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                    />
+                  )}
+                </motion.button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </motion.nav>
