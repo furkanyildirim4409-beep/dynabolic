@@ -6,10 +6,10 @@ import {
   Search,
   Plus,
   Droplets,
-  Zap,
   Camera,
   X,
   Focus,
+  ScanBarcode,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -194,8 +194,21 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
 };
 
 // --- CAMERA SCANNER COMPONENT ---
-const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+type ScannerMode = "meal" | "barcode";
+
+const CameraScanner = ({
+  isOpen,
+  onClose,
+  mode = "meal",
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  mode?: ScannerMode;
+}) => {
   const [phase, setPhase] = useState<"camera" | "processing">("camera");
+
+  const instructionText = mode === "barcode" ? "Barkodu çerçeve içine alın" : "Yiyeceği çerçeve içine alın";
+  const processingText = mode === "barcode" ? "BARKOD TARANIYOR..." : "ÖĞÜN TARANIYOR...";
 
   const handleCapture = () => {
     setPhase("processing");
@@ -204,7 +217,7 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
       setPhase("camera");
       toast({
         title: "Analiz Tamamlandı ✅",
-        description: "Öğün başarıyla tarandı ve sisteme eklendi.",
+        description: mode === "barcode" ? "Barkod başarıyla tarandı." : "Öğün başarıyla tarandı ve sisteme eklendi.",
       });
     }, 2500);
   };
@@ -232,7 +245,7 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 transition={{ duration: 1, repeat: Infinity }}
               />
               <span className="font-display text-sm text-white tracking-wider uppercase">
-                NUTRİ-SCAN AI
+                {mode === "barcode" ? "BARKOD TARAYICI" : "NUTRİ-SCAN AI"}
               </span>
             </div>
             <button
@@ -272,7 +285,11 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
                     {/* Center Focus Icon */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <Focus className="w-12 h-12 text-primary/30" />
+                      {mode === "barcode" ? (
+                        <ScanBarcode className="w-12 h-12 text-primary/30" />
+                      ) : (
+                        <Focus className="w-12 h-12 text-primary/30" />
+                      )}
                     </div>
 
                     {/* Animated Corners Pulse */}
@@ -286,7 +303,7 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
 
                 {/* Instructions */}
                 <div className="absolute bottom-40 left-0 right-0 text-center">
-                  <p className="text-zinc-400 text-sm">Yiyeceği çerçeve içine alın</p>
+                  <p className="text-zinc-400 text-sm">{instructionText}</p>
                 </div>
               </div>
 
@@ -299,7 +316,11 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                   className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-lg shadow-white/20"
                 >
                   <div className="w-16 h-16 rounded-full border-4 border-black/20 flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-black" />
+                    {mode === "barcode" ? (
+                      <ScanBarcode className="w-6 h-6 text-black" />
+                    ) : (
+                      <Camera className="w-6 h-6 text-black" />
+                    )}
                   </div>
                 </motion.button>
               </div>
@@ -328,7 +349,11 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                     animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                   >
-                    <Zap className="w-12 h-12 text-primary" />
+                    {mode === "barcode" ? (
+                      <ScanBarcode className="w-12 h-12 text-primary" />
+                    ) : (
+                      <Camera className="w-12 h-12 text-primary" />
+                    )}
                   </motion.div>
                 </div>
 
@@ -346,9 +371,11 @@ const CameraScanner = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               >
-                ÖĞÜN TARANIYOR...
+                {processingText}
               </motion.p>
-              <p className="text-zinc-500 text-sm mt-2">Yapay zeka besinleri analiz ediyor</p>
+              <p className="text-zinc-500 text-sm mt-2">
+                {mode === "barcode" ? "Ürün bilgileri alınıyor" : "Yapay zeka besinleri analiz ediyor"}
+              </p>
             </div>
           )}
         </motion.div>
@@ -603,11 +630,22 @@ const Beslenme = () => {
   const [meals, setMeals] = useState<Meal[]>(initialMealData);
   const [showManualAdd, setShowManualAdd] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
+  const [scannerMode, setScannerMode] = useState<ScannerMode>("meal");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFood, setSelectedFood] = useState<SelectedFood | null>(null);
 
   const waterGoal = 3.5;
   const progress = (waterIntake / waterGoal) * 100;
+
+  const openMealScanner = () => {
+    setScannerMode("meal");
+    setShowCamera(true);
+  };
+
+  const openBarcodeScanner = () => {
+    setScannerMode("barcode");
+    setShowCamera(true);
+  };
 
   // Yiyecek Durumu Değiştirme (Yendi/Yenmedi)
   const handleToggleFood = (mealId: string, foodIndex: number) => {
@@ -681,9 +719,6 @@ const Beslenme = () => {
 
   return (
     <div className="min-h-screen bg-background px-4 pt-6 pb-32">
-      {/* MACRO DASHBOARD */}
-      <MacroDashboard meals={meals} />
-
       {/* HEADER */}
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex justify-between items-start">
@@ -696,22 +731,25 @@ const Beslenme = () => {
           <div className="flex gap-2">
             <Button
               size="icon"
-              onClick={() => setShowCamera(true)}
+              onClick={openBarcodeScanner}
               className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl h-10 w-10"
             >
-              <Camera size={20} />
+              <ScanBarcode size={20} />
             </Button>
           </div>
         </div>
 
+        {/* MACRO DASHBOARD - Below header, before action buttons */}
+        <MacroDashboard meals={meals} />
+
         {/* Action Buttons */}
         <div className="grid grid-cols-2 gap-3">
           <button
-            onClick={() => setShowCamera(true)}
+            onClick={openMealScanner}
             className="flex items-center justify-center gap-2 bg-secondary border border-white/5 p-3 rounded-xl text-sm font-medium text-muted-foreground hover:border-primary/50 active:scale-95 transition-all"
           >
-            <Zap className="w-4 h-4 text-primary" />
-            Yapay Zeka Analizi
+            <Camera className="w-4 h-4 text-primary" />
+            Öğün Tara
           </button>
           <button
             onClick={() => setShowManualAdd(true)}
@@ -779,7 +817,7 @@ const Beslenme = () => {
       </div>
 
       {/* CAMERA SCANNER */}
-      <CameraScanner isOpen={showCamera} onClose={() => setShowCamera(false)} />
+      <CameraScanner isOpen={showCamera} onClose={() => setShowCamera(false)} mode={scannerMode} />
 
       {/* MANUAL ADD MODAL */}
       <Dialog open={showManualAdd} onOpenChange={(open) => {
