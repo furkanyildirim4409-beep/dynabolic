@@ -1,129 +1,112 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { DynabolicLogo } from "./DynabolicLogo";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import DynabolicLogo from "./DynabolicLogo"; // Logo bileşeninin doğru import edildiğinden emin ol
 
 interface SplashScreenProps {
   onComplete: () => void;
 }
 
-type Phase = "drawing" | "activating" | "zooming";
-
 const SplashScreen = ({ onComplete }: SplashScreenProps) => {
-  const [phase, setPhase] = useState<Phase>("drawing");
-  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<"drawing" | "activating" | "zooming">("drawing");
 
   useEffect(() => {
-    // Phase 1: Drawing (0-1s)
-    const drawInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 1) {
-          clearInterval(drawInterval);
-          return 1;
-        }
-        return prev + 0.02;
-      });
-    }, 20);
+    // 1. Faz: Çizim (0s - 1.2s arası)
+    // Logo "DynabolicLogo" içindeki animasyonla çiziliyor.
 
-    // Transition to activation phase at 1s
+    // 2. Faz: Aktivasyon (1.2s)
+    // İç parçalar doluyor ve neon parlıyor
     const activationTimer = setTimeout(() => {
       setPhase("activating");
-    }, 1000);
+    }, 1200);
 
-    // Transition to zoom phase at 1.8s
+    // 3. Faz: Zoom (2.2s)
+    // Kameraya doğru yaklaşma
     const zoomTimer = setTimeout(() => {
       setPhase("zooming");
-    }, 1800);
+    }, 2200);
 
-    // Complete at 2.5s
+    // 4. Bitiş (2.8s)
+    // Ana ekrana geçiş.
+    // NOT: Zoom animasyonu bitmeden hemen önce tetikleyerek "boşluk" hissini önlüyoruz.
     const completeTimer = setTimeout(() => {
       onComplete();
-    }, 2500);
+    }, 2700);
 
     return () => {
-      clearInterval(drawInterval);
       clearTimeout(activationTimer);
       clearTimeout(zoomTimer);
       clearTimeout(completeTimer);
     };
   }, [onComplete]);
 
-  const isFilled = phase === "activating" || phase === "zooming";
-  const isZooming = phase === "zooming";
-
   return (
     <motion.div
-      initial={{ opacity: 1 }}
+      className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden"
+      // Exit animasyonu: Ana ekrana geçerken siyah ekran yavaşça kaybolur
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden"
+      transition={{ duration: 0.5 }}
     >
-      {/* Scan Line Effect during drawing */}
-      {phase === "drawing" && (
-        <motion.div
-          initial={{ top: "0%" }}
-          animate={{ top: "100%" }}
-          transition={{ duration: 1, ease: "linear" }}
-          className="absolute left-0 right-0 h-1 bg-gradient-to-b from-transparent via-primary/50 to-transparent pointer-events-none"
-        />
-      )}
-
-      {/* Main Content Container with Zoom Effect */}
       <motion.div
-        animate={{
-          scale: isZooming ? 50 : 1,
-          opacity: isZooming ? 0 : 1,
-        }}
+        className="relative z-10 flex flex-col items-center justify-center"
+        // ÖNEMLİ DÜZELTME: scale: 50 yerine scale: 12 kullanıyoruz.
+        // 12 kat büyüme ekranı kaplamak için yeterlidir ve kasmayı engeller.
+        animate={phase === "zooming" ? { scale: 12, opacity: 0 } : { scale: 1, opacity: 1 }}
         transition={{
-          duration: 0.7,
-          ease: "easeIn",
+          duration: 0.6,
+          ease: [0.64, 0, 0.78, 0], // "Ease-in-expo" benzeri hızlı çıkış
         }}
-        className="flex flex-col items-center justify-center"
+        // GPU Hızlandırması için:
+        style={{ willChange: "transform, opacity" }}
       >
-        {/* Glow Effect Container */}
-        <motion.div
-          animate={{
-            boxShadow: isFilled
-              ? [
-                  "0 0 20px rgba(204, 255, 0, 0.2)",
-                  "0 0 60px rgba(204, 255, 0, 0.4)",
-                  "0 0 20px rgba(204, 255, 0, 0.2)",
-                ]
-              : "none",
-          }}
-          transition={{
-            duration: 0.8,
-            repeat: isFilled && !isZooming ? Infinity : 0,
-            ease: "easeInOut",
-          }}
-          className="rounded-full p-4"
-        >
-          <DynabolicLogo progress={progress} isFilled={isFilled} />
-        </motion.div>
+        {/* LOGO BİLEŞENİ */}
+        {/* progress prop'unu kaldırdık, Framer Motion kendi içinde hallediyor */}
+        <div className="relative">
+          <DynabolicLogo
+            // Logo bileşenine prop göndererek içindeki animasyonu kontrol ediyoruz
+            // Eğer senin DynabolicLogo bileşenin prop almıyorsa burayı düzenlememiz gerekebilir
+            // Ancak standart SVG animasyonlarında class kontrolü yeterlidir.
+            className={`w-48 h-48 md:w-64 md:h-64 drop-shadow-[0_0_15px_rgba(204,255,0,0.3)] transition-all duration-700 ${
+              phase !== "drawing" ? "drop-shadow-[0_0_50px_rgba(204,255,0,0.8)]" : ""
+            }`}
+          />
 
-        {/* Brand Text */}
-        <motion.h1
+          {/* Şimşek Efekti (Logo ortasında ekstra parlama) */}
+          <AnimatePresence>
+            {phase === "activating" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: [0, 1, 0], scale: 1.5 }}
+                transition={{ duration: 0.3 }}
+                className="absolute inset-0 bg-white blur-xl rounded-full opacity-0"
+                style={{ mixBlendMode: "overlay" }}
+              />
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* METİN ALANI */}
+        <motion.div
+          className="mt-12 text-center"
           initial={{ opacity: 0, y: 20 }}
           animate={{
-            opacity: isFilled ? 1 : 0,
-            y: isFilled ? 0 : 20,
+            opacity: phase !== "drawing" ? 1 : 0,
+            y: phase !== "drawing" ? 0 : 20,
           }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          className="font-display text-3xl md:text-4xl tracking-[0.3em] text-primary mt-6 text-neon-glow"
+          transition={{ duration: 0.8 }}
         >
-          DYNABOLIC
-        </motion.h1>
-
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{
-            opacity: isFilled ? 0.6 : 0,
-          }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="text-muted-foreground text-xs tracking-[0.5em] uppercase mt-2"
-        >
-          POWER UNLEASHED
-        </motion.p>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-white tracking-[0.3em] uppercase">
+            DYNABOLIC
+          </h1>
+          <motion.div
+            className="h-0.5 bg-[#CCFF00] mt-2 mx-auto"
+            initial={{ width: 0 }}
+            animate={{ width: phase !== "drawing" ? "100%" : 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          />
+          <p className="text-[#CCFF00] text-xs md:text-sm font-mono mt-2 tracking-widest opacity-80">
+            SYSTEM INITIALIZED
+          </p>
+        </motion.div>
       </motion.div>
     </motion.div>
   );
