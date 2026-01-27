@@ -1,20 +1,28 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { Bell, X, Trophy, Settings, MessageCircle } from "lucide-react";
 import EnergyBank from "@/components/EnergyBank";
 import CoachUplink from "@/components/CoachUplink";
 import BentoStats from "@/components/BentoStats";
 import QuickActionFAB from "@/components/QuickActionFAB";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
-// Mock assigned coach data
-const assignedCoach = {
-  id: "1",
-  name: "Koç Serdar",
-  avatar: "https://images.unsplash.com/photo-1567013127542-490d757e51fc?w=100&h=100&fit=crop&crop=face",
-};
+import { assignedCoach, notifications } from "@/lib/mockData";
 
 const Kokpit = () => {
   const navigate = useNavigate();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
+
+  const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
+
+  const handleNotificationClick = (notificationId: string, coachId?: string) => {
+    setReadNotifications(prev => ({ ...prev, [notificationId]: true }));
+    if (coachId) {
+      setShowNotifications(false);
+      navigate(`/coach/${coachId}`);
+    }
+  };
 
   return (
     <div className="space-y-6 pb-24">
@@ -29,10 +37,26 @@ const Kokpit = () => {
           <p className="text-muted-foreground text-sm">Misyon Kontrol Merkezi</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Notifications Bell */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowNotifications(true)}
+            className="relative p-2"
+          >
+            <Bell className="w-5 h-5 text-muted-foreground" />
+            {unreadCount > 0 && (
+              <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive flex items-center justify-center">
+                <span className="text-white text-[10px] font-bold">{unreadCount}</span>
+              </div>
+            )}
+          </motion.button>
+
           <div className="text-right">
             <p className="text-primary font-display text-lg">27 OCAK</p>
             <p className="text-muted-foreground text-xs">Pazartesi</p>
           </div>
+          
           {/* Coach Avatar - Clicking navigates to Coach Profile */}
           <motion.button
             onClick={() => navigate(`/coach/${assignedCoach.id}`)}
@@ -86,6 +110,85 @@ const Kokpit = () => {
 
       {/* Quick Action FAB */}
       <QuickActionFAB />
+
+      {/* Notifications Panel */}
+      <AnimatePresence>
+        {showNotifications && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowNotifications(false)}
+          >
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-background border-l border-white/10"
+            >
+              {/* Header */}
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <h2 className="font-display text-lg text-foreground">BİLDİRİMLER</h2>
+                <button
+                  onClick={() => setShowNotifications(false)}
+                  className="p-2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Notifications List */}
+              <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-80px)]">
+                {notifications.map((notification, index) => {
+                  const isRead = notification.read || readNotifications[notification.id];
+                  
+                  return (
+                    <motion.button
+                      key={notification.id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      onClick={() => handleNotificationClick(notification.id, notification.coachId)}
+                      className={`w-full text-left glass-card p-4 flex items-start gap-3 hover:bg-white/5 transition-colors ${
+                        !isRead ? "border-l-2 border-l-primary" : ""
+                      }`}
+                    >
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        notification.type === "coach" ? "bg-primary/20" :
+                        notification.type === "achievement" ? "bg-yellow-500/20" :
+                        "bg-secondary"
+                      }`}>
+                        {notification.type === "coach" && <MessageCircle className="w-5 h-5 text-primary" />}
+                        {notification.type === "achievement" && <Trophy className="w-5 h-5 text-yellow-500" />}
+                        {notification.type === "system" && <Settings className="w-5 h-5 text-muted-foreground" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className={`font-medium text-sm ${isRead ? "text-muted-foreground" : "text-foreground"}`}>
+                            {notification.title}
+                          </p>
+                          {!isRead && (
+                            <div className="w-2 h-2 rounded-full bg-primary" />
+                          )}
+                        </div>
+                        <p className="text-muted-foreground text-xs mt-1 line-clamp-2">
+                          {notification.message}
+                        </p>
+                        <p className="text-muted-foreground/50 text-[10px] mt-2">
+                          {notification.time}
+                        </p>
+                      </div>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

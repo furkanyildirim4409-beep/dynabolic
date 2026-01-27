@@ -1,71 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Calendar, TrendingUp, Clock, Target, History, X, CheckCircle2, Timer, Flame } from "lucide-react";
+import { Dumbbell, Calendar, TrendingUp, Clock, Target, History, X, CheckCircle2, Timer, Flame, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import WorkoutCard from "@/components/WorkoutCard";
 import VisionAIExecution from "@/components/VisionAIExecution";
-
-interface WorkoutHistoryEntry {
-  id: string;
-  date: string;
-  dateShort: string;
-  name: string;
-  duration: string;
-  tonnage: string;
-  exercises: number;
-  bioCoins: number;
-  completed: boolean;
-}
-
-const workoutHistory: WorkoutHistoryEntry[] = [
-  { id: "1", date: "27 Ocak 2026", dateShort: "27 Oca", name: "Göğüs & Arka Kol", duration: "55dk", tonnage: "4.2 Ton", exercises: 6, bioCoins: 75, completed: true },
-  { id: "2", date: "25 Ocak 2026", dateShort: "25 Oca", name: "Bacak & Core", duration: "48dk", tonnage: "5.8 Ton", exercises: 5, bioCoins: 80, completed: true },
-  { id: "3", date: "23 Ocak 2026", dateShort: "23 Oca", name: "Sırt & Biceps", duration: "52dk", tonnage: "3.9 Ton", exercises: 7, bioCoins: 70, completed: true },
-  { id: "4", date: "21 Ocak 2026", dateShort: "21 Oca", name: "Omuz & Trapez", duration: "42dk", tonnage: "2.8 Ton", exercises: 5, bioCoins: 60, completed: true },
-  { id: "5", date: "19 Ocak 2026", dateShort: "19 Oca", name: "Full Body", duration: "65dk", tonnage: "6.1 Ton", exercises: 8, bioCoins: 95, completed: true },
-  { id: "6", date: "17 Ocak 2026", dateShort: "17 Oca", name: "Göğüs & Arka Kol", duration: "50dk", tonnage: "4.0 Ton", exercises: 6, bioCoins: 72, completed: true },
-];
+import { workoutHistory, assignedWorkouts, WorkoutHistoryEntry } from "@/lib/mockData";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const Antrenman = () => {
   const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
-
-  const assignedWorkouts = [
-    {
-      id: "1",
-      title: "GÖĞÜS & SIRT",
-      day: "GÜN 1 - PAZARTESİ",
-      exercises: 8,
-      duration: "55 dk",
-      intensity: "Yüksek" as const,
-      coachNote: "Tempoya dikkat et. Göğüs açıklığını koru.",
-    },
-    {
-      id: "2",
-      title: "BACAK & KOR",
-      day: "GÜN 2 - ÇARŞAMBA",
-      exercises: 6,
-      duration: "45 dk",
-      intensity: "Yüksek" as const,
-      coachNote: "Squat derinliğini Vision AI ile kontrol et.",
-    },
-    {
-      id: "3",
-      title: "OMUZ & KOL",
-      day: "GÜN 3 - CUMA",
-      exercises: 7,
-      duration: "50 dk",
-      intensity: "Orta" as const,
-    },
-    {
-      id: "4",
-      title: "AKTİF DİNLENME",
-      day: "GÜN 4 - PAZAR",
-      exercises: 4,
-      duration: "30 dk",
-      intensity: "Düşük" as const,
-      coachNote: "Esneme hareketlerine odaklan.",
-    },
-  ];
+  const [selectedWorkout, setSelectedWorkout] = useState<WorkoutHistoryEntry | null>(null);
 
   const weeklyStats = [
     { label: "Tamamlanan", value: "5", icon: Target },
@@ -76,6 +20,10 @@ const Antrenman = () => {
   // Calculate history stats
   const totalBioCoins = workoutHistory.reduce((acc, w) => acc + w.bioCoins, 0);
   const totalWorkouts = workoutHistory.length;
+
+  const handleWorkoutClick = (workout: WorkoutHistoryEntry) => {
+    setSelectedWorkout(workout);
+  };
 
   return (
     <>
@@ -155,7 +103,7 @@ const Antrenman = () => {
             <h2 className="font-display text-lg text-foreground tracking-wide">
               ATANAN ANTRENMANLAR
             </h2>
-            <span className="text-xs text-primary">4 Görev</span>
+            <span className="text-xs text-primary">{assignedWorkouts.length} Görev</span>
           </div>
           
           <div className="space-y-4">
@@ -251,12 +199,13 @@ const Antrenman = () => {
               {/* History List */}
               <div className="space-y-3 pb-8">
                 {workoutHistory.map((workout, index) => (
-                  <motion.div
+                  <motion.button
                     key={workout.id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
-                    className="glass-card p-4 flex items-center gap-4"
+                    onClick={() => handleWorkoutClick(workout)}
+                    className="w-full glass-card p-4 flex items-center gap-4 text-left hover:bg-white/5 transition-colors"
                   >
                     {/* Date */}
                     <div className="w-14 text-center flex-shrink-0">
@@ -298,10 +247,130 @@ const Antrenman = () => {
                         <span>+{workout.bioCoins}</span>
                       </div>
                     </div>
-                  </motion.div>
+
+                    <ChevronDown className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  </motion.button>
                 ))}
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Workout Detail Modal */}
+      <AnimatePresence>
+        {selectedWorkout && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-sm flex items-end justify-center"
+            onClick={() => setSelectedWorkout(null)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[85vh] overflow-hidden"
+            >
+              {/* Modal Header */}
+              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+                <div>
+                  <h2 className="font-display text-lg text-foreground">ANTRENMAN ÖZETİ</h2>
+                  <p className="text-muted-foreground text-xs">{selectedWorkout.date} • {selectedWorkout.duration}</p>
+                </div>
+                <button
+                  onClick={() => setSelectedWorkout(null)}
+                  className="p-2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Stats Row */}
+              <div className="p-4 border-b border-white/10 grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <p className="font-display text-xl text-primary">{selectedWorkout.tonnage}</p>
+                  <p className="text-muted-foreground text-[10px]">TONAJ</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-display text-xl text-foreground">{selectedWorkout.exercises}</p>
+                  <p className="text-muted-foreground text-[10px]">HAREKET</p>
+                </div>
+                <div className="text-center">
+                  <p className="font-display text-xl text-primary">+{selectedWorkout.bioCoins}</p>
+                  <p className="text-muted-foreground text-[10px]">BIO-COIN</p>
+                </div>
+              </div>
+
+              {/* Exercise List (Accordion) */}
+              <div className="p-4 overflow-y-auto max-h-[50vh]">
+                <h3 className="font-display text-sm text-muted-foreground mb-3 tracking-wider">HAREKETLER</h3>
+                
+                <Accordion type="single" collapsible className="space-y-2">
+                  {selectedWorkout.details.map((exercise, index) => (
+                    <AccordionItem 
+                      key={index} 
+                      value={`exercise-${index}`}
+                      className="glass-card border-white/10 rounded-xl overflow-hidden"
+                    >
+                      <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-white/5">
+                        <div className="flex items-center gap-3 text-left">
+                          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-display text-sm">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <p className="text-foreground text-sm font-medium">{exercise.exerciseName}</p>
+                            <p className="text-muted-foreground text-[10px]">{exercise.sets.length} set</p>
+                          </div>
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-4 pb-3">
+                        <div className="space-y-1 mt-1">
+                          {exercise.sets.map((set, setIndex) => (
+                            <div 
+                              key={setIndex}
+                              className={`flex items-center justify-between p-2 rounded-lg ${
+                                set.isFailure ? "bg-destructive/10 border border-destructive/30" : "bg-secondary/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground text-xs w-12">Set {setIndex + 1}</span>
+                                {set.isFailure && (
+                                  <AlertCircle className="w-3 h-3 text-destructive" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-4">
+                                <span className="text-foreground text-sm font-medium">
+                                  {set.weight > 0 ? `${set.weight}kg` : "Vücut Ağırlığı"}
+                                </span>
+                                <span className="text-primary text-sm">
+                                  x{set.reps}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+
+              {/* Close Button */}
+              <div className="p-4 border-t border-white/10">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedWorkout(null)}
+                  className="w-full py-3 bg-secondary text-foreground font-display text-sm rounded-xl"
+                >
+                  KAPAT
+                </motion.button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -6,34 +6,12 @@ import NutriScanner from "@/components/NutriScanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-
-interface FoodItem {
-  id: string;
-  name: string;
-  portion: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-}
+import { foodDatabase, FoodItem } from "@/lib/mockData";
 
 interface AddedFood extends FoodItem {
   quantity: number;
   meal: string;
 }
-
-const foodDatabase: FoodItem[] = [
-  { id: "1", name: "Haşlanmış Yumurta", portion: "1 adet", calories: 70, protein: 6, carbs: 0.5, fat: 5 },
-  { id: "2", name: "Tavuk Göğsü (Pişmiş)", portion: "100g", calories: 165, protein: 31, carbs: 0, fat: 3.6 },
-  { id: "3", name: "Basmati Pirinç (Lapa)", portion: "100g", calories: 130, protein: 2.5, carbs: 28, fat: 0.3 },
-  { id: "4", name: "Yulaf Ezmesi", portion: "50g", calories: 180, protein: 6, carbs: 30, fat: 3 },
-  { id: "5", name: "Whey Protein", portion: "1 ölçek", calories: 120, protein: 24, carbs: 3, fat: 1.5 },
-  { id: "6", name: "Muz", portion: "1 orta boy", calories: 105, protein: 1.3, carbs: 27, fat: 0.4 },
-  { id: "7", name: "Yoğurt (Tam Yağlı)", portion: "200g", calories: 130, protein: 8, carbs: 10, fat: 6 },
-  { id: "8", name: "Zeytinyağı", portion: "1 yemek kaşığı", calories: 119, protein: 0, carbs: 0, fat: 13.5 },
-  { id: "9", name: "Tam Buğday Ekmek", portion: "1 dilim", calories: 80, protein: 4, carbs: 15, fat: 1 },
-  { id: "10", name: "Badem", portion: "30g", calories: 170, protein: 6, carbs: 6, fat: 15 },
-];
 
 const mealOptions = [
   { id: "breakfast", label: "Kahvaltı", icon: Coffee },
