@@ -1,182 +1,245 @@
 
+# DYNABOLIC Rebranding & Splash Screen Implementation
 
-# Ultra-Fluid Animation Physics Overhaul
-
-This plan addresses the animation physics in `EliteDock.tsx` to achieve an organic, "liquid," and high-end feel matching the Ultrahuman reference.
-
----
-
-## Problem Summary
-
-| Issue | Current State | Target State |
-|-------|---------------|--------------|
-| Nav Bubble | Snaps too harshly (stiffness: 500) | Viscous liquid flow |
-| FAB Closed | Expanding border ring (disconnected) | Breathing glow effect |
-| FAB Open | Items float above button | Zipper ejection from button center |
+This plan covers the complete rebranding from "GOKALAF" to "DYNABOLIC" and implements a cinematic splash screen with the new animated logo.
 
 ---
 
-## Implementation Details
+## Summary of Changes
 
-### 1. NAV PILL: "LIQUID LENS" PHYSICS
+| Task | Files Affected | Description |
+|------|---------------|-------------|
+| 1. Global Rebranding | 6 files | Replace all "GOKALAF/Gokalaf" text with "DYNABOLIC/Dynabolic" |
+| 2. Logo Component | 1 new file | Create `DynabolicLogo.tsx` with animated SVG |
+| 3. Splash Screen | 1 new file | Create `SplashScreen.tsx` with 3-phase animation |
+| 4. App Integration | 1 file | Wrap app with splash state logic in `App.tsx` |
+| 5. Loader Update | 1 file | Update/rename `GokalafLoader.tsx` to use new branding |
 
-**File:** `src/components/EliteDock.tsx` (lines 166-172)
+---
 
-**Change:** Update the `layoutId="navBubble"` transition to heavier, more viscous physics.
+## Step 1: Global Text Replacement
+
+### Files to Update:
+
+**1. `src/pages/BiometricLogin.tsx` (line 95)**
+```text
+FROM: GOKALAF
+TO:   DYNABOLIC
+```
+
+**2. `src/components/GokalafLoader.tsx` (line 41)**
+```text
+FROM: GOKALAF
+TO:   DYNABOLIC
+```
+Also rename file to `DynabolicLoader.tsx`
+
+**3. `src/pages/Profil.tsx` (lines 405-406)**
+```text
+FROM: GOKALAF MVP v1.0.0
+      © 2026 Gokalaf Labs
+TO:   DYNABOLIC v1.0.0
+      © 2026 Dynabolic Labs
+```
+
+**4. `src/pages/Akademi.tsx` (line 132)**
+```text
+FROM: Gokalaf sisteminin tüm özelliklerini keşfet
+TO:   Dynabolic sisteminin tüm özelliklerini keşfet
+```
+
+**5. `src/lib/mockData.ts` (multiple lines)**
+```text
+FROM: #GokalafAilesi, Gokalaf Lifting Straps, Gokalaf Pro Atlet
+TO:   #DynabolicAilesi, Dynabolic Lifting Straps, Dynabolic Pro Atlet
+```
+
+**6. `src/index.css` (comments only - lines 7, 59)**
+```text
+FROM: /* GOKALAF Design System */
+      /* Custom GOKALAF Variables */
+TO:   /* DYNABOLIC Design System */
+      /* Custom DYNABOLIC Variables */
+```
+
+---
+
+## Step 2: Create DynabolicLogo Component
+
+**New File:** `src/components/DynabolicLogo.tsx`
 
 ```text
-FROM:
-transition={{
-  type: "spring",
-  stiffness: 500,
-  damping: 30,
-  mass: 0.8,
-}}
-
-TO:
-transition={{
-  type: "spring",
-  stiffness: 350,  // Softer tension
-  damping: 35,     // More friction (less wobble)
-  mass: 1.5        // Heavier feel, slower start/stop
-}}
+Structure:
+- SVG with viewBox="0 0 200 200"
+- Neon glow filter definition
+- 3 animated path elements:
+  1. Outer D Shape (outline, draws with pathLength)
+  2. Inner Tech Segments (horizontal lines, fade in)
+  3. Lightning Bolt (center core, springs in with scale)
+- Props: progress (0-1), isFilled (boolean)
 ```
 
-**Effect:** The bubble will move with a more organic, liquid-like motion - slower to accelerate and decelerate, with minimal oscillation.
+Animation behavior:
+- `progress` controls the D outline drawing (pathLength: 0 → progress)
+- `isFilled` triggers inner segments and lightning bolt visibility
+- Lightning bolt uses spring animation for "power on" effect
 
 ---
 
-### 2. FAB CLOSED STATE: "RADIOACTIVE BREATHING"
+## Step 3: Create SplashScreen Component
 
-**File:** `src/components/EliteDock.tsx` (lines 259-286)
+**New File:** `src/components/SplashScreen.tsx`
 
-**Changes:**
-
-**A) REMOVE** the expanding border ring pulse (lines 279-285):
-```typescript
-// DELETE THIS ENTIRE BLOCK:
-{!isFabOpen && (
-  <motion.div
-    className="absolute inset-0 rounded-full border-2 border-primary"
-    animate={{ scale: [1, 1.4], opacity: [0.6, 0] }}
-    transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
-  />
-)}
-```
-
-**B) ADD** breathing boxShadow animation to the main FAB button:
-```typescript
-<motion.button
-  whileHover={{ scale: 1.05 }}
-  whileTap={{ scale: 0.95 }}
-  animate={{
-    boxShadow: isFabOpen
-      ? "0 0 0px rgba(0,0,0,0)"
-      : [
-          "0 0 20px rgba(204,255,0,0.3)",
-          "0 0 50px rgba(204,255,0,0.6)",
-          "0 0 20px rgba(204,255,0,0.3)"
-        ]
-  }}
-  transition={{
-    boxShadow: { duration: 3, repeat: Infinity, ease: "easeInOut" }
-  }}
-  // ... rest of props
->
-```
-
-**Effect:** Instead of a cheap expanding ring, the button itself will pulse with a soft neon glow that breathes in and out over 3 seconds.
-
----
-
-### 3. FAB OPEN SEQUENCE: "THE ZIPPER EJECTION"
-
-**File:** `src/components/EliteDock.tsx` (lines 216-233)
-
-**Change:** Update the variants to make items originate FROM the button center with an arc trajectory.
+### Animation Sequence (2.5s total):
 
 ```text
-FROM:
-variants={{
-  hidden: {
-    opacity: 0,
-    y: 20,
-    scale: 0.8,
-  },
-  visible: (i) => ({
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      delay: (fabActions.length - 1 - i) * 0.04,
-      type: "spring",
-      stiffness: 350,
-      damping: 20,
-    },
-  }),
-}}
-
-TO:
-variants={{
-  hidden: {
-    opacity: 0,
-    scale: 0.4,    // Start much smaller
-    y: 60,         // Start deeper down (closer to button center Y)
-    x: 20,         // Start shifted right (closer to button center X)
-  },
-  visible: (i) => ({
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    x: 0,
-    transition: {
-      delay: (fabActions.length - 1 - i) * 0.03,  // Tighter timing
-      type: "spring",
-      stiffness: 400,
-      damping: 25,
-      mass: 0.8     // Lightweight items popping up fast
-    },
-  }),
-}}
+┌─────────────────────────────────────────────────────────────┐
+│  PHASE 1: DRAWING (0-1s)                                    │
+│  - Logo outline draws from 0% to 100%                       │
+│  - progress: 0 → 1                                          │
+│  - isFilled: false                                          │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│  PHASE 2: ACTIVATION (1s-1.8s)                              │
+│  - Inner segments fade in                                   │
+│  - Lightning bolt springs into view                         │
+│  - Glow intensifies (box-shadow animation)                  │
+│  - isFilled: true                                           │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│  PHASE 3: ZOOM THROUGH (1.8s-2.5s)                          │
+│  - Container scales from 1 → 50                             │
+│  - Opacity fades from 1 → 0                                 │
+│  - Creates "flying through logo" effect                     │
+│  - onComplete callback triggers                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Effect:** Menu items will appear to "eject" from the FAB button itself, creating a satisfying arc motion as they fan out upward.
+### Component Structure:
+```tsx
+interface SplashScreenProps {
+  onComplete: () => void;
+}
+
+// State machine: "drawing" | "activating" | "zooming"
+// useEffect handles phase transitions with setTimeout
+// AnimatePresence handles exit animation
+```
+
+### Visual Elements:
+- Full-screen pitch black background (#000000)
+- Centered DynabolicLogo component
+- "DYNABOLIC" text below logo (fades in during activation)
+- Subtle scan-line effect during drawing phase
+
+---
+
+## Step 4: App.tsx Integration
+
+**File:** `src/App.tsx`
+
+### Changes:
+1. Import SplashScreen component
+2. Add `showSplash` state (default: `true`)
+3. Wrap entire app with splash logic
+4. Use AnimatePresence for smooth transition
+
+```tsx
+// New structure:
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  
+  return (
+    <QueryClientProvider>
+      <TooltipProvider>
+        <AnimatePresence mode="wait">
+          {showSplash ? (
+            <SplashScreen 
+              key="splash"
+              onComplete={() => setShowSplash(false)} 
+            />
+          ) : (
+            // Existing router setup with key="app"
+          )}
+        </AnimatePresence>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+```
+
+### Key Points:
+- Splash appears on every app mount (cold start)
+- 2.5s duration before main app reveals
+- Smooth cross-fade between splash and app
+- z-index: 50 ensures splash covers everything
+
+---
+
+## Step 5: Update/Rename Loader Component
+
+**Rename:** `GokalafLoader.tsx` → `DynabolicLoader.tsx`
+
+### Changes:
+- Update text from "GOKALAF" to "DYNABOLIC"
+- Update import references throughout codebase
+- Optionally integrate the new DynabolicLogo for visual consistency
 
 ---
 
 ## Technical Details
 
-### Animation Physics Comparison
+### Animation Physics (Framer Motion):
 
-| Parameter | Current | New | Effect |
-|-----------|---------|-----|--------|
-| **Nav Bubble** | | | |
-| stiffness | 500 | 350 | Softer spring tension |
-| damping | 30 | 35 | More friction, less wobble |
-| mass | 0.8 | 1.5 | Heavier, more inertia |
-| **FAB Pulse** | | | |
-| Type | Border ring expand | boxShadow keyframes | Integrated glow |
-| Duration | 2s | 3s | Slower, calmer breathing |
-| **Menu Items** | | | |
-| Initial scale | 0.8 | 0.4 | Smaller origin |
-| Initial y | 20 | 60 | Starts closer to button |
-| Initial x | 0 | 20 | Horizontal offset for arc |
-| Delay | 0.04s | 0.03s | Tighter zipper effect |
+| Animation | Type | Duration | Easing |
+|-----------|------|----------|--------|
+| Path Drawing | pathLength | 1s | easeInOut |
+| Segment Fade | opacity | 0.5s | easeOut |
+| Lightning Pop | spring | - | stiffness: 300, damping: 20 |
+| Zoom Through | scale/opacity | 0.7s | easeIn |
+| Glow Pulse | boxShadow | 0.8s | easeInOut |
 
----
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `src/components/EliteDock.tsx` | Update 3 animation configurations |
+### SVG Filter for Neon Glow:
+```xml
+<filter id="neon-glow">
+  <feGaussianBlur stdDeviation="5" result="coloredBlur" />
+  <feMerge>
+    <feMergeNode in="coloredBlur" />
+    <feMergeNode in="SourceGraphic" />
+  </feMerge>
+</filter>
+```
 
 ---
 
-## Expected Result
+## File Structure After Implementation
 
-After implementation:
-- The navigation bubble will flow like liquid between icons
-- The FAB will pulse with an organic breathing glow when closed
-- Opening the FAB menu will create a satisfying "zipper ejection" effect where items appear to originate from the button itself
+```text
+src/
+├── components/
+│   ├── DynabolicLogo.tsx      (NEW)
+│   ├── DynabolicLoader.tsx    (RENAMED from GokalafLoader.tsx)
+│   ├── SplashScreen.tsx       (NEW)
+│   └── ...existing components
+├── pages/
+│   ├── BiometricLogin.tsx     (UPDATED - text only)
+│   ├── Profil.tsx             (UPDATED - text only)
+│   ├── Akademi.tsx            (UPDATED - text only)
+│   └── ...
+├── lib/
+│   └── mockData.ts            (UPDATED - text only)
+├── App.tsx                    (UPDATED - splash integration)
+└── index.css                  (UPDATED - comments only)
+```
 
+---
+
+## Safety Notes
+
+- **No changes to core feature logic** (Nutrition, Camera, Macros, EliteDock)
+- All existing components treated as "black box"
+- Only visual/branding changes to existing files
+- Splash screen is a pure wrapper, does not interfere with routing
+- BiometricLogin remains the first route after splash
