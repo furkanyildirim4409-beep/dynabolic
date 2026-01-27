@@ -141,9 +141,24 @@ const ExpandableMealCard = ({ meal }: { meal: (typeof mealData)[0] }) => {
   );
 };
 
-// 3. RENDER (Use this inside your Main View)
-// <div className="space-y-1">
-//   {mealData.map((meal) => (
-//     <ExpandableMealCard key={meal.id} meal={meal} />
-//   ))}
-// </div>
+// Main Beslenme Page Component
+const Beslenme = () => {
+  return (
+    <div className="min-h-screen bg-black px-4 pt-6 pb-32">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Beslenme Planı</h1>
+        <p className="text-zinc-500 text-sm">Günlük öğün takibiniz</p>
+      </div>
+
+      {/* Meal Cards */}
+      <div className="space-y-3">
+        {mealData.map((meal) => (
+          <ExpandableMealCard key={meal.id} meal={meal} />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Beslenme;
