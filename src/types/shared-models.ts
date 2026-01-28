@@ -55,11 +55,13 @@ export interface AssignedProgram {
   coachNote?: string;
 }
 
+export type StoryCategory = "Değişimler" | "Soru-Cevap" | "Başarılar" | "Antrenman" | "Motivasyon";
+
 export interface CoachStory {
   id: string;
   title: string;
   thumbnail: string;
-  category: "Değişimler" | "Soru-Cevap" | "Başarılar" | "Antrenman" | "Motivasyon";
+  category: StoryCategory;
   content: {
     image: string;
     text: string;

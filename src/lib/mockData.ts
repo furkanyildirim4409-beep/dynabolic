@@ -875,6 +875,8 @@ import type { Invoice, CoachStory } from "@/types/shared-models";
 export const invoices: Invoice[] = [
   { 
     id: "1", 
+    clientId: "user-1",
+    clientName: "Ahmet Yılmaz",
     amount: 1500, 
     status: "paid", 
     date: "2026-01-15", 
@@ -882,6 +884,8 @@ export const invoices: Invoice[] = [
   },
   { 
     id: "2", 
+    clientId: "user-1",
+    clientName: "Ahmet Yılmaz",
     amount: 300, 
     status: "pending", 
     date: "2026-01-27", 
@@ -890,6 +894,8 @@ export const invoices: Invoice[] = [
   },
   { 
     id: "3", 
+    clientId: "user-1",
+    clientName: "Ahmet Yılmaz",
     amount: 1500, 
     status: "overdue", 
     date: "2026-01-01", 
@@ -898,6 +904,8 @@ export const invoices: Invoice[] = [
   },
   { 
     id: "4", 
+    clientId: "user-1",
+    clientName: "Ahmet Yılmaz",
     amount: 250, 
     status: "paid", 
     date: "2025-12-20", 
@@ -905,6 +913,8 @@ export const invoices: Invoice[] = [
   },
   { 
     id: "5", 
+    clientId: "user-1",
+    clientName: "Ahmet Yılmaz",
     amount: 1500, 
     status: "paid", 
     date: "2025-12-15", 
@@ -926,7 +936,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=1200&fit=crop",
       text: "12 haftada inanılmaz dönüşüm! Ahmet, disiplinli çalışmasıyla 15kg kas kütlesi kazandı. 💪"
-    }
+    },
+    createdAt: "2026-01-27T10:00:00Z"
   },
   {
     id: "2",
@@ -936,7 +947,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=1200&fit=crop",
       text: "Kilo vermeden form kazanmak mümkün! Mehmet'in 8 haftalık rekomposizyon yolculuğu."
-    }
+    },
+    createdAt: "2026-01-26T14:30:00Z"
   },
   // Soru-Cevap
   {
@@ -947,7 +959,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=1200&fit=crop",
       text: "Protein ne zaman alınmalı? Antrenman öncesi mi sonrası mı? Cevap: Toplam günlük protein daha önemli!"
-    }
+    },
+    createdAt: "2026-01-25T09:00:00Z"
   },
   // Başarılar
   {
@@ -958,7 +971,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&h=1200&fit=crop",
       text: "Öğrencim Ayşe, squat'ta 100kg PR kırdı! 🎉 3 aylık program sonucu."
-    }
+    },
+    createdAt: "2026-01-24T16:00:00Z"
   },
   {
     id: "5",
@@ -968,7 +982,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=800&h=1200&fit=crop",
       text: "Türkiye Natural Vücut Geliştirme Şampiyonası'nda 2. sıra! Tebrikler Can!"
-    }
+    },
+    createdAt: "2026-01-23T11:00:00Z"
   },
   // Antrenman
   {
@@ -979,7 +994,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=1200&fit=crop",
       text: "Bench Press'te omuz ağrısı mı? Skapular retraksiyon yaparak omuz bıçaklarını birbirine yaklaştır!"
-    }
+    },
+    createdAt: "2026-01-22T08:00:00Z"
   },
   {
     id: "7",
@@ -989,7 +1005,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=1200&fit=crop",
       text: "Deadlift'te bel yuvarlama problemi? Kalça menteşesi hareketine odaklan, sırt düz kalsın."
-    }
+    },
+    createdAt: "2026-01-21T13:00:00Z"
   },
   // Motivasyon
   {
@@ -1000,7 +1017,8 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=1200&fit=crop",
       text: "\"Disiplin, motivasyonun bittiği yerde başlar.\" Bu hafta da hedeflerine odaklan! 🔥"
-    }
+    },
+    createdAt: "2026-01-20T07:00:00Z"
   },
   {
     id: "9",
@@ -1010,6 +1028,7 @@ export const coachStories: CoachStory[] = [
     content: {
       image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=1200&fit=crop",
       text: "Bugün antrenman yapmasan bile, beslenme ve uyku kaliteni koru. Toparlanma da antrenman kadar önemli!"
-    }
+    },
+    createdAt: "2026-01-19T18:00:00Z"
   },
 ];
