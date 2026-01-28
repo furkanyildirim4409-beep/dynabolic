@@ -14,6 +14,7 @@ import {
   MessageSquare,
   BookOpen,
   ChefHat,
+  CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -83,13 +84,18 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
     navigate("/tarifler");
     setIsFabOpen(false);
   };
+  
+  const handleOpenPayments = () => {
+    navigate("/odemeler");
+    setIsFabOpen(false);
+  };
 
   const fabActions = [
     { id: "water", label: "Su Ekle", icon: <Droplets className="w-5 h-5" />, onClick: handleAddWater },
     { id: "weight", label: "Ağırlık Gir", icon: <Scale className="w-5 h-5" />, onClick: handleLogWeight },
     { id: "coach", label: "Koça Raporla", icon: <MessageSquare className="w-5 h-5" />, onClick: handleReportToCoach },
+    { id: "payments", label: "Ödemeler", icon: <CreditCard className="w-5 h-5" />, onClick: handleOpenPayments },
     { id: "academy", label: "Akademi", icon: <BookOpen className="w-5 h-5" />, onClick: handleOpenAcademy },
-    { id: "recipes", label: "Tarifler", icon: <ChefHat className="w-5 h-5" />, onClick: handleOpenRecipes },
   ];
 
   return (

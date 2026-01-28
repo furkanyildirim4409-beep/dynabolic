@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Bell, X, Trophy, Settings, MessageCircle } from "lucide-react";
+import { Bell, X, Trophy, Settings, MessageCircle, ClipboardCheck } from "lucide-react";
 import EnergyBank from "@/components/EnergyBank";
 import CoachUplink from "@/components/CoachUplink";
 import BentoStats from "@/components/BentoStats";
-
 import CoachChat from "@/components/CoachChat";
+import DailyCheckIn from "@/components/DailyCheckIn";
+import StoriesRing from "@/components/StoriesRing";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications } from "@/lib/mockData";
 
@@ -14,6 +15,7 @@ const Kokpit = () => {
   const navigate = useNavigate();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showCheckIn, setShowCheckIn] = useState(false);
   const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
 
   const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
@@ -43,6 +45,16 @@ const Kokpit = () => {
           <p className="text-muted-foreground text-sm">Misyon Kontrol Merkezi</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Check-In Button */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowCheckIn(true)}
+            className="relative p-2"
+          >
+            <ClipboardCheck className="w-5 h-5 text-primary" />
+          </motion.button>
+
           {/* Chat Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -94,6 +106,15 @@ const Kokpit = () => {
         </div>
       </motion.div>
 
+      {/* Stories Ring */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.05 }}
+      >
+        <StoriesRing />
+      </motion.div>
+
       {/* Energy Bank - Hero Widget */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -124,6 +145,9 @@ const Kokpit = () => {
         </h2>
         <BentoStats />
       </div>
+
+      {/* Daily Check-In Modal */}
+      <DailyCheckIn isOpen={showCheckIn} onClose={() => setShowCheckIn(false)} />
 
       {/* Coach Chat */}
       <CoachChat isOpen={showChat} onClose={() => setShowChat(false)} />
