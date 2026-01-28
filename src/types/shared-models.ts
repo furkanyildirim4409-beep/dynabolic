@@ -1,4 +1,4 @@
-// Shared data models synced with Coach Admin Panel
+// Shared data models synced between Coach Admin Panel and Student Mobile App
 
 export interface UserProfile {
   id: string;
@@ -19,15 +19,17 @@ export interface UserProfile {
 
 export interface DailyCheckIn {
   date: string;
-  mood: number;
-  sleep: number;
-  soreness: number;
-  stress: number;
+  mood: number; // 1-10
+  sleep: number; // 1-10
+  soreness: number; // 1-10
+  stress: number; // 1-10
   notes: string;
 }
 
 export interface Invoice {
   id: string;
+  clientId: string;
+  clientName: string;
   amount: number;
   status: "paid" | "pending" | "overdue";
   date: string;
@@ -42,6 +44,7 @@ export interface ProgramExercise {
   reps: number;
   rpe: number;
   notes?: string;
+  category?: string;
 }
 
 export interface AssignedProgram {
@@ -52,51 +55,99 @@ export interface AssignedProgram {
   coachNote?: string;
 }
 
-export type StoryCategory = "Değişimler" | "Soru-Cevap" | "Başarılar" | "Antrenman" | "Motivasyon";
-
 export interface CoachStory {
   id: string;
   title: string;
   thumbnail: string;
-  category: StoryCategory;
-  content: { 
-    image: string; 
-    text: string; 
+  category: "Değişimler" | "Soru-Cevap" | "Başarılar" | "Antrenman" | "Motivasyon";
+  content: {
+    image: string;
+    text: string;
   };
-  viewed?: boolean;
+  createdAt: string;
 }
 
 export interface CoachAdjustment {
   id: string;
+  athleteId: string;
   type: "intensity" | "calories" | "volume";
   value: number;
+  previousValue: number;
   message: string;
   appliedAt: string;
 }
 
-// Extended Notification Types - Synced with Coach Admin Panel
-export type NotificationType = 
-  | "coach"      // Messages from coach
-  | "system"     // System announcements
-  | "achievement" // Badges, milestones
-  | "health"     // Health alerts, recovery warnings
-  | "payment"    // Invoice due, payment received
-  | "program"    // Program updates, new assignments
-  | "checkin";   // Check-in reminders
-
-export interface ExtendedNotification {
-  id: string;
-  type: NotificationType;
+export interface Notification {
+  id: string | number;
+  type: "coach" | "system" | "achievement" | "health" | "payment" | "program" | "checkin" | "session";
+  level?: "critical" | "warning" | "info";
   title: string;
   message: string;
   time: string;
-  read: boolean;
+  read?: boolean;
+  athleteId?: string;
   coachId?: string;
-  actionUrl?: string;  // Deep link for navigation
-  priority?: "low" | "normal" | "high";
-  metadata?: {
-    invoiceId?: string;
-    programId?: string;
-    achievementIcon?: string;
+}
+
+// Extended Athlete interface for Admin Panel (extends UserProfile with admin-specific fields)
+export interface Athlete extends UserProfile {
+  sport: string;
+  email: string;
+  phone: string;
+  joinDate: string;
+  lastActive: string;
+  latestCheckIn?: {
+    mood: number;
+    sleep: number;
+    soreness: number;
+    stress: number;
+    notes: string;
   };
+  riskType?: "injury" | "nutrition" | "compliance" | "general";
+}
+
+// Extended Invoice interface for Admin Panel
+export interface InvoiceAdmin extends Invoice {
+  breakdown?: {
+    item: string;
+    quantity: number;
+    unitPrice: number;
+    total: number;
+  }[];
+  timeline?: {
+    event: string;
+    date: string;
+    completed: boolean;
+  }[];
+}
+
+export interface BloodworkEntry {
+  month: string;
+  testosterone: number;
+  cortisol: number;
+  ratio?: number;
+}
+
+export interface AssignedNutritionPlan {
+  id: string;
+  athleteId: string;
+  meals: {
+    id: string;
+    name: string;
+    time: string;
+    foods: {
+      id: string;
+      name: string;
+      portion: number;
+      unit: "g" | "adet" | "ml";
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+    }[];
+  }[];
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
 }
