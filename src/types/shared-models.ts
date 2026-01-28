@@ -73,3 +73,30 @@ export interface CoachAdjustment {
   message: string;
   appliedAt: string;
 }
+
+// Extended Notification Types - Synced with Coach Admin Panel
+export type NotificationType = 
+  | "coach"      // Messages from coach
+  | "system"     // System announcements
+  | "achievement" // Badges, milestones
+  | "health"     // Health alerts, recovery warnings
+  | "payment"    // Invoice due, payment received
+  | "program"    // Program updates, new assignments
+  | "checkin";   // Check-in reminders
+
+export interface ExtendedNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+  coachId?: string;
+  actionUrl?: string;  // Deep link for navigation
+  priority?: "low" | "normal" | "high";
+  metadata?: {
+    invoiceId?: string;
+    programId?: string;
+    achievementIcon?: string;
+  };
+}
