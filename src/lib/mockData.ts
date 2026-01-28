@@ -77,12 +77,14 @@ export interface WorkoutHistoryEntry {
 
 export interface Notification {
   id: string;
-  type: "coach" | "system" | "achievement";
+  type: "coach" | "system" | "achievement" | "health" | "payment" | "program" | "checkin";
   title: string;
   message: string;
   time: string;
   read: boolean;
   coachId?: string;
+  actionUrl?: string;
+  priority?: "low" | "normal" | "high";
 }
 
 // ============================================
@@ -731,7 +733,8 @@ export const notifications: Notification[] = [
     message: "Programını güncelledi. Yeni haftanın antrenmanlarını kontrol et!",
     time: "5dk önce",
     read: false,
-    coachId: "1"
+    coachId: "1",
+    priority: "high"
   },
   {
     id: "2",
@@ -739,24 +742,73 @@ export const notifications: Notification[] = [
     title: "Yeni Rozet!",
     message: "\"150 Antrenman\" rozetini kazandın! +50 Bio-Coin 🎉",
     time: "2sa önce",
-    read: false
+    read: false,
+    priority: "normal"
   },
   {
     id: "3",
-    type: "system",
-    title: "Haftalık Özet",
-    message: "Bu hafta 5 antrenman tamamladın ve 380 Bio-Coin kazandın.",
-    time: "1 gün önce",
-    read: true
+    type: "health",
+    title: "Toparlanma Uyarısı",
+    message: "Göğüs kaslarınız dinlenme gerektiriyor. Bugün üst vücut antrenmanından kaçının.",
+    time: "2sa önce",
+    read: false,
+    priority: "high"
   },
   {
     id: "4",
+    type: "payment",
+    title: "Ödeme Hatırlatması",
+    message: "Aylık koçluk ödemesi yarın son gün. Gecikmemesi için şimdi ödeyin.",
+    time: "12sa önce",
+    read: false,
+    actionUrl: "/odemeler",
+    priority: "high"
+  },
+  {
+    id: "5",
+    type: "program",
+    title: "Program Güncellendi",
+    message: "Bu haftaki antrenmanlarınız hazır. Yeni egzersizler eklendi!",
+    time: "1g önce",
+    read: true,
+    priority: "normal"
+  },
+  {
+    id: "6",
+    type: "checkin",
+    title: "Check-in Zamanı",
+    message: "Günlük durumunuzu bildirin. Koçunuz ilerlemenizi takip etsin.",
+    time: "4sa önce",
+    read: false,
+    priority: "normal"
+  },
+  {
+    id: "7",
+    type: "system",
+    title: "Yeni Özellik",
+    message: "Vücut tarama özelliği eklendi! Profil sayfasından fotoğraf yükleyebilirsiniz.",
+    time: "2g önce",
+    read: true,
+    priority: "low"
+  },
+  {
+    id: "8",
+    type: "system",
+    title: "Haftalık Özet",
+    message: "Bu hafta 5 antrenman tamamladın ve 380 Bio-Coin kazandın.",
+    time: "3g önce",
+    read: true,
+    priority: "low"
+  },
+  {
+    id: "9",
     type: "coach",
     title: "Koç Elif",
     message: "Yeni mobilite videosu yükledi. Kaçırma!",
-    time: "2 gün önce",
+    time: "4g önce",
     read: true,
-    coachId: "2"
+    coachId: "2",
+    priority: "normal"
   }
 ];
 

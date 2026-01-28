@@ -15,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
-        display: ['Oswald', 'sans-serif'],
+        display: ['Inter', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -74,6 +74,10 @@ export default {
           strain: "hsl(var(--stat-strain))",
           sleep: "hsl(var(--stat-sleep))",
           hrv: "hsl(var(--stat-hrv))",
+        },
+        glass: {
+          bg: "hsl(var(--glass-bg) / 0.8)",
+          border: "hsl(var(--glass-border) / 0.5)",
         },
       },
       borderRadius: {

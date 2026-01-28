@@ -8,15 +8,15 @@
 
 @layer base {
   :root {
-    /* Void Black Background */
-    --background: 0 0% 2%;
+    /* Pure Void Black Background - Synced with Admin Panel */
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
-    /* Card/Glass Surfaces */
-    --card: 0 0% 5%;
+    /* Card/Glass Surfaces - Blue tint for depth */
+    --card: 240 6% 4%;
     --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 5%;
+    --popover: 240 6% 4%;
     --popover-foreground: 0 0% 98%;
 
     /* Neon Lime Primary */
@@ -24,11 +24,11 @@
     --primary-foreground: 0 0% 2%;
 
     /* Dark Secondary */
-    --secondary: 0 0% 10%;
+    --secondary: 240 6% 8%;
     --secondary-foreground: 0 0% 98%;
 
     /* Muted */
-    --muted: 0 0% 15%;
+    --muted: 240 4% 15%;
     --muted-foreground: 0 0% 60%;
 
     /* Accent - Subtle Lime */
@@ -40,25 +40,29 @@
     --destructive-foreground: 0 0% 98%;
 
     /* Borders & Input */
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
+    --border: 240 4% 15%;
+    --input: 240 4% 15%;
     --ring: 68 100% 50%;
 
     --radius: 0.75rem;
 
     /* Sidebar */
-    --sidebar-background: 0 0% 3%;
+    --sidebar-background: 240 6% 2%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 68 100% 50%;
     --sidebar-primary-foreground: 0 0% 2%;
-    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent: 240 6% 8%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 15%;
+    --sidebar-border: 240 4% 15%;
     --sidebar-ring: 68 100% 50%;
 
     /* Custom DYNABOLIC Variables */
     --neon-lime: 68 100% 50%;
-    --void-black: 0 0% 2%;
+    --void-black: 0 0% 0%;
+    
+    /* Glass Variables - Synced with Admin Panel */
+    --glass-bg: 240 6% 4%;
+    --glass-border: 240 4% 20%;
     
     /* Stat Card Colors */
     --stat-strain: 217 91% 60%;
@@ -69,32 +73,32 @@
   }
 
   .dark {
-    --background: 0 0% 2%;
+    --background: 0 0% 0%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 5%;
+    --card: 240 6% 4%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 5%;
+    --popover: 240 6% 4%;
     --popover-foreground: 0 0% 98%;
     --primary: 68 100% 50%;
     --primary-foreground: 0 0% 2%;
-    --secondary: 0 0% 10%;
+    --secondary: 240 6% 8%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 15%;
+    --muted: 240 4% 15%;
     --muted-foreground: 0 0% 60%;
     --accent: 68 100% 50%;
     --accent-foreground: 0 0% 2%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
+    --border: 240 4% 15%;
+    --input: 240 4% 15%;
     --ring: 68 100% 50%;
-    --sidebar-background: 0 0% 3%;
+    --sidebar-background: 240 6% 2%;
     --sidebar-foreground: 0 0% 98%;
     --sidebar-primary: 68 100% 50%;
     --sidebar-primary-foreground: 0 0% 2%;
-    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent: 240 6% 8%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 15%;
+    --sidebar-border: 240 4% 15%;
     --sidebar-ring: 68 100% 50%;
   }
 }
@@ -110,9 +114,16 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Oswald', sans-serif;
-    @apply font-bold uppercase tracking-wide;
+    font-family: 'Inter', sans-serif;
+    @apply font-semibold tracking-tight;
   }
+}
+
+/* Glass Card Sync - Matching Admin Panel */
+.glass-card-sync {
+  background: hsl(var(--glass-bg) / 0.8);
+  border: 1px solid hsl(var(--glass-border) / 0.5);
+  @apply backdrop-blur-xl rounded-2xl;
 }
 
 @layer utilities {

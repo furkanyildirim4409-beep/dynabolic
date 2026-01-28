@@ -1,16 +1,19 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Moon, Smartphone, Lock, HelpCircle, X } from "lucide-react";
+import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Moon, Smartphone, Lock, HelpCircle, X, Camera } from "lucide-react";
 import RealisticBodyAvatar from "@/components/RealisticBodyAvatar";
 import BioCoinWallet from "@/components/BioCoinWallet";
+import BodyScanUpload from "@/components/BodyScanUpload";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 
 const Profil = () => {
   const [timelineValue, setTimelineValue] = useState([50]);
   const [bioCoins] = useState(2450);
   const [showSettings, setShowSettings] = useState(false);
+  const [showBodyScan, setShowBodyScan] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [notifications, setNotifications] = useState(true);
   
@@ -294,6 +297,33 @@ const Profil = () => {
         </div>
       </motion.div>
 
+      {/* Body Scan Upload Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="glass-card p-4"
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <Camera className="w-5 h-5 text-primary" />
+          <h2 className="font-display text-lg text-foreground tracking-wide">
+            VÜCUT TARAMA
+          </h2>
+        </div>
+        
+        <p className="text-muted-foreground text-sm mb-4">
+          İlerlemenizi takip etmek için koçunuza güncel vücut fotoğraflarınızı gönderin.
+        </p>
+        
+        <Button 
+          onClick={() => setShowBodyScan(true)}
+          className="w-full h-12 font-display neon-glow-sm"
+        >
+          <Camera className="w-5 h-5 mr-2" />
+          FOTOĞRAF YÜKLE
+        </Button>
+      </motion.div>
+
       {/* Settings Menu */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -410,6 +440,12 @@ const Profil = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Body Scan Upload Modal */}
+      <BodyScanUpload 
+        isOpen={showBodyScan} 
+        onClose={() => setShowBodyScan(false)} 
+      />
     </div>
   );
 };
