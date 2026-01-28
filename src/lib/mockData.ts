@@ -813,3 +813,151 @@ export const assignedWorkouts = [
 
 // User's assigned coach
 export const assignedCoach = coaches[0]; // Koç Serdar
+
+// ============================================
+// INVOICES DATA
+// ============================================
+
+import type { Invoice, CoachStory } from "@/types/shared-models";
+
+export const invoices: Invoice[] = [
+  { 
+    id: "1", 
+    amount: 1500, 
+    status: "paid", 
+    date: "2026-01-15", 
+    serviceType: "Aylık Koçluk" 
+  },
+  { 
+    id: "2", 
+    amount: 300, 
+    status: "pending", 
+    date: "2026-01-27", 
+    dueDate: "2026-02-01", 
+    serviceType: "E-Kitap" 
+  },
+  { 
+    id: "3", 
+    amount: 1500, 
+    status: "overdue", 
+    date: "2026-01-01", 
+    dueDate: "2026-01-15", 
+    serviceType: "Aylık Koçluk" 
+  },
+  { 
+    id: "4", 
+    amount: 250, 
+    status: "paid", 
+    date: "2025-12-20", 
+    serviceType: "Lifting Straps" 
+  },
+  { 
+    id: "5", 
+    amount: 1500, 
+    status: "paid", 
+    date: "2025-12-15", 
+    serviceType: "Aylık Koçluk" 
+  },
+];
+
+// ============================================
+// COACH STORIES DATA
+// ============================================
+
+export const coachStories: CoachStory[] = [
+  // Değişimler
+  {
+    id: "1",
+    title: "Haftalık Dönüşüm",
+    thumbnail: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=100&h=100&fit=crop",
+    category: "Değişimler",
+    content: {
+      image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=800&h=1200&fit=crop",
+      text: "12 haftada inanılmaz dönüşüm! Ahmet, disiplinli çalışmasıyla 15kg kas kütlesi kazandı. 💪"
+    }
+  },
+  {
+    id: "2",
+    title: "Vücut Rekomposizyonu",
+    thumbnail: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=100&h=100&fit=crop",
+    category: "Değişimler",
+    content: {
+      image: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=800&h=1200&fit=crop",
+      text: "Kilo vermeden form kazanmak mümkün! Mehmet'in 8 haftalık rekomposizyon yolculuğu."
+    }
+  },
+  // Soru-Cevap
+  {
+    id: "3",
+    title: "Sıkça Sorulan",
+    thumbnail: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=100&h=100&fit=crop",
+    category: "Soru-Cevap",
+    content: {
+      image: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?w=800&h=1200&fit=crop",
+      text: "Protein ne zaman alınmalı? Antrenman öncesi mi sonrası mı? Cevap: Toplam günlük protein daha önemli!"
+    }
+  },
+  // Başarılar
+  {
+    id: "4",
+    title: "PR Kırıldı!",
+    thumbnail: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=100&h=100&fit=crop",
+    category: "Başarılar",
+    content: {
+      image: "https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?w=800&h=1200&fit=crop",
+      text: "Öğrencim Ayşe, squat'ta 100kg PR kırdı! 🎉 3 aylık program sonucu."
+    }
+  },
+  {
+    id: "5",
+    title: "Yarışma Zaferi",
+    thumbnail: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=100&h=100&fit=crop",
+    category: "Başarılar",
+    content: {
+      image: "https://images.unsplash.com/photo-1517963879433-6ad2b056d712?w=800&h=1200&fit=crop",
+      text: "Türkiye Natural Vücut Geliştirme Şampiyonası'nda 2. sıra! Tebrikler Can!"
+    }
+  },
+  // Antrenman
+  {
+    id: "6",
+    title: "Günün İpucu",
+    thumbnail: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=100&h=100&fit=crop",
+    category: "Antrenman",
+    content: {
+      image: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&h=1200&fit=crop",
+      text: "Bench Press'te omuz ağrısı mı? Skapular retraksiyon yaparak omuz bıçaklarını birbirine yaklaştır!"
+    }
+  },
+  {
+    id: "7",
+    title: "Form Analizi",
+    thumbnail: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=100&h=100&fit=crop",
+    category: "Antrenman",
+    content: {
+      image: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=1200&fit=crop",
+      text: "Deadlift'te bel yuvarlama problemi? Kalça menteşesi hareketine odaklan, sırt düz kalsın."
+    }
+  },
+  // Motivasyon
+  {
+    id: "8",
+    title: "Pazartesi Motivasyonu",
+    thumbnail: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=100&h=100&fit=crop",
+    category: "Motivasyon",
+    content: {
+      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=1200&fit=crop",
+      text: "\"Disiplin, motivasyonun bittiği yerde başlar.\" Bu hafta da hedeflerine odaklan! 🔥"
+    }
+  },
+  {
+    id: "9",
+    title: "Günlük Hatırlatma",
+    thumbnail: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=100&h=100&fit=crop",
+    category: "Motivasyon",
+    content: {
+      image: "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&h=1200&fit=crop",
+      text: "Bugün antrenman yapmasan bile, beslenme ve uyku kaliteni koru. Toparlanma da antrenman kadar önemli!"
+    }
+  },
+];
