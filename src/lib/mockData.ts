@@ -1065,3 +1065,16 @@ export const coachStories: CoachStory[] = [
     createdAt: "2026-01-19T18:00:00Z"
   },
 ];
+
+// Current User Data
+export const currentUser = {
+  id: "user-1",
+  name: "Ahmet Yılmaz",
+  email: "ahmet@example.com",
+  avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop",
+  memberSince: "2025-06-15",
+  level: 12,
+  bioCoins: 2450,
+  readinessScore: 85,
+  streak: 14,
+};
