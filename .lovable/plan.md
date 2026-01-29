@@ -1,7 +1,8 @@
 
-# Coach Admin Panel Sync - Phases 5, 6, 7 Implementation
 
-This plan implements the Body Scan Upload component, CSS variable synchronization, and extended notification types to complete the Coach Admin Panel integration.
+# Dynabolic OS - Complete UI/UX Redesign Plan
+
+This plan implements a comprehensive visual overhaul to make the mobile app the perfect "Student-Facing" counterpart to the Dynabolic OS Coach Admin Panel, including a new Bloodwork Upload feature and design system synchronization.
 
 ---
 
@@ -9,201 +10,427 @@ This plan implements the Body Scan Upload component, CSS variable synchronizatio
 
 | Phase | Feature | New Files | Modified Files |
 |-------|---------|-----------|----------------|
-| 5 | Body Scan Upload | `src/components/BodyScanUpload.tsx` | `src/pages/Profil.tsx` |
-| 6 | CSS Variable Sync | - | `src/index.css`, `tailwind.config.ts` |
-| 7 | Extended Notifications | - | `src/types/shared-models.ts`, `src/lib/mockData.ts` |
+| 1 | Visual Overhaul (Design System) | - | `src/index.css`, `tailwind.config.ts` |
+| 2 | Dashboard (Kokpit) Redesign | `src/components/DailyFocusCard.tsx` | `src/pages/Kokpit.tsx` |
+| 3 | Bloodwork Upload Feature | `src/components/BloodworkUpload.tsx` | `src/pages/Profil.tsx`, `src/lib/mockData.ts`, `src/types/shared-models.ts` |
+| 4 | Component Polish | - | `src/components/AppShell.tsx`, `src/components/EliteDock.tsx`, `src/components/EnergyBank.tsx`, `src/components/CoachUplink.tsx`, `src/components/BentoStats.tsx` |
+| 5 | Page-Level Updates | - | `src/pages/Antrenman.tsx`, `src/pages/Beslenme.tsx`, `src/pages/Payments.tsx`, `src/pages/Profil.tsx` |
 
 ---
 
-## Phase 5: Body Scan Upload Component
+## Phase 1: Visual Overhaul (Design System Sync)
 
-**Create:** `src/components/BodyScanUpload.tsx`
+### 1.1 CSS Variable Updates (`src/index.css`)
 
-### Features
-- Two photo upload slots side-by-side:
-  - **"Ön Görünüm"** (Front View)
-  - **"Yan Görünüm"** (Side View)
-- Camera/file picker using native HTML input with accept="image/*"
-- Mobile-first camera capture (capture="environment" attribute)
-- Upload progress animation with neon lime accent
-- Cyberpunk styling matching existing glass-card patterns
-- Submit button to send photos to coach (simulated POST to `/api/athlete/:id/body-scan`)
+Ensure pure black backgrounds and consistent glass styling:
 
-### UI Layout
-```text
-┌─────────────────────────────────────────────────────┐
-│  📷  VÜCUT TARAMA          [Koça Gönder]            │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  ┌─────────────────┐    ┌─────────────────┐        │
-│  │                 │    │                 │        │
-│  │   [📷 Icon]     │    │   [📷 Icon]     │        │
-│  │                 │    │                 │        │
-│  │   ÖN GÖRÜNÜM    │    │   YAN GÖRÜNÜM   │        │
-│  │                 │    │                 │        │
-│  │ [Tap to upload] │    │ [Tap to upload] │        │
-│  └─────────────────┘    └─────────────────┘        │
-│                                                     │
-│  ┌──────────────────────────────────────────────┐  │
-│  │  Fotoğraf çekerken düz durun. Aydınlık bir   │  │
-│  │  ortamda çekim yapın.                        │  │
-│  └──────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────┘
-```
-
-### Upload States
-- **Empty**: Camera icon + placeholder text
-- **Uploading**: Animated progress bar (0-100%)
-- **Uploaded**: Image preview with delete button overlay
-- **Submitted**: Green checkmark with "Koç Onayı Bekleniyor" badge
-
-### Component Structure
-```typescript
-interface BodyScanUploadProps {
-  onComplete?: () => void;
-}
-
-// State
-const [frontImage, setFrontImage] = useState<string | null>(null);
-const [sideImage, setSideImage] = useState<string | null>(null);
-const [uploadProgress, setUploadProgress] = useState({ front: 0, side: 0 });
-const [isSubmitting, setIsSubmitting] = useState(false);
-```
-
-### Integration with Profil.tsx
-Add a new card section after "VÜCUT VERİLERİ" (Body Stats) section with a button that opens the BodyScanUpload modal.
-
----
-
-## Phase 6: CSS Variable Sync
-
-**Modify:** `src/index.css`
-
-### CSS Variable Updates (in :root)
 ```css
 :root {
-  /* Updated to pure black for true void effect */
-  --background: 0 0% 0%;        /* Was: 0 0% 2% */
+  /* TRUE Void Black - No compromise */
+  --background: 0 0% 0%;
   
-  /* Updated card with slight blue tint */
-  --card: 240 6% 4%;            /* Was: 0 0% 5% */
+  /* Card with subtle blue tint for depth */
+  --card: 240 6% 4%;
   
-  /* New glass variables for consistency with Admin Panel */
+  /* Glass variables for Admin Panel consistency */
   --glass-bg: 240 6% 4%;
   --glass-border: 240 4% 20%;
+  
+  /* Primary Neon Lime (unchanged - already correct) */
+  --primary: 68 100% 50%;
 }
 ```
 
-### Typography Change
-**Current:**
+### 1.2 Font Cleanup
+
+Remove Oswald font import entirely (already switched to Inter in previous update):
+
 ```css
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Oswald', sans-serif;
-  @apply font-bold uppercase tracking-wide;
-}
+/* BEFORE */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* AFTER */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 ```
 
-**Updated:**
+### 1.3 Enhanced Glass Card Class
+
+Add a premium `.glass-card-premium` class with refined styling:
+
 ```css
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Inter', sans-serif;
-  @apply font-semibold tracking-tight;
+.glass-card-premium {
+  background: hsl(240 6% 4% / 0.9);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  backdrop-filter: blur(24px);
+  @apply rounded-2xl shadow-2xl shadow-black/50;
 }
 ```
 
-### New Glass Utility Class
+### 1.4 Page Transition Animations
+
+Add consistent page entry animations:
+
 ```css
-.glass-card-sync {
-  background: hsl(var(--glass-bg) / 0.8);
-  border: 1px solid hsl(var(--glass-border) / 0.5);
-  @apply backdrop-blur-xl rounded-2xl;
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-```
 
-**Modify:** `tailwind.config.ts`
-
-Update font-display to use Inter (keeping it as fallback option):
-```typescript
-fontFamily: {
-  sans: ['Inter', 'sans-serif'],
-  display: ['Inter', 'sans-serif'],  // Changed from Oswald
-},
-```
-
-Add glass color references:
-```typescript
-glass: {
-  bg: "hsl(var(--glass-bg) / 0.8)",
-  border: "hsl(var(--glass-border) / 0.5)",
-},
+.animate-page-enter {
+  animation: page-enter 0.4s ease-out forwards;
+}
 ```
 
 ---
 
-## Phase 7: Extended Notification Types
+## Phase 2: Dashboard (Kokpit) Redesign
+
+### 2.1 New Component: Daily Focus Card
+
+**Create:** `src/components/DailyFocusCard.tsx`
+
+A hero card that highlights the most important task for the day (workout or habit):
+
+```text
+┌─────────────────────────────────────────────────┐
+│  ⚡ BUGÜNKÜ ODAK                                │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │  💪  BACAK GÜNÜ                          │  │
+│  │      Koç Serdar atadı • 45 dk            │  │
+│  │                                          │  │
+│  │  [████████████░░░░░░]  75% Tamamlandı    │  │
+│  │                                          │  │
+│  │  ┌────────────────────────────────────┐  │  │
+│  │  │       ANTRENMANA BAŞLA            │  │  │
+│  │  └────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+**Features:**
+- Dynamic content based on assigned workout/habit for the day
+- Animated progress indicator
+- Quick action CTA with neon glow effect
+- Coach attribution
+
+### 2.2 Kokpit Layout Restructure
+
+**Modify:** `src/pages/Kokpit.tsx`
+
+New section order (top to bottom):
+
+1. **Header** (User greeting + Date + Coach avatar)
+2. **Stories Ring** (Already implemented - position confirmed)
+3. **Daily Focus Card** (NEW - Hero placement)
+4. **Energy Bank** (Kept but redesigned container)
+5. **Coach Uplink** (Redesigned for cleaner look)
+6. **Bento Stats Grid** (Health data cards)
+
+### 2.3 Header Refinements
+
+- Cleaner layout with less clutter
+- Date display with Turkish locale formatting
+- Coach avatar with subtle neon border glow
+
+---
+
+## Phase 3: Bloodwork Upload Feature (Kan Tahlili)
+
+### 3.1 Type Definitions
 
 **Modify:** `src/types/shared-models.ts`
 
-Add new notification type definition:
 ```typescript
-export type NotificationType = 
-  | "coach"      // Messages from coach
-  | "system"     // System announcements
-  | "achievement" // Badges, milestones
-  | "health"     // Health alerts, recovery warnings
-  | "payment"    // Invoice due, payment received
-  | "program"    // Program updates, new assignments
-  | "checkin";   // Check-in reminders
+export type BloodworkStatus = "pending" | "analyzed" | "requires_attention";
 
-export interface ExtendedNotification {
+export interface BloodworkReport {
   id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  coachId?: string;
-  actionUrl?: string;  // Deep link for navigation
-  priority?: "low" | "normal" | "high";
-  metadata?: {
-    invoiceId?: string;
-    programId?: string;
-    achievementIcon?: string;
-  };
+  uploadDate: string;
+  fileName: string;
+  fileType: "pdf" | "image";
+  status: BloodworkStatus;
+  coachNotes?: string;
+  analysisDate?: string;
+  flaggedValues?: string[];
 }
 ```
+
+### 3.2 Mock Data
 
 **Modify:** `src/lib/mockData.ts`
 
-Update the Notification interface (line 78-86):
 ```typescript
-export interface Notification {
-  id: string;
-  type: "coach" | "system" | "achievement" | "health" | "payment" | "program" | "checkin";
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  coachId?: string;
-  actionUrl?: string;
-  priority?: "low" | "normal" | "high";
-}
+export const bloodworkReports: BloodworkReport[] = [
+  {
+    id: "bw-1",
+    uploadDate: "2026-01-15",
+    fileName: "kan_tahlili_ocak_2026.pdf",
+    fileType: "pdf",
+    status: "analyzed",
+    coachNotes: "Vitamin D seviyesi düşük, takviye önerildi.",
+    analysisDate: "2026-01-16",
+    flaggedValues: ["Vitamin D", "Ferritin"],
+  },
+  {
+    id: "bw-2",
+    uploadDate: "2025-10-20",
+    fileName: "check_up_ekim.pdf",
+    fileType: "pdf",
+    status: "analyzed",
+    analysisDate: "2025-10-22",
+  },
+  {
+    id: "bw-3",
+    uploadDate: "2026-01-27",
+    fileName: "yeni_tahlil.jpg",
+    fileType: "image",
+    status: "pending",
+  },
+];
 ```
 
-Add sample notifications for new types:
+### 3.3 Bloodwork Upload Component
+
+**Create:** `src/components/BloodworkUpload.tsx`
+
+**UI Design:**
+
+```text
+┌─────────────────────────────────────────────────┐
+│  🩸 KAN TAHLİLİ                    [+ YÜKLE]   │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │  📄 kan_tahlili_ocak_2026.pdf            │  │
+│  │     15 Ocak 2026 • Analiz Edildi ✅      │  │
+│  │     ⚠️ Vitamin D, Ferritin düşük         │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │  📄 check_up_ekim.pdf                    │  │
+│  │     20 Ekim 2025 • Analiz Edildi ✅      │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+│  ┌──────────────────────────────────────────┐  │
+│  │  🖼️ yeni_tahlil.jpg                      │  │
+│  │     27 Ocak 2026 • Bekliyor 🕐           │  │
+│  └──────────────────────────────────────────┘  │
+│                                                 │
+└─────────────────────────────────────────────────┘
+```
+
+**Features:**
+- File upload button (accepts PDF and images)
+- History list with status badges:
+  - **Analiz Edildi** (Green) - Coach reviewed
+  - **Bekliyor** (Amber) - Awaiting review
+  - **Dikkat Gerekli** (Red) - Has flagged values
+- Expandable cards showing coach notes
+- File type icons (PDF vs Image)
+- Date formatting in Turkish
+
+**Component Structure:**
+
 ```typescript
-export const notifications: Notification[] = [
-  // Existing types
-  { id: "1", type: "coach", title: "Koç Serdar", message: "Yeni program güncellendi!", time: "5dk", read: false, coachId: "1", priority: "high" },
-  { id: "2", type: "achievement", title: "Yeni Rozet!", message: "100 Antrenman rozetini kazandın! 🏆", time: "1s", read: false },
-  
-  // New types
-  { id: "3", type: "health", title: "Toparlanma Uyarısı", message: "Göğüs kaslarınız dinlenme gerektiriyor", time: "2s", read: false, priority: "high" },
-  { id: "4", type: "payment", title: "Ödeme Hatırlatması", message: "Aylık koçluk ödemesi yarın son gün", time: "12s", read: false, actionUrl: "/odemeler", priority: "high" },
-  { id: "5", type: "program", title: "Program Güncellendi", message: "Bu haftaki antrenmanlarınız hazır", time: "1g", read: true, priority: "normal" },
-  { id: "6", type: "checkin", title: "Check-in Zamanı", message: "Günlük durumunuzu bildirin", time: "4s", read: false, priority: "normal" },
-  { id: "7", type: "system", title: "Yeni Özellik", message: "Vücut tarama özelliği eklendi!", time: "2g", read: true, priority: "low" },
-];
+interface BloodworkUploadProps {
+  className?: string;
+}
+
+// States
+const [isUploading, setIsUploading] = useState(false);
+const [uploadProgress, setUploadProgress] = useState(0);
+const [expandedReport, setExpandedReport] = useState<string | null>(null);
+```
+
+### 3.4 Integration with Profil.tsx
+
+Add the BloodworkUpload component after the Body Scan section:
+
+```tsx
+{/* Bloodwork Upload Section */}
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.35 }}
+>
+  <BloodworkUpload />
+</motion.div>
+```
+
+---
+
+## Phase 4: Component Polish
+
+### 4.1 AppShell Updates
+
+**Modify:** `src/components/AppShell.tsx`
+
+- Ensure background is true `#000000`
+- Reduce grid pattern opacity for subtlety
+- Add page transition wrapper with framer-motion
+
+### 4.2 Elite Dock Refinements
+
+**Modify:** `src/components/EliteDock.tsx`
+
+Current dock is well-implemented. Minor refinements:
+- Ensure nav pill uses `bg-[#0a0a0a]` for deeper black
+- Subtle border glow on active state
+- FAB menu items use solid backgrounds (already optimized for performance)
+
+### 4.3 Energy Bank Visual Update
+
+**Modify:** `src/components/EnergyBank.tsx`
+
+- Add subtle scanline animation overlay
+- Increase glow intensity on the liquid
+- Better integration with surrounding dark theme
+
+### 4.4 Coach Uplink Refinement
+
+**Modify:** `src/components/CoachUplink.tsx`
+
+- Update hexagon avatar to use Inter font (currently Oswald)
+- Ensure consistent glass-card styling
+- Add subtle border animation when coach is online
+
+### 4.5 Bento Stats Enhancement
+
+**Modify:** `src/components/BentoStats.tsx`
+
+- Ensure cards use `.glass-card-premium` class
+- Add hover states with subtle neon glow
+- Consistent typography with Inter
+
+---
+
+## Phase 5: Page-Level Updates
+
+### 5.1 All Pages: Consistent Header Pattern
+
+Every page should follow this pattern:
+
+```tsx
+<motion.div 
+  initial={{ opacity: 0, y: -10 }}
+  animate={{ opacity: 1, y: 0 }}
+  className="flex items-center justify-between"
+>
+  <div>
+    <h1 className="font-display text-2xl font-bold text-foreground tracking-tight">
+      PAGE TITLE
+    </h1>
+    <p className="text-muted-foreground text-sm">
+      Turkish subtitle here
+    </p>
+  </div>
+  {/* Action buttons if any */}
+</motion.div>
+```
+
+### 5.2 Payments Page Polish
+
+**Modify:** `src/pages/Payments.tsx`
+
+- Ensure invoice cards match Admin Panel style
+- Status badges with proper colors (already good)
+- Add invoice detail expansion on tap
+
+### 5.3 Antrenman Page
+
+**Modify:** `src/pages/Antrenman.tsx`
+
+- Ensure Vision AI banner uses premium glass styling
+- Workout cards with consistent border treatment
+- History modal with proper dark theme
+
+### 5.4 Beslenme Page
+
+**Modify:** `src/pages/Beslenme.tsx`
+
+- Already uses `#1a1a1a` for some cards - standardize to CSS variables
+- Ensure meal cards use consistent glass styling
+- Camera scanner maintains proper dark theme
+
+### 5.5 Profil Page Structure
+
+**Modify:** `src/pages/Profil.tsx`
+
+New section order:
+1. Header (Profile title + BioCoin wallet)
+2. User ID Card
+3. Digital Twin (3D Avatar)
+4. Timeline AI (Body projection slider)
+5. Bio-Coin Wallet Stats
+6. Recovery Zones
+7. Body Stats Grid
+8. **Body Scan Upload** (existing)
+9. **Bloodwork Upload** (NEW)
+10. Settings Menu
+
+---
+
+## Technical Implementation Details
+
+### Framer Motion Page Transitions
+
+Standard pattern for all pages:
+
+```tsx
+// Page wrapper
+<motion.div
+  initial={{ opacity: 0, y: 12 }}
+  animate={{ opacity: 1, y: 0 }}
+  exit={{ opacity: 0, y: -12 }}
+  transition={{ duration: 0.3, ease: "easeOut" }}
+  className="space-y-6 pb-24"
+>
+  {/* Page content */}
+</motion.div>
+```
+
+### Glass Card Variants
+
+```tsx
+// Standard glass card
+className="glass-card p-4"
+
+// Premium glass card (hero sections)
+className="glass-card-premium p-5"
+
+// Glass card with accent border
+className="glass-card border-primary/20 p-4"
+```
+
+### Status Badge Pattern
+
+```tsx
+const statusBadges = {
+  analyzed: {
+    label: "Analiz Edildi",
+    className: "bg-green-500/20 text-green-400 border-green-500/30",
+    icon: CheckCircle2,
+  },
+  pending: {
+    label: "Bekliyor",
+    className: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    icon: Clock,
+  },
+  requires_attention: {
+    label: "Dikkat Gerekli",
+    className: "bg-red-500/20 text-red-400 border-red-500/30",
+    icon: AlertTriangle,
+  },
+};
 ```
 
 ---
@@ -213,89 +440,44 @@ export const notifications: Notification[] = [
 ### New Files
 | File | Description |
 |------|-------------|
-| `src/components/BodyScanUpload.tsx` | Photo upload component with dual slots |
+| `src/components/DailyFocusCard.tsx` | Hero card for today's main task |
+| `src/components/BloodworkUpload.tsx` | Bloodwork upload with history list |
 
 ### Modified Files
 | File | Changes |
 |------|---------|
-| `src/pages/Profil.tsx` | Add Body Scan section with button |
-| `src/index.css` | Update CSS variables, typography, add glass-card-sync |
-| `tailwind.config.ts` | Update font-display, add glass colors |
-| `src/types/shared-models.ts` | Add NotificationType and ExtendedNotification |
-| `src/lib/mockData.ts` | Update Notification interface, add sample data |
-
----
-
-## Technical Implementation Details
-
-### BodyScanUpload Image Handling
-```typescript
-const handleImageUpload = (slot: "front" | "side") => (e: React.ChangeEvent<HTMLInputElement>) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
-  
-  // Create preview URL
-  const reader = new FileReader();
-  reader.onloadstart = () => setUploadProgress(p => ({ ...p, [slot]: 10 }));
-  reader.onprogress = (event) => {
-    if (event.lengthComputable) {
-      const progress = Math.round((event.loaded / event.total) * 100);
-      setUploadProgress(p => ({ ...p, [slot]: progress }));
-    }
-  };
-  reader.onload = () => {
-    if (slot === "front") setFrontImage(reader.result as string);
-    else setSideImage(reader.result as string);
-    setUploadProgress(p => ({ ...p, [slot]: 100 }));
-  };
-  reader.readAsDataURL(file);
-};
-```
-
-### Animation Patterns (Framer Motion)
-```typescript
-// Upload progress bar
-<motion.div
-  className="h-1 bg-primary rounded-full"
-  initial={{ width: 0 }}
-  animate={{ width: `${progress}%` }}
-  transition={{ duration: 0.3 }}
-/>
-
-// Image preview fade-in
-<motion.img
-  initial={{ opacity: 0, scale: 0.9 }}
-  animate={{ opacity: 1, scale: 1 }}
-  transition={{ type: "spring" }}
-  src={imageUrl}
-/>
-```
-
-### Notification Type Icons Mapping
-```typescript
-const notificationIcons: Record<NotificationType, LucideIcon> = {
-  coach: MessageSquare,
-  system: Bell,
-  achievement: Trophy,
-  health: Heart,
-  payment: CreditCard,
-  program: Dumbbell,
-  checkin: ClipboardCheck,
-};
-```
+| `src/index.css` | Remove Oswald font, add premium glass class, page transitions |
+| `tailwind.config.ts` | Ensure Inter font is primary, no Oswald references |
+| `src/types/shared-models.ts` | Add BloodworkReport interface |
+| `src/lib/mockData.ts` | Add bloodworkReports sample data |
+| `src/pages/Kokpit.tsx` | Add DailyFocusCard, reorder sections |
+| `src/pages/Profil.tsx` | Add BloodworkUpload section |
+| `src/components/AppShell.tsx` | Refined background and transitions |
+| `src/components/EliteDock.tsx` | Minor styling refinements |
+| `src/components/EnergyBank.tsx` | Enhanced glow effects |
+| `src/components/CoachUplink.tsx` | Font update in SVG |
+| `src/components/BentoStats.tsx` | Premium glass styling |
+| `src/pages/Payments.tsx` | Glass card consistency |
+| `src/pages/Antrenman.tsx` | Glass card consistency |
+| `src/pages/Beslenme.tsx` | CSS variable standardization |
 
 ---
 
 ## Post-Implementation Verification
 
 After implementation, verify:
-- [ ] Body Scan shows two photo slots in Profil page
-- [ ] Camera/gallery picker works on mobile
-- [ ] Upload progress animation displays correctly
-- [ ] Image previews render after upload
-- [ ] Submit button shows loading state
-- [ ] CSS variables create darker, bluer background
-- [ ] Headers now use Inter font (not Oswald)
-- [ ] Glass cards have consistent styling
-- [ ] Extended notification types are properly typed
-- [ ] Sample notifications cover all 7 types
+- [ ] All backgrounds are pure black (#000000)
+- [ ] No gray backgrounds visible anywhere
+- [ ] All headers use Inter font (no Oswald)
+- [ ] Cards have subtle blue tint (`240 6% 4%`)
+- [ ] Neon lime (#CCFF00) accents are consistent
+- [ ] Stories Ring displays in Kokpit header
+- [ ] Daily Focus Card shows workout/habit priority
+- [ ] Bloodwork Upload accepts PDF and images
+- [ ] Bloodwork history shows with correct status badges
+- [ ] Elite Dock floats with glassmorphic styling
+- [ ] Page transitions are smooth (300ms ease-out)
+- [ ] All Turkish text is correct and consistent
+- [ ] Body Scan button is prominent in Profile
+- [ ] Payments page matches Admin Panel invoice style
+
