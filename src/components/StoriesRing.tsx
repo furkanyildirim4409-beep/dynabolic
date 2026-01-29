@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { RefreshCw, HelpCircle, Trophy, Dumbbell, Zap } from "lucide-react";
 import { coachStories } from "@/lib/mockData";
 import type { StoryCategory, CoachStory } from "@/types/shared-models";
-import StoryViewer from "./StoryViewer";
+import { useStory, type Story } from "@/context/StoryContext";
 
 interface StoriesRingProps {
   className?: string;
@@ -43,73 +43,72 @@ const groupedStories = coachStories.reduce((acc, story) => {
 
 const categories = Object.keys(groupedStories) as StoryCategory[];
 
+// Convert CoachStory to Story format for context
+const convertToStories = (coachStories: CoachStory[]): Story[] => {
+  return coachStories.map((story) => ({
+    id: story.id,
+    title: story.title,
+    thumbnail: story.thumbnail,
+    content: story.content,
+  }));
+};
+
 const StoriesRing = ({ className = "" }: StoriesRingProps) => {
   const [viewedCategories, setViewedCategories] = useState<Set<StoryCategory>>(new Set());
-  const [activeCategory, setActiveCategory] = useState<StoryCategory | null>(null);
+  const { openStories } = useStory();
 
   const handleCategoryClick = (category: StoryCategory) => {
-    setActiveCategory(category);
+    const config = categoryConfig[category];
+    const stories = convertToStories(groupedStories[category]);
+    
+    openStories(stories, 0, {
+      categoryLabel: category,
+      categoryIcon: config.icon,
+      categoryGradient: config.gradient,
+    });
+    
     setViewedCategories((prev) => new Set([...prev, category]));
   };
 
-  const handleClose = () => {
-    setActiveCategory(null);
-  };
-
   return (
-    <>
-      {/* Stories Ring */}
-      <div className={`overflow-x-auto scrollbar-hide ${className}`}>
-        <div className="flex gap-3 px-1 py-2">
-          {categories.map((category, index) => {
-            const config = categoryConfig[category];
-            const isViewed = viewedCategories.has(category);
+    <div className={`overflow-x-auto scrollbar-hide ${className}`}>
+      <div className="flex gap-3 px-1 py-2">
+        {categories.map((category, index) => {
+          const config = categoryConfig[category];
+          const isViewed = viewedCategories.has(category);
 
-            return (
-              <motion.button
-                key={category}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.05 }}
-                onClick={() => handleCategoryClick(category)}
-                className="flex flex-col items-center gap-1.5 min-w-[72px]"
+          return (
+            <motion.button
+              key={category}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05 }}
+              onClick={() => handleCategoryClick(category)}
+              className="flex flex-col items-center gap-1.5 min-w-[72px]"
+            >
+              {/* Ring */}
+              <div
+                className={`p-0.5 rounded-full ${
+                  isViewed
+                    ? "bg-muted/50"
+                    : "bg-gradient-to-tr from-primary via-primary/80 to-primary neon-glow-sm"
+                }`}
               >
-                {/* Ring */}
                 <div
-                  className={`p-0.5 rounded-full ${
-                    isViewed
-                      ? "bg-muted/50"
-                      : "bg-gradient-to-tr from-primary via-primary/80 to-primary neon-glow-sm"
-                  }`}
+                  className={`w-14 h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
                 >
-                  <div
-                    className={`w-14 h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
-                  >
-                    {config.icon}
-                  </div>
+                  {config.icon}
                 </div>
-                {/* Label */}
-                <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[72px]">
-                  {category}
-                </span>
-              </motion.button>
-            );
-          })}
-        </div>
+              </div>
+              {/* Label */}
+              <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[72px]">
+                {category}
+              </span>
+            </motion.button>
+          );
+        })}
       </div>
-
-      {/* Story Viewer */}
-      {activeCategory && (
-        <StoryViewer
-          isOpen={!!activeCategory}
-          onClose={handleClose}
-          category={activeCategory}
-          stories={groupedStories[activeCategory]}
-          categoryIcon={categoryConfig[activeCategory].icon}
-          categoryGradient={categoryConfig[activeCategory].gradient}
-        />
-      )}
-    </>
+    </div>
   );
 };
 

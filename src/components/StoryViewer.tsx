@@ -1,32 +1,26 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import type { StoryCategory, CoachStory } from "@/types/shared-models";
-
-interface StoryViewerProps {
-  isOpen: boolean;
-  onClose: () => void;
-  category: StoryCategory;
-  stories: CoachStory[];
-  categoryIcon: React.ReactNode;
-  categoryGradient: string;
-}
+import { useStory } from "@/context/StoryContext";
 
 const STORY_DURATION = 5000; // 5 seconds per story
 const PROGRESS_INTERVAL = 50; // Update progress every 50ms
 
-const StoryViewer = ({
-  isOpen,
-  onClose,
-  category,
-  stories,
-  categoryIcon,
-  categoryGradient,
-}: StoryViewerProps) => {
+const StoryViewer = () => {
+  const {
+    isOpen,
+    stories,
+    initialIndex,
+    categoryLabel,
+    categoryIcon,
+    categoryGradient,
+    closeStories,
+  } = useStory();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  
+
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,9 +44,9 @@ const StoryViewer = ({
       progressRef.current = 0;
     } else {
       // Last story finished, close viewer
-      onClose();
+      closeStories();
     }
-  }, [currentIndex, stories.length, onClose, clearTimer]);
+  }, [currentIndex, stories.length, closeStories, clearTimer]);
 
   // Go to previous story
   const goPrev = useCallback(() => {
@@ -70,7 +64,7 @@ const StoryViewer = ({
     clearTimer();
     timerRef.current = setInterval(() => {
       progressRef.current += (PROGRESS_INTERVAL / STORY_DURATION) * 100;
-      
+
       if (progressRef.current >= 100) {
         goNext();
       } else {
@@ -82,7 +76,7 @@ const StoryViewer = ({
   // Handle timer based on pause state
   useEffect(() => {
     if (!isOpen) return;
-    
+
     if (isPaused) {
       clearTimer();
     } else {
@@ -95,19 +89,19 @@ const StoryViewer = ({
   // Reset state when opening
   useEffect(() => {
     if (isOpen) {
-      setCurrentIndex(0);
+      setCurrentIndex(initialIndex);
       setProgress(0);
       progressRef.current = 0;
       setIsPaused(false);
     }
-  }, [isOpen]);
+  }, [isOpen, initialIndex]);
 
   // Handle tap zones
   const handleTap = (e: React.MouseEvent | React.TouchEvent) => {
     if (!containerRef.current) return;
-    
+
     const rect = containerRef.current.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.changedTouches[0].clientX : e.clientX;
+    const clientX = "touches" in e ? e.changedTouches[0].clientX : e.clientX;
     const tapPosition = (clientX - rect.left) / rect.width;
 
     if (tapPosition < 0.5) {
@@ -135,7 +129,16 @@ const StoryViewer = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[60] bg-black touch-none select-none"
+        className="fixed inset-0 z-[9999] bg-black touch-none select-none"
+        style={{
+          width: "100vw",
+          height: "100vh",
+          position: "fixed",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
         onMouseDown={handlePressStart}
         onMouseUp={handlePressEnd}
         onMouseLeave={handlePressEnd}
@@ -168,22 +171,26 @@ const StoryViewer = ({
         {/* Header */}
         <div className="absolute top-10 left-4 right-4 z-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div
-              className={`w-10 h-10 rounded-full bg-gradient-to-br ${categoryGradient} flex items-center justify-center text-white shadow-lg`}
-            >
-              {categoryIcon}
-            </div>
+            {categoryIcon && categoryGradient && (
+              <div
+                className={`w-10 h-10 rounded-full bg-gradient-to-br ${categoryGradient} flex items-center justify-center text-white shadow-lg`}
+              >
+                {categoryIcon}
+              </div>
+            )}
             <div>
-              <p className="text-white font-display text-sm tracking-wide">
-                {category.toUpperCase()}
-              </p>
+              {categoryLabel && (
+                <p className="text-white font-display text-sm tracking-wide">
+                  {categoryLabel.toUpperCase()}
+                </p>
+              )}
               <p className="text-white/60 text-xs">{currentStory.title}</p>
             </div>
           </div>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onClose();
+              closeStories();
             }}
             className="p-2 text-white/80 hover:text-white transition-colors z-30"
           >
@@ -203,7 +210,7 @@ const StoryViewer = ({
             className="w-full h-full object-cover"
             draggable={false}
           />
-          
+
           {/* Gradient overlay for readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
         </div>
