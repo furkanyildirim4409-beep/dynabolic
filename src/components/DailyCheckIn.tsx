@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Send, Smile, Frown, Moon, Star, Flame, Sparkles, Brain, Heart } from "lucide-react";
+import { motion } from "framer-motion";
+import { Send, Moon, Brain, Flame, Heart, Sparkles } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import type { DailyCheckIn as DailyCheckInType } from "@/types/shared-models";
 
 interface DailyCheckInProps {
@@ -16,39 +22,39 @@ interface DailyCheckInProps {
 interface SliderConfig {
   id: keyof Pick<DailyCheckInType, "mood" | "sleep" | "soreness" | "stress">;
   label: string;
-  iconLow: React.ReactNode;
-  iconHigh: React.ReactNode;
-  colorClass: string;
+  icon: React.ReactNode;
+  gradient: string;
+  trackColor: string;
 }
 
 const sliderConfigs: SliderConfig[] = [
   {
     id: "mood",
     label: "RUH HALİ",
-    iconLow: <Frown className="w-5 h-5" />,
-    iconHigh: <Smile className="w-5 h-5" />,
-    colorClass: "text-yellow-400",
+    icon: <Heart className="w-4 h-4" />,
+    gradient: "from-pink-500 to-rose-500",
+    trackColor: "bg-pink-500/20",
   },
   {
     id: "sleep",
     label: "UYKU KALİTESİ",
-    iconLow: <Moon className="w-5 h-5" />,
-    iconHigh: <Star className="w-5 h-5" />,
-    colorClass: "text-blue-400",
+    icon: <Moon className="w-4 h-4" />,
+    gradient: "from-purple-500 to-violet-500",
+    trackColor: "bg-purple-500/20",
   },
   {
     id: "soreness",
     label: "KAS AĞRISI",
-    iconLow: <Flame className="w-5 h-5" />,
-    iconHigh: <Sparkles className="w-5 h-5" />,
-    colorClass: "text-orange-400",
+    icon: <Flame className="w-4 h-4" />,
+    gradient: "from-orange-500 to-amber-500",
+    trackColor: "bg-orange-500/20",
   },
   {
     id: "stress",
     label: "STRES SEVİYESİ",
-    iconLow: <Brain className="w-5 h-5" />,
-    iconHigh: <Heart className="w-5 h-5" />,
-    colorClass: "text-pink-400",
+    icon: <Brain className="w-4 h-4" />,
+    gradient: "from-blue-500 to-cyan-500",
+    trackColor: "bg-blue-500/20",
   },
 ];
 
@@ -84,8 +90,8 @@ const DailyCheckIn = ({ isOpen, onClose, onSubmit }: DailyCheckInProps) => {
     onSubmit?.(checkInData);
     
     toast({
-      title: "Check-In Tamamlandı ✓",
-      description: "Bugünkü veriler koçuna iletildi.",
+      title: "Veriler İşlendi ✓",
+      description: "Günlük check-in verilerin koçuna iletildi.",
     });
 
     setIsSubmitting(false);
@@ -93,136 +99,104 @@ const DailyCheckIn = ({ isOpen, onClose, onSubmit }: DailyCheckInProps) => {
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl"
-        >
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ delay: 0.1 }}
-            className="h-full flex flex-col"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-white/10">
-              <button
-                onClick={onClose}
-                className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-              <h1 className="font-display text-lg text-foreground">GÜNLÜK CHECK-IN</h1>
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                size="sm"
-                className="bg-primary text-primary-foreground hover:bg-primary/90 font-display"
-              >
-                {isSubmitting ? (
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                  >
-                    <Send className="w-4 h-4" />
-                  </motion.div>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-1" />
-                    GÖNDER
-                  </>
-                )}
-              </Button>
-            </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-[380px] bg-black/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-0 overflow-hidden">
+        {/* Neon glow effect */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-purple-500/5 pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-1 bg-gradient-to-r from-transparent via-primary to-transparent" />
+        
+        <DialogHeader className="p-5 pb-3 border-b border-white/5">
+          <DialogTitle className="font-display text-lg text-foreground flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-primary" />
+            GÜNLÜK CHECK-IN
+          </DialogTitle>
+        </DialogHeader>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6">
-              {/* Info Card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 }}
-                className="glass-card p-4 border-l-2 border-l-primary"
-              >
-                <p className="text-sm text-muted-foreground">
-                  Günlük check-in verilerini girerek koçunun programını optimize etmesine yardımcı ol.
-                </p>
-              </motion.div>
-
-              {/* Sliders */}
-              {sliderConfigs.map((config, index) => (
-                <motion.div
-                  key={config.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15 + index * 0.1 }}
-                  className="space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-display text-sm text-foreground">{config.label}</span>
-                    <span className={`font-display text-lg ${config.colorClass}`}>
-                      {values[config.id]}/10
-                    </span>
+        <div className="p-5 space-y-5 max-h-[60vh] overflow-y-auto">
+          {/* Sliders */}
+          {sliderConfigs.map((config, index) => (
+            <motion.div
+              key={config.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.08 }}
+              className="space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className={`p-1.5 rounded-lg bg-gradient-to-br ${config.gradient}`}>
+                    {config.icon}
                   </div>
+                  <span className="font-display text-xs text-muted-foreground tracking-wider">
+                    {config.label}
+                  </span>
+                </div>
+                <div className={`font-display text-xl font-bold bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent`}>
+                  {values[config.id]}
+                </div>
+              </div>
 
-                  <div className="relative">
-                    <Slider
-                      value={[values[config.id]]}
-                      onValueChange={(val) => handleSliderChange(config.id, val)}
-                      min={1}
-                      max={10}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between text-muted-foreground">
-                    <span className={config.colorClass}>{config.iconLow}</span>
-                    <span className={config.colorClass}>{config.iconHigh}</span>
-                  </div>
-                </motion.div>
-              ))}
-
-              {/* Notes */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="space-y-2"
-              >
-                <label className="font-display text-sm text-foreground">NOTLAR</label>
-                <Textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Bugün hakkında notlar... (opsiyonel)"
-                  className="bg-card/40 border-white/10 min-h-[100px] resize-none"
+              <div className="relative">
+                <div className={`absolute inset-0 h-2 rounded-full ${config.trackColor}`} />
+                <Slider
+                  value={[values[config.id]]}
+                  onValueChange={(val) => handleSliderChange(config.id, val)}
+                  min={1}
+                  max={10}
+                  step={1}
+                  className="w-full relative z-10"
                 />
-              </motion.div>
+              </div>
 
-              {/* Submit Button (Mobile) */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="pt-4 pb-8"
-              >
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="w-full h-14 bg-primary text-primary-foreground hover:bg-primary/90 font-display text-lg"
-                >
-                  {isSubmitting ? "GÖNDERİLİYOR..." : "CHECK-IN GÖNDER"}
-                </Button>
-              </motion.div>
-            </div>
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground/50 font-display">
+                <span>DÜŞÜK</span>
+                <span>YÜKSEK</span>
+              </div>
+            </motion.div>
+          ))}
+
+          {/* Notes */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="space-y-2 pt-2"
+          >
+            <label className="font-display text-xs text-muted-foreground tracking-wider">NOTLAR</label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Bugün hakkında notlar... (opsiyonel)"
+              className="bg-white/[0.03] border-white/10 min-h-[80px] resize-none text-sm focus:border-primary/50 focus:ring-primary/20"
+            />
           </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+        </div>
+
+        {/* Footer */}
+        <div className="p-5 pt-3 border-t border-white/5">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="w-full h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-display text-sm tracking-wider rounded-xl transition-all duration-300 shadow-lg shadow-primary/20"
+          >
+            {isSubmitting ? (
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                className="mr-2"
+              >
+                <Send className="w-4 h-4" />
+              </motion.div>
+            ) : (
+              <>
+                <Send className="w-4 h-4 mr-2" />
+                KAYDET
+              </>
+            )}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
