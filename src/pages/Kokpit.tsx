@@ -4,7 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight } from "lucide-react";
 import PerformanceRing from "@/components/PerformanceRing";
 import NextMissionCard from "@/components/NextMissionCard";
-import QuickStatsRow from "@/components/QuickStatsRow";
+import QuickStatsRow, { StatType } from "@/components/QuickStatsRow";
+import WeeklyActivityChart from "@/components/WeeklyActivityChart";
+import StatDetailModal from "@/components/StatDetailModal";
 import CoachChat from "@/components/CoachChat";
 import StoriesRing from "@/components/StoriesRing";
 import BentoStats from "@/components/BentoStats";
@@ -16,6 +18,7 @@ const Kokpit = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
+  const [selectedStat, setSelectedStat] = useState<StatType | null>(null);
 
   const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
 
@@ -130,7 +133,10 @@ const Kokpit = () => {
       />
 
       {/* Quick Stats Row */}
-      <QuickStatsRow />
+      <QuickStatsRow onStatClick={(stat) => setSelectedStat(stat)} />
+
+      {/* Weekly Activity Chart */}
+      <WeeklyActivityChart />
 
       {/* Coach Message Teaser */}
       <motion.button
@@ -169,6 +175,13 @@ const Kokpit = () => {
 
       {/* Coach Chat */}
       <CoachChat isOpen={showChat} onClose={() => setShowChat(false)} />
+
+      {/* Stat Detail Modal */}
+      <StatDetailModal 
+        isOpen={!!selectedStat} 
+        onClose={() => setSelectedStat(null)} 
+        statType={selectedStat} 
+      />
 
       {/* Notifications Panel */}
       <AnimatePresence>
