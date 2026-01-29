@@ -119,7 +119,7 @@ const Kokpit = () => {
       >
         <PerformanceRing 
           score={85}
-          label="Hazır Oluşluk"
+          label="HAZIRSIN"
           sublabel="Yüksek yoğunluklu antrenman için uygun"
         />
       </motion.div>
