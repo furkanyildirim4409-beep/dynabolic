@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { coaches, getLeaderboardCoaches, Coach } from "@/lib/mockData";
 import CartView, { CartItem } from "@/components/CartView";
 import ProductDetail from "@/components/ProductDetail";
+import { useStory, type Story } from "@/context/StoryContext";
 
 // Bio-Coin Discount Calculator
 const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
@@ -70,7 +71,7 @@ const getAllPosts = () => {
 
 const Kesfet = () => {
   const navigate = useNavigate();
-  const [selectedStory, setSelectedStory] = useState<Coach | null>(null);
+  const { openStories } = useStory();
   const [bioCoins, setBioCoins] = useState(USER_BIO_COINS);
   const [coinDiscounts, setCoinDiscounts] = useState<Record<string, boolean>>({});
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
@@ -88,9 +89,18 @@ const Kesfet = () => {
   };
 
   const handleStoryClick = (coach: Coach) => {
-    setSelectedStory(coach);
-    // Auto-close after 5 seconds
-    setTimeout(() => setSelectedStory(null), 5000);
+    // Convert coach story to Story format
+    const story: Story = {
+      id: `coach-${coach.id}`,
+      title: coach.name,
+      thumbnail: coach.avatar,
+      content: coach.storyContent,
+    };
+    
+    openStories([story], 0, {
+      categoryLabel: coach.specialty,
+      categoryGradient: "from-primary to-primary/60",
+    });
   };
 
   const handleLike = (postId: string, currentLikes: number) => {
@@ -569,99 +579,7 @@ const Kesfet = () => {
         </Tabs>
       </div>
 
-      {/* Story Viewer Overlay */}
-      <AnimatePresence>
-        {selectedStory && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black"
-            onClick={() => setSelectedStory(null)}
-          >
-            {/* Story Progress Bars */}
-            <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
-              {[1, 2, 3].map((_, i) => (
-                <div key={i} className="flex-1 h-0.5 bg-white/30 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-white"
-                    initial={{ width: "0%" }}
-                    animate={{ width: i === 0 ? "100%" : "0%" }}
-                    transition={{ duration: 5, ease: "linear" }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Story Header - Clickable to navigate to profile */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedStory(null);
-                navigate(`/coach/${selectedStory.id}`);
-              }}
-              className="absolute top-8 left-4 right-16 flex items-center gap-3 z-10"
-            >
-              <Avatar className="w-10 h-10 border-2 border-primary">
-                <AvatarImage src={selectedStory.avatar} className="object-cover" />
-                <AvatarFallback>{selectedStory.name.charAt(4)}</AvatarFallback>
-              </Avatar>
-              <div className="text-left">
-                <p className="text-white text-sm font-medium">{selectedStory.name}</p>
-                <p className="text-white/60 text-xs">{selectedStory.specialty}</p>
-              </div>
-            </button>
-            
-            {/* Close button */}
-            <button
-              onClick={() => setSelectedStory(null)}
-              className="absolute top-8 right-4 p-2 text-white/80 hover:text-white transition-colors z-10"
-            >
-              <X className="w-6 h-6" />
-            </button>
-
-            {/* Story Content - Full Screen Image */}
-            <div className="absolute inset-0">
-              <img 
-                src={selectedStory.storyContent.image} 
-                alt="Story"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40" />
-            </div>
-
-            {/* Story Text */}
-            <div className="absolute bottom-24 left-4 right-4 z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-black/50 backdrop-blur-sm rounded-xl p-4"
-              >
-                <p className="text-white text-sm leading-relaxed">
-                  {selectedStory.storyContent.text}
-                </p>
-              </motion.div>
-              
-              <motion.button
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedStory(null);
-                  navigate(`/coach/${selectedStory.id}`);
-                }}
-                className="w-full mt-4 bg-primary text-primary-foreground px-6 py-3 rounded-xl font-display text-sm"
-              >
-                PROFİLE GİT
-              </motion.button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Story Viewer is now global - handled by StoryContext */}
 
       {/* Cart View */}
       <CartView

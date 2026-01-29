@@ -13,7 +13,6 @@ import {
   ShoppingBag,
   Briefcase,
   Grid3X3,
-  X,
   Play,
   Coins,
   Check
@@ -24,11 +23,12 @@ import { toast } from "@/hooks/use-toast";
 import { getCoachById, coaches } from "@/lib/mockData";
 import ProductDetail from "@/components/ProductDetail";
 import CartView, { CartItem } from "@/components/CartView";
+import { useStory, type Story } from "@/context/StoryContext";
 
 const CoachProfile = () => {
   const navigate = useNavigate();
   const { coachId } = useParams();
-  const [selectedStory, setSelectedStory] = useState<{ id: string; title: string; thumbnail: string } | null>(null);
+  const { openStories } = useStory();
   const [activeTab, setActiveTab] = useState("feed");
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [isFollowing, setIsFollowing] = useState(false);
@@ -39,6 +39,37 @@ const CoachProfile = () => {
 
   // Get coach by ID - fallback to first coach if not found
   const coach = getCoachById(coachId || "1") || coaches[0];
+
+  // Convert highlight to Story format and open viewer
+  const handleHighlightClick = (highlight: { id: string; title: string; thumbnail: string }) => {
+    // Create a story from the highlight + coach's story content
+    const story: Story = {
+      id: highlight.id,
+      title: highlight.title,
+      thumbnail: highlight.thumbnail,
+      content: coach.storyContent, // Use coach's main story content
+    };
+    
+    openStories([story], 0, {
+      categoryLabel: highlight.title,
+      categoryGradient: "from-primary to-primary/60",
+    });
+  };
+
+  // Open the main coach story (from avatar click)
+  const handleAvatarStoryClick = () => {
+    const story: Story = {
+      id: `coach-${coach.id}`,
+      title: coach.name,
+      thumbnail: coach.avatar,
+      content: coach.storyContent,
+    };
+    
+    openStories([story], 0, {
+      categoryLabel: coach.specialty,
+      categoryGradient: "from-primary to-primary/60",
+    });
+  };
 
   const handleLike = (postId: string) => {
     setLikedPosts(prev => ({ ...prev, [postId]: !prev[postId] }));
@@ -138,7 +169,7 @@ const CoachProfile = () => {
           <div className="flex items-start gap-4">
             {/* Avatar with Neon Ring */}
             <motion.button
-              onClick={() => setSelectedStory(coach.highlights[0])}
+              onClick={handleAvatarStoryClick}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="relative"
@@ -222,7 +253,7 @@ const CoachProfile = () => {
             {coach.highlights.map((highlight) => (
               <motion.button
                 key={highlight.id}
-                onClick={() => setSelectedStory(highlight)}
+                onClick={() => handleHighlightClick(highlight)}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex flex-col items-center gap-2 flex-shrink-0"
@@ -470,74 +501,7 @@ const CoachProfile = () => {
         </Tabs>
       </div>
 
-      {/* Story/Highlight Viewer Overlay */}
-      <AnimatePresence>
-        {selectedStory && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black"
-            onClick={() => setSelectedStory(null)}
-          >
-            {/* Story Progress */}
-            <div className="absolute top-4 left-4 right-4 flex gap-1 z-10">
-              {coach.highlights.map((_, i) => (
-                <div key={i} className="flex-1 h-0.5 bg-white/30 rounded-full overflow-hidden">
-                  <motion.div
-                    className="h-full bg-white"
-                    initial={{ width: "0%" }}
-                    animate={{ width: selectedStory.id === coach.highlights[i].id ? "100%" : "0%" }}
-                    transition={{ duration: 5, ease: "linear" }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Header */}
-            <div className="absolute top-8 left-4 right-4 flex items-center justify-between z-10">
-              <div className="flex items-center gap-3">
-                <Avatar className="w-10 h-10 border-2 border-primary">
-                  <AvatarImage src={coach.avatar} className="object-cover" />
-                  <AvatarFallback>{coach.name.charAt(4)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="text-white text-sm font-medium">{coach.name}</p>
-                  <p className="text-white/60 text-xs">{selectedStory.title}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setSelectedStory(null)}
-                className="p-2 text-white/80 hover:text-white transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="absolute inset-0">
-              <img 
-                src={selectedStory.thumbnail.replace("w=100&h=100", "w=800&h=1200")} 
-                alt={selectedStory.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/40" />
-            </div>
-
-            {/* Title */}
-            <div className="absolute bottom-24 left-4 right-4 z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center"
-              >
-                <h3 className="font-display text-2xl text-white mb-2">{selectedStory.title}</h3>
-                <p className="text-white/70 text-sm">{coach.name} • {coach.specialty}</p>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Story Viewer is now global - handled by StoryContext */}
 
       {/* Product Detail Modal */}
       <ProductDetail
