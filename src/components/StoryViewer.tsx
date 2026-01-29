@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { X, Send } from "lucide-react";
 import { useStory } from "@/context/StoryContext";
+import { toast } from "@/hooks/use-toast";
 
 const STORY_DURATION = 5000; // 5 seconds per story
 const PROGRESS_INTERVAL = 50; // Update progress every 50ms
@@ -20,10 +21,13 @@ const StoryViewer = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [replyText, setReplyText] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const progressRef = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const currentStory = stories[currentIndex];
 
@@ -73,18 +77,18 @@ const StoryViewer = () => {
     }, PROGRESS_INTERVAL);
   }, [clearTimer, goNext]);
 
-  // Handle timer based on pause state
+  // Handle timer based on pause state and input focus
   useEffect(() => {
     if (!isOpen) return;
 
-    if (isPaused) {
+    if (isPaused || isInputFocused) {
       clearTimer();
     } else {
       startTimer();
     }
 
     return () => clearTimer();
-  }, [isOpen, isPaused, currentIndex, startTimer, clearTimer]);
+  }, [isOpen, isPaused, isInputFocused, currentIndex, startTimer, clearTimer]);
 
   // Reset state when opening
   useEffect(() => {
@@ -93,11 +97,15 @@ const StoryViewer = () => {
       setProgress(0);
       progressRef.current = 0;
       setIsPaused(false);
+      setReplyText("");
+      setIsInputFocused(false);
     }
   }, [isOpen, initialIndex]);
 
   // Handle tap zones
   const handleTap = (e: React.MouseEvent | React.TouchEvent) => {
+    // Don't handle taps if input is focused
+    if (isInputFocused) return;
     if (!containerRef.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
@@ -112,11 +120,47 @@ const StoryViewer = () => {
   };
 
   // Long press handlers
-  const handlePressStart = () => {
+  const handlePressStart = (e: React.MouseEvent | React.TouchEvent) => {
+    // Don't pause if interacting with input area
+    const target = e.target as HTMLElement;
+    if (target.tagName === "INPUT" || target.closest(".reply-container")) {
+      return;
+    }
     setIsPaused(true);
   };
 
   const handlePressEnd = () => {
+    if (!isInputFocused) {
+      setIsPaused(false);
+    }
+  };
+
+  // Handle reply submission
+  const handleSendReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!replyText.trim()) return;
+
+    toast({
+      title: "Mesaj Gönderildi ✓",
+      description: `"${replyText.slice(0, 30)}${replyText.length > 30 ? "..." : ""}" koça iletildi.`,
+    });
+
+    setReplyText("");
+    setIsInputFocused(false);
+    inputRef.current?.blur();
+  };
+
+  // Handle input focus
+  const handleInputFocus = () => {
+    setIsInputFocused(true);
+    setIsPaused(true);
+  };
+
+  // Handle input blur
+  const handleInputBlur = () => {
+    setIsInputFocused(false);
     setIsPaused(false);
   };
 
@@ -216,7 +260,7 @@ const StoryViewer = () => {
         </div>
 
         {/* Text Overlay */}
-        <div className="absolute bottom-20 left-4 right-4 z-20">
+        <div className="absolute bottom-36 left-4 right-4 z-20">
           <motion.div
             key={currentStory.id + "-text"}
             initial={{ opacity: 0, y: 20 }}
@@ -230,9 +274,45 @@ const StoryViewer = () => {
           </motion.div>
         </div>
 
-        {/* Pause indicator */}
+        {/* Reply Input */}
+        <div
+          className="reply-container absolute bottom-6 left-4 right-4 z-30"
+          onClick={(e) => e.stopPropagation()}
+          onMouseDown={(e) => e.stopPropagation()}
+          onTouchStart={(e) => e.stopPropagation()}
+        >
+          <form onSubmit={handleSendReply} className="flex gap-2">
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                onFocus={handleInputFocus}
+                onBlur={handleInputBlur}
+                placeholder="Koça mesaj gönder..."
+                className="w-full px-4 py-3 bg-white/10 backdrop-blur-xl border border-white/20 rounded-full text-white text-sm placeholder:text-white/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-all touch-auto select-auto"
+              />
+            </div>
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              disabled={!replyText.trim()}
+              className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                replyText.trim()
+                  ? "bg-primary text-primary-foreground neon-glow-sm"
+                  : "bg-white/10 text-white/40"
+              }`}
+            >
+              <Send className="w-5 h-5" />
+            </motion.button>
+          </form>
+        </div>
+
+        {/* Pause indicator - only show when paused by long press, not input focus */}
         <AnimatePresence>
-          {isPaused && (
+          {isPaused && !isInputFocused && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
