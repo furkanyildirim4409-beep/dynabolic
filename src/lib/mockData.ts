@@ -870,7 +870,40 @@ export const assignedCoach = coaches[0]; // Koç Serdar
 // INVOICES DATA
 // ============================================
 
-import type { Invoice, CoachStory } from "@/types/shared-models";
+import type { Invoice, CoachStory, BloodworkReport } from "@/types/shared-models";
+
+// ============================================
+// BLOODWORK REPORTS DATA
+// ============================================
+
+export const bloodworkReports: BloodworkReport[] = [
+  {
+    id: "bw-1",
+    uploadDate: "2026-01-15",
+    fileName: "kan_tahlili_ocak_2026.pdf",
+    fileType: "pdf",
+    status: "analyzed",
+    coachNotes: "Vitamin D seviyesi düşük, takviye önerildi. Ferritin de sınırda, demir açısından zengin gıdalara yönel.",
+    analysisDate: "2026-01-16",
+    flaggedValues: ["Vitamin D", "Ferritin"],
+  },
+  {
+    id: "bw-2",
+    uploadDate: "2025-10-20",
+    fileName: "check_up_ekim.pdf",
+    fileType: "pdf",
+    status: "analyzed",
+    coachNotes: "Tüm değerler normal aralıkta. Harika gidiyorsun!",
+    analysisDate: "2025-10-22",
+  },
+  {
+    id: "bw-3",
+    uploadDate: "2026-01-27",
+    fileName: "yeni_tahlil.jpg",
+    fileType: "image",
+    status: "pending",
+  },
+];
 
 export const invoices: Invoice[] = [
   { 

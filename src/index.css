@@ -1,14 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* DYNABOLIC Design System - Elite Athlete App */
+/* DYNABOLIC OS Design System - Elite Athlete App */
+/* Synced with Coach Admin Panel */
 
 @layer base {
   :root {
-    /* Pure Void Black Background - Synced with Admin Panel */
+    /* TRUE Void Black - No compromise */
     --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
@@ -124,6 +125,30 @@
   background: hsl(var(--glass-bg) / 0.8);
   border: 1px solid hsl(var(--glass-border) / 0.5);
   @apply backdrop-blur-xl rounded-2xl;
+}
+
+/* Premium Glass Card - Hero Sections */
+.glass-card-premium {
+  background: hsl(240 6% 4% / 0.9);
+  border: 1px solid hsl(0 0% 100% / 0.08);
+  backdrop-filter: blur(24px);
+  @apply rounded-2xl shadow-2xl shadow-black/50;
+}
+
+/* Page Transition Animations */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-enter {
+  animation: page-enter 0.4s ease-out forwards;
 }
 
 @layer utilities {

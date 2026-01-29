@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Moon, Smartphone, Lock, HelpCircle, X, Camera } from "lucide-react";
+import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Moon, Smartphone, Lock, HelpCircle, X, Camera, Droplet } from "lucide-react";
 import RealisticBodyAvatar from "@/components/RealisticBodyAvatar";
 import BioCoinWallet from "@/components/BioCoinWallet";
 import BodyScanUpload from "@/components/BodyScanUpload";
+import BloodworkUpload from "@/components/BloodworkUpload";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -322,6 +323,16 @@ const Profil = () => {
           <Camera className="w-5 h-5 mr-2" />
           FOTOĞRAF YÜKLE
         </Button>
+      </motion.div>
+
+      {/* Bloodwork Upload Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="glass-card p-4"
+      >
+        <BloodworkUpload />
       </motion.div>
 
       {/* Settings Menu */}

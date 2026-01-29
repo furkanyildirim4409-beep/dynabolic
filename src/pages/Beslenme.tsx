@@ -154,7 +154,7 @@ const MacroDashboard = ({ meals }: { meals: Meal[] }) => {
   ];
 
   return (
-    <div className="bg-[#1a1a1a] border border-white/5 rounded-2xl p-4 mb-6">
+    <div className="bg-card border border-white/5 rounded-2xl p-4 mb-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">MAKRO ÖZETİ</h2>
@@ -455,23 +455,23 @@ const ExpandableMealCard = ({
       layout
       className={cn(
         "border rounded-2xl overflow-hidden mb-3 transition-colors",
-        allEaten ? "bg-[#1a1a1a] border-primary/20" : "bg-[#1a1a1a] border-white/5",
+        allEaten ? "bg-card border-primary/20" : "bg-card border-white/5",
       )}
     >
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 bg-[#1a1a1a] hover:bg-white/5 transition-colors"
+        className="w-full flex items-center justify-between p-4 bg-card hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-4">
           <div
             className={cn(
-              "w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-xl relative flex-shrink-0",
+              "w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xl relative flex-shrink-0",
               meal.color,
             )}
           >
             {meal.icon}
             {allEaten && (
-              <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border-2 border-[#1a1a1a]">
+              <div className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5 border-2 border-card">
                 <Check size={10} className="text-black" />
               </div>
             )}

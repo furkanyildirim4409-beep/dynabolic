@@ -39,7 +39,8 @@ const StatCard = ({ title, value, subtitle, badge, type, progress }: StatCardPro
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-4 relative overflow-hidden"
+      whileHover={{ scale: 1.01 }}
+      className="glass-card-premium p-4 relative overflow-hidden group transition-all duration-300 hover:border-primary/20"
     >
       {/* Background Glow */}
       <div className={`absolute -bottom-8 -right-8 w-24 h-24 ${config.bgColor} opacity-10 blur-2xl rounded-full`} />

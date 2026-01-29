@@ -153,3 +153,17 @@ export interface AssignedNutritionPlan {
   totalCarbs: number;
   totalFat: number;
 }
+
+// Bloodwork Report Types
+export type BloodworkStatus = "pending" | "analyzed" | "requires_attention";
+
+export interface BloodworkReport {
+  id: string;
+  uploadDate: string;
+  fileName: string;
+  fileType: "pdf" | "image";
+  status: BloodworkStatus;
+  coachNotes?: string;
+  analysisDate?: string;
+  flaggedValues?: string[];
+}
