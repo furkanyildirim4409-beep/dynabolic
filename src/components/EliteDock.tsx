@@ -116,7 +116,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {/* NAVIGATION PILL */}
-        <nav className="pointer-events-auto relative bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 h-[68px] flex items-center gap-1 shadow-2xl shadow-black/50 overflow-hidden isolate">
+        <nav className="pointer-events-auto relative bg-[#0a0a0a]/95 backdrop-blur-xl border border-white/10 rounded-full px-4 h-[68px] flex items-center gap-1 shadow-2xl shadow-black/50 overflow-hidden isolate">
           <LayoutGroup id="dock-nav">
             {navItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -186,7 +186,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
                       }}
                       // FIX 4: REMOVED 'backdrop-blur-xl'. This was causing the LAG.
                       // Replaced with solid semi-transparent color for 60FPS performance.
-                      className="group flex items-center gap-3 px-4 py-3 bg-[#121212] border border-white/10 rounded-full shadow-xl hover:bg-zinc-900 transition-colors"
+                      className="group flex items-center gap-3 px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-full shadow-xl hover:bg-zinc-900 transition-colors"
                     >
                       <span className="text-white text-sm font-medium group-hover:text-[#ccff00] transition-colors">
                         {action.label}

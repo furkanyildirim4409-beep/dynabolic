@@ -82,8 +82,8 @@ const CoachUplink = ({ coachName, coachId = "1", status, message, onMessageClick
               textAnchor="middle"
               fill="hsl(var(--primary))"
               fontSize="20"
-              fontFamily="Oswald"
-              fontWeight="bold"
+              fontFamily="Inter, sans-serif"
+              fontWeight="700"
             >
               S
             </text>

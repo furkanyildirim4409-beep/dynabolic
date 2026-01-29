@@ -7,6 +7,7 @@ import CoachUplink from "@/components/CoachUplink";
 import BentoStats from "@/components/BentoStats";
 import CoachChat from "@/components/CoachChat";
 import DailyCheckIn from "@/components/DailyCheckIn";
+import DailyFocusCard from "@/components/DailyFocusCard";
 import StoriesRing from "@/components/StoriesRing";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications } from "@/lib/mockData";
@@ -115,11 +116,20 @@ const Kokpit = () => {
         <StoriesRing />
       </motion.div>
 
-      {/* Energy Bank - Hero Widget */}
+      {/* Daily Focus Card - Hero Widget */}
+      <DailyFocusCard
+        title="BACAK GÜNÜ"
+        coach="Koç Serdar"
+        duration="45 dk"
+        progress={25}
+        type="workout"
+      />
+
+      {/* Energy Bank */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
+        transition={{ delay: 0.2 }}
         className="glass-card py-8 px-6 flex justify-center"
       >
         <EnergyBank
