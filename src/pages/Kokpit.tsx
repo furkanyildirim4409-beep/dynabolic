@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight } from "lucide-react";
+import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck } from "lucide-react";
 import PerformanceRing from "@/components/PerformanceRing";
 import NextMissionCard from "@/components/NextMissionCard";
 import QuickStatsRow, { StatType } from "@/components/QuickStatsRow";
@@ -10,6 +10,7 @@ import StatDetailModal from "@/components/StatDetailModal";
 import CoachChat from "@/components/CoachChat";
 import StoriesRing from "@/components/StoriesRing";
 import BentoStats from "@/components/BentoStats";
+import DailyCheckIn from "@/components/DailyCheckIn";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications, currentUser } from "@/lib/mockData";
 
@@ -19,6 +20,7 @@ const Kokpit = () => {
   const [showChat, setShowChat] = useState(false);
   const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
   const [selectedStat, setSelectedStat] = useState<StatType | null>(null);
+  const [showDailyCheckIn, setShowDailyCheckIn] = useState(false);
 
   const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
 
@@ -135,6 +137,26 @@ const Kokpit = () => {
       {/* Quick Stats Row */}
       <QuickStatsRow onStatClick={(stat) => setSelectedStat(stat)} />
 
+      {/* Daily Check-In Trigger Button */}
+      <motion.button
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setShowDailyCheckIn(true)}
+        className="w-full backdrop-blur-xl bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 flex items-center justify-center gap-3 group hover:border-primary/30 transition-all duration-300"
+      >
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center group-hover:from-primary/30 group-hover:to-purple-500/30 transition-all">
+          <ClipboardCheck className="w-5 h-5 text-primary" />
+        </div>
+        <div className="text-left flex-1">
+          <p className="font-display text-sm text-foreground tracking-wide">GÜNLÜK VERİ GİR</p>
+          <p className="text-xs text-muted-foreground">Uyku, stres ve kas ağrısı verilerini kaydet</p>
+        </div>
+        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      </motion.button>
+
       {/* Weekly Activity Chart */}
       <WeeklyActivityChart />
 
@@ -175,6 +197,12 @@ const Kokpit = () => {
 
       {/* Coach Chat */}
       <CoachChat isOpen={showChat} onClose={() => setShowChat(false)} />
+
+      {/* Daily Check-In Modal */}
+      <DailyCheckIn 
+        isOpen={showDailyCheckIn} 
+        onClose={() => setShowDailyCheckIn(false)} 
+      />
 
       {/* Stat Detail Modal */}
       <StatDetailModal 
