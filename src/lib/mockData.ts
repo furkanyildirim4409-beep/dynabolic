@@ -1166,6 +1166,58 @@ export const coachStories: CoachStory[] = [
   },
 ];
 
+// ============================================
+// BLOODWORK TRENDS & BIOMARKERS
+// ============================================
+
+export interface BloodworkEntry {
+  month: string;
+  testosterone: number;
+  cortisol: number;
+  ratio: number;
+}
+
+export const bloodworkTrends: BloodworkEntry[] = [
+  { month: "Eki 2025", testosterone: 580, cortisol: 18, ratio: 32.2 },
+  { month: "Kas 2025", testosterone: 610, cortisol: 16, ratio: 38.1 },
+  { month: "Ara 2025", testosterone: 595, cortisol: 17, ratio: 35.0 },
+  { month: "Oca 2026", testosterone: 640, cortisol: 15, ratio: 42.7 },
+];
+
+export interface FlaggedBiomarker {
+  name: string;
+  value: number;
+  unit: string;
+  normalRange: string;
+  severity: "critical" | "borderline";
+}
+
+export const flaggedBiomarkers: Record<string, FlaggedBiomarker[]> = {
+  "bw-1": [
+    { name: "Vitamin D", value: 12, unit: "ng/mL", normalRange: "30-100", severity: "critical" },
+    { name: "Ferritin", value: 28, unit: "ng/mL", normalRange: "30-400", severity: "borderline" },
+  ],
+  "bw-2": [],
+};
+
+// ============================================
+// WEARABLE DEVICE METRICS
+// ============================================
+
+export const wearableMetrics = {
+  rhr: { value: 58, change: -2, unit: "bpm" },
+  hrv: { value: 42, change: 5, unit: "ms" },
+  sleep: { 
+    total: 7.2, 
+    deep: 23, 
+    rem: 18, 
+    light: 59, 
+    unit: "saat" 
+  },
+  steps: { value: 8456, change: 12, goal: 10000 },
+  lastSync: "2 saat önce",
+};
+
 // Current User Data
 export const currentUser = {
   id: "user-1",
