@@ -1,10 +1,10 @@
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, RefreshCw, AlertTriangle, Pill, Clock } from "lucide-react";
+import { Check, RefreshCw, AlertTriangle, Pill, ShoppingCart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useCart } from "@/context/CartContext";
 
 export interface Supplement {
   id: string;
@@ -23,6 +23,15 @@ interface SupplementTrackerProps {
   onRefill: (id: string) => void;
 }
 
+// Mock product data for supplements that can be ordered
+const supplementProducts: Record<string, { price: number; image: string }> = {
+  "sup-1": { price: 350, image: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=300&h=300&fit=crop" },
+  "sup-2": { price: 450, image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=300&h=300&fit=crop" },
+  "sup-3": { price: 180, image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=300&h=300&fit=crop" },
+  "sup-4": { price: 120, image: "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=300&h=300&fit=crop" },
+  "sup-5": { price: 150, image: "https://images.unsplash.com/photo-1550572017-edd951aa8f72?w=300&h=300&fit=crop" },
+};
+
 const timingColors: Record<string, string> = {
   "Sabah": "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
   "Öğle": "bg-orange-500/20 text-orange-400 border-orange-500/30",
@@ -35,20 +44,16 @@ const SupplementCard = ({
   supplement,
   onToggle,
   onRefill,
+  onOrder,
 }: {
   supplement: Supplement;
   onToggle: () => void;
   onRefill: () => void;
+  onOrder: () => void;
 }) => {
   const stockPercentage = (supplement.servingsLeft / supplement.totalServings) * 100;
   const isLowStock = supplement.servingsLeft <= 5;
   const isCritical = supplement.servingsLeft <= 3;
-  
-  const getStockColor = () => {
-    if (isCritical) return "bg-red-500";
-    if (isLowStock) return "bg-amber-500";
-    return "bg-primary";
-  };
 
   const handleToggle = () => {
     onToggle();
@@ -167,15 +172,25 @@ const SupplementCard = ({
             )}
           </div>
 
-          {/* Critical Warning */}
+          {/* Critical Warning with Order Button */}
           {isCritical && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
-              className="mt-3 flex items-center gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2"
+              className="mt-3 flex items-center justify-between gap-2 text-xs text-red-400 bg-red-500/10 rounded-lg px-3 py-2"
             >
-              <AlertTriangle size={12} />
-              <span>{supplement.servingsLeft} gün kaldı - Hemen sipariş ver!</span>
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={12} />
+                <span>{supplement.servingsLeft} gün kaldı!</span>
+              </div>
+              <Button
+                size="sm"
+                onClick={onOrder}
+                className="h-6 px-2 text-[10px] bg-red-500 text-white hover:bg-red-600"
+              >
+                <ShoppingCart size={10} className="mr-1" />
+                SİPARİŞ VER
+              </Button>
             </motion.div>
           )}
         </div>
@@ -185,9 +200,21 @@ const SupplementCard = ({
 };
 
 const SupplementTracker = ({ supplements, onToggleTaken, onRefill }: SupplementTrackerProps) => {
+  const { addToCart } = useCart();
   const takenCount = supplements.filter(s => s.takenToday).length;
   const totalCount = supplements.length;
   const completionPercentage = (takenCount / totalCount) * 100;
+
+  const handleOrderSupplement = (supplement: Supplement) => {
+    const productInfo = supplementProducts[supplement.id] || { price: 200, image: "" };
+    addToCart({
+      id: `order-${supplement.id}-${Date.now()}`,
+      title: supplement.name,
+      price: productInfo.price,
+      image: productInfo.image,
+      type: "supplement",
+    });
+  };
 
   return (
     <div className="space-y-4">
@@ -258,6 +285,7 @@ const SupplementTracker = ({ supplements, onToggleTaken, onRefill }: SupplementT
             supplement={supplement}
             onToggle={() => onToggleTaken(supplement.id)}
             onRefill={() => onRefill(supplement.id)}
+            onOrder={() => handleOrderSupplement(supplement)}
           />
         ))}
       </div>

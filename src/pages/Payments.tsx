@@ -5,7 +5,7 @@ import confetti from "canvas-confetti";
 import { invoices as initialInvoices } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import PaymentModal from "@/components/PaymentModal";
+import PaymentModal, { PaymentDetails } from "@/components/PaymentModal";
 import type { Invoice } from "@/types/shared-models";
 
 const statusConfig = {
@@ -105,11 +105,24 @@ const Payments = () => {
     setShowPaymentModal(true);
   };
 
-  const handlePaymentSuccess = (invoiceId: string) => {
+  const getPaymentDetails = (): PaymentDetails | null => {
+    if (!selectedInvoice) return null;
+    return {
+      amount: selectedInvoice.amount,
+      title: `Fatura #${selectedInvoice.id}`,
+      description: selectedInvoice.serviceType,
+      type: "invoice",
+      referenceId: selectedInvoice.id,
+    };
+  };
+
+  const handlePaymentSuccess = () => {
+    if (!selectedInvoice) return;
+    
     // Update invoice status to paid
     setInvoices((current) =>
       current.map((inv) =>
-        inv.id === invoiceId ? { ...inv, status: "paid" as const } : inv
+        inv.id === selectedInvoice.id ? { ...inv, status: "paid" as const } : inv
       )
     );
 
@@ -123,6 +136,8 @@ const Payments = () => {
       title: "Ödeme Başarılı! 🎉",
       description: "Faturanız başarıyla ödendi. Teşekkür ederiz!",
     });
+
+    setSelectedInvoice(null);
   };
 
   return (
@@ -223,7 +238,7 @@ const Payments = () => {
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
-        invoice={selectedInvoice}
+        payment={getPaymentDetails()}
         onPaymentSuccess={handlePaymentSuccess}
       />
     </div>

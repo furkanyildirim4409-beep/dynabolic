@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, X, Droplets, Scale, MessageSquare } from "lucide-react";
+import { Plus, X, Droplets, Scale, MessageSquare, GraduationCap, ChefHat, CreditCard, User } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -18,6 +19,7 @@ interface QuickActionFABProps {
 }
 
 const QuickActionFAB = ({ onOpenChat }: QuickActionFABProps) => {
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [weight, setWeight] = useState("78.5");
@@ -53,6 +55,11 @@ const QuickActionFAB = ({ onOpenChat }: QuickActionFABProps) => {
     setIsOpen(false);
   };
 
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
+
   const actions: QuickAction[] = [
     {
       id: "water",
@@ -71,6 +78,30 @@ const QuickActionFAB = ({ onOpenChat }: QuickActionFABProps) => {
       label: "Koça Raporla",
       icon: <MessageSquare className="w-5 h-5" />,
       onClick: handleReportToCoach,
+    },
+    {
+      id: "akademi",
+      label: "Akademi",
+      icon: <GraduationCap className="w-5 h-5" />,
+      onClick: () => handleNavigate("/akademi"),
+    },
+    {
+      id: "tarifler",
+      label: "Tarifler",
+      icon: <ChefHat className="w-5 h-5" />,
+      onClick: () => handleNavigate("/tarifler"),
+    },
+    {
+      id: "odemeler",
+      label: "Ödemeler",
+      icon: <CreditCard className="w-5 h-5" />,
+      onClick: () => handleNavigate("/odemeler"),
+    },
+    {
+      id: "hizmetler",
+      label: "Koçluk Paketleri",
+      icon: <User className="w-5 h-5" />,
+      onClick: () => handleNavigate("/hizmetler"),
     },
   ];
 

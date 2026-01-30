@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CreditCard, Building2, Copy, Check, Shield, Loader2 } from "lucide-react";
+import { CreditCard, Building2, Copy, Check, Shield, Loader2, ShoppingBag, Package, User } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,13 +11,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import type { Invoice } from "@/types/shared-models";
+
+export type PaymentType = "invoice" | "store" | "coaching" | "supplement";
+
+export interface PaymentDetails {
+  amount: number;
+  title: string;
+  description?: string;
+  type: PaymentType;
+  referenceId?: string;
+}
 
 interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  invoice: Invoice | null;
-  onPaymentSuccess: (invoiceId: string) => void;
+  payment: PaymentDetails | null;
+  onPaymentSuccess: () => void;
 }
 
 const formatCurrency = (amount: number) => {
@@ -49,7 +58,34 @@ const formatExpiry = (value: string) => {
   return v;
 };
 
-const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentModalProps) => {
+const getTypeIcon = (type: PaymentType) => {
+  switch (type) {
+    case "store":
+    case "supplement":
+      return <ShoppingBag className="w-4 h-4" />;
+    case "coaching":
+      return <User className="w-4 h-4" />;
+    case "invoice":
+    default:
+      return <Package className="w-4 h-4" />;
+  }
+};
+
+const getTypeLabel = (type: PaymentType) => {
+  switch (type) {
+    case "store":
+      return "Mağaza Alışverişi";
+    case "supplement":
+      return "Supplement Siparişi";
+    case "coaching":
+      return "Koçluk Paketi";
+    case "invoice":
+    default:
+      return "Fatura Ödemesi";
+  }
+};
+
+const PaymentModal = ({ isOpen, onClose, payment, onPaymentSuccess }: PaymentModalProps) => {
   const [activeTab, setActiveTab] = useState("card");
   const [isProcessing, setIsProcessing] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -60,10 +96,17 @@ const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentMod
   const [cvv, setCvv] = useState("");
   const [cardName, setCardName] = useState("");
 
+  const generateReferenceCode = () => {
+    const prefix = payment?.type === "coaching" ? "COACH" : 
+                   payment?.type === "supplement" ? "SUP" :
+                   payment?.type === "store" ? "SHOP" : "DYN";
+    return `${prefix}-${payment?.referenceId || Date.now()}-${new Date().getFullYear()}`;
+  };
+
   const bankDetails = {
     bankName: "DYNABOLIC A.Ş.",
     iban: "TR12 3456 7890 1234 5678 9012 34",
-    referenceCode: `DYN-${invoice?.id || "000"}-${new Date().getFullYear()}`,
+    referenceCode: generateReferenceCode(),
   };
 
   const handleCopy = (field: string, value: string) => {
@@ -77,14 +120,14 @@ const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentMod
   };
 
   const handlePayment = () => {
-    if (!invoice) return;
+    if (!payment) return;
     
     setIsProcessing(true);
     
     // Simulate payment processing
     setTimeout(() => {
       setIsProcessing(false);
-      onPaymentSuccess(invoice.id);
+      onPaymentSuccess();
       onClose();
       
       // Reset form
@@ -97,7 +140,7 @@ const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentMod
 
   const isCardFormValid = cardNumber.length >= 19 && expiry.length === 5 && cvv.length >= 3 && cardName.length >= 2;
 
-  if (!invoice) return null;
+  if (!payment) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -112,17 +155,27 @@ const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentMod
           </div>
         </DialogHeader>
 
-        {/* Invoice Summary */}
+        {/* Payment Summary */}
         <div className="px-5 py-4 bg-white/[0.02] border-b border-white/5">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Ödenecek Tutar</p>
-              <p className="text-xs text-muted-foreground/60">{invoice.serviceType}</p>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+                {getTypeIcon(payment.type)}
+              </div>
+              <div>
+                <p className="text-sm text-foreground font-medium">{payment.title}</p>
+                <p className="text-xs text-muted-foreground">{getTypeLabel(payment.type)}</p>
+              </div>
             </div>
             <p className="font-display text-2xl text-foreground font-bold">
-              {formatCurrency(invoice.amount)}
+              {formatCurrency(payment.amount)}
             </p>
           </div>
+          {payment.description && (
+            <p className="text-xs text-muted-foreground mt-2 pt-2 border-t border-white/5">
+              {payment.description}
+            </p>
+          )}
         </div>
 
         {/* Payment Tabs */}
@@ -238,7 +291,7 @@ const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentMod
                         className="flex items-center gap-2"
                       >
                         <CreditCard className="w-5 h-5" />
-                        {formatCurrency(invoice.amount)} ÖDE
+                        {formatCurrency(payment.amount)} ÖDE
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -323,7 +376,7 @@ const PaymentModal = ({ isOpen, onClose, invoice, onPaymentSuccess }: PaymentMod
                 <div className="text-center py-4 border-t border-white/5">
                   <p className="text-sm text-muted-foreground">Aktarılacak Tutar</p>
                   <p className="font-display text-3xl text-foreground font-bold mt-1">
-                    {formatCurrency(invoice.amount)}
+                    {formatCurrency(payment.amount)}
                   </p>
                 </div>
               </div>
