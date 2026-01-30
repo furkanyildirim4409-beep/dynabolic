@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Activity, Moon, Footprints, Clock, TrendingUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Heart, Activity, Moon, Footprints, Clock, TrendingUp, ChevronRight } from "lucide-react";
 import { wearableMetrics, rhrTrend, hrvTrend } from "@/lib/mockData";
 import { Progress } from "@/components/ui/progress";
 import { 
@@ -69,6 +70,7 @@ const MiniTrendChart = ({
 );
 
 const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
+  const navigate = useNavigate();
   const metrics = isActive ? wearableMetrics : null;
 
   const metricCards = [
@@ -294,6 +296,23 @@ const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
             <span>Hafif %{metrics.sleep.light}</span>
           </div>
         </motion.div>
+      )}
+
+      {/* View All Trends Button */}
+      {isActive && (
+        <motion.button
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate("/saglik-trendleri")}
+          className="w-full mt-4 flex items-center justify-center gap-2 p-3 bg-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/30 transition-colors"
+        >
+          <TrendingUp className="w-4 h-4" />
+          TÜM TRENDLERİ GÖR
+          <ChevronRight className="w-4 h-4" />
+        </motion.button>
       )}
     </motion.div>
   );
