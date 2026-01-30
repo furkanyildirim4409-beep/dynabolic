@@ -5,6 +5,8 @@ import RealisticBodyAvatar from "@/components/RealisticBodyAvatar";
 import BioCoinWallet from "@/components/BioCoinWallet";
 import BodyScanUpload from "@/components/BodyScanUpload";
 import BloodworkUpload from "@/components/BloodworkUpload";
+import WearableDeviceSync from "@/components/WearableDeviceSync";
+import BioMetricsDashboard from "@/components/BioMetricsDashboard";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -17,6 +19,7 @@ const Profil = () => {
   const [showBodyScan, setShowBodyScan] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
   const [notifications, setNotifications] = useState(true);
+  const [wearableSimulation, setWearableSimulation] = useState(false);
   
   // Calculate waist scale based on timeline (1.2 at start, 0.85 at goal)
   const waistScale = 1.2 - (timelineValue[0] / 100) * 0.35;
@@ -229,6 +232,27 @@ const Profil = () => {
         <p className="text-muted-foreground text-xs mt-3 text-center">
           Her tamamlanan antrenman = Bio-Coin kazanırsın! 💪
         </p>
+      </motion.div>
+
+      {/* Wearable Device Sync */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.19 }}
+      >
+        <WearableDeviceSync
+          simulationEnabled={wearableSimulation}
+          onSimulationToggle={setWearableSimulation}
+        />
+      </motion.div>
+
+      {/* Bio-Metrics Dashboard */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.195 }}
+      >
+        <BioMetricsDashboard isActive={wearableSimulation} />
       </motion.div>
 
       {/* Recovery Zones */}

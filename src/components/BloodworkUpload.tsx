@@ -10,12 +10,13 @@ import {
   AlertTriangle,
   ChevronDown,
   Upload,
-  X
+  Eye
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { bloodworkReports } from "@/lib/mockData";
 import type { BloodworkReport, BloodworkStatus } from "@/types/shared-models";
 import { Progress } from "@/components/ui/progress";
+import BloodworkDetailModal from "@/components/BloodworkDetailModal";
 
 const statusConfig: Record<BloodworkStatus, { label: string; className: string; icon: typeof CheckCircle2 }> = {
   analyzed: {
@@ -48,6 +49,8 @@ const BloodworkUpload = ({ className }: BloodworkUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<BloodworkReport | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,6 +94,13 @@ const BloodworkUpload = ({ className }: BloodworkUploadProps) => {
 
   const toggleExpand = (reportId: string) => {
     setExpandedReport(expandedReport === reportId ? null : reportId);
+  };
+
+  const handleViewDetails = (report: BloodworkReport) => {
+    if (report.status === "analyzed") {
+      setSelectedReport(report);
+      setShowDetailModal(true);
+    }
   };
 
   return (
@@ -232,6 +242,22 @@ const BloodworkUpload = ({ className }: BloodworkUploadProps) => {
                           </p>
                         </div>
                       )}
+
+                      {/* View Details Button for Analyzed Reports */}
+                      {report.status === "analyzed" && (
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleViewDetails(report);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 p-3 bg-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/30 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                          DETAYLARI GÖR
+                        </motion.button>
+                      )}
                     </div>
                   </motion.div>
                 )}
@@ -252,6 +278,16 @@ const BloodworkUpload = ({ className }: BloodworkUploadProps) => {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      <BloodworkDetailModal
+        report={selectedReport}
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedReport(null);
+        }}
+      />
     </div>
   );
 };
