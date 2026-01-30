@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck } from "lucide-react";
@@ -11,8 +11,9 @@ import CoachChat from "@/components/CoachChat";
 import StoriesRing from "@/components/StoriesRing";
 import BentoStats from "@/components/BentoStats";
 import DailyCheckIn from "@/components/DailyCheckIn";
+import CoachAdjustmentBanner from "@/components/dashboard/CoachAdjustmentBanner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { assignedCoach, notifications, currentUser } from "@/lib/mockData";
+import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
 
 const Kokpit = () => {
   const navigate = useNavigate();
@@ -21,6 +22,19 @@ const Kokpit = () => {
   const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
   const [selectedStat, setSelectedStat] = useState<StatType | null>(null);
   const [showDailyCheckIn, setShowDailyCheckIn] = useState(false);
+  const [acknowledgedAdjustments, setAcknowledgedAdjustments] = useState<string[]>(() => {
+    const stored = localStorage.getItem("acknowledgedAdjustments");
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  // Get the latest unacknowledged coach adjustment
+  const latestAdjustment = getLatestAdjustment("user-001", acknowledgedAdjustments);
+
+  const handleDismissAdjustment = (adjustmentId: string) => {
+    const updated = [...acknowledgedAdjustments, adjustmentId];
+    setAcknowledgedAdjustments(updated);
+    localStorage.setItem("acknowledgedAdjustments", JSON.stringify(updated));
+  };
 
   const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
 
@@ -102,6 +116,20 @@ const Kokpit = () => {
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Coach Adjustment Banner - Urgent Alert */}
+      {latestAdjustment && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <CoachAdjustmentBanner
+            adjustment={latestAdjustment}
+            onDismiss={handleDismissAdjustment}
+          />
+        </motion.div>
+      )}
 
       {/* Stories Ring - Smaller & Elegant */}
       <motion.div
