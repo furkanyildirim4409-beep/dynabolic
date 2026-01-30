@@ -1,6 +1,106 @@
 // Central Mock Data for GOKALAF MVP
 // All data is in Turkish as per requirements
 
+import type { CoachAdjustment, ProgramExercise } from "@/types/shared-models";
+
+// ============================================
+// COACH ADJUSTMENTS (Real-time updates from Admin Panel)
+// ============================================
+
+export const coachAdjustments: CoachAdjustment[] = [
+  {
+    id: "adj-001",
+    athleteId: "user-001",
+    type: "intensity",
+    previousValue: 70,
+    value: 85,
+    message: "Bu hafta daha yüksek yoğunlukla çalışabilirsin. Formun çok iyi, performansın artıyor!",
+    appliedAt: new Date().toISOString(),
+  },
+  {
+    id: "adj-002",
+    athleteId: "user-001",
+    type: "calories",
+    previousValue: 2400,
+    value: 2600,
+    message: "Kas kütlesi artışı için kalori alımını yükseltiyoruz. Özellikle antrenman sonrası karbonhidratı artır.",
+    appliedAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "adj-003",
+    athleteId: "user-001",
+    type: "volume",
+    previousValue: 16,
+    value: 20,
+    message: "Toparlanman mükemmel görünüyor. Set sayısını artırıyoruz.",
+    appliedAt: new Date(Date.now() - 172800000).toISOString(),
+  },
+];
+
+export const getLatestAdjustment = (athleteId: string, acknowledgedIds: string[]): CoachAdjustment | null => {
+  const unacknowledged = coachAdjustments
+    .filter(adj => adj.athleteId === athleteId && !acknowledgedIds.includes(adj.id))
+    .sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime());
+  
+  return unacknowledged[0] || null;
+};
+
+// ============================================
+// DETAILED EXERCISE DATA (with RPE, notes, category)
+// ============================================
+
+export const detailedExercises: (ProgramExercise & { targetReps: number; tempo: string; restDuration: number })[] = [
+  {
+    id: "ex-001",
+    name: "BARBELL SQUAT",
+    sets: 4,
+    reps: 12,
+    targetReps: 12,
+    tempo: "3010",
+    restDuration: 90,
+    rpe: 8,
+    notes: "Negatif fazda 3 saniye kontrollü in. Diz açısı 90 dereceyi geçmesin.",
+    category: "Bacak / Güç",
+  },
+  {
+    id: "ex-002",
+    name: "LEG PRESS",
+    sets: 4,
+    reps: 15,
+    targetReps: 15,
+    tempo: "2010",
+    restDuration: 75,
+    rpe: 7,
+    notes: "Ayak pozisyonunu yüksek tut, kalçayı vurgula.",
+    category: "Bacak / Hipertrofi",
+  },
+  {
+    id: "ex-003",
+    name: "LEG CURL",
+    sets: 4,
+    reps: 12,
+    targetReps: 12,
+    tempo: "3011",
+    restDuration: 60,
+    rpe: 9,
+    notes: "Son 2 tekrarda zorlan, drop set uygulayabilirsin.",
+    category: "Arka Bacak / İzolasyon",
+  },
+  {
+    id: "ex-004",
+    name: "CALF RAISE",
+    sets: 4,
+    reps: 20,
+    targetReps: 20,
+    tempo: "2010",
+    restDuration: 45,
+    rpe: 6,
+    category: "Baldır / Dayanıklılık",
+  },
+];
+
+
+
 export interface Coach {
   id: string;
   name: string;

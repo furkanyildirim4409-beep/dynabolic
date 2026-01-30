@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy } from "lucide-react";
+import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, ChevronDown, ChevronUp } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
 import { toast } from "sonner";
+import { detailedExercises } from "@/lib/mockData";
 
 interface VisionAIExecutionProps {
   workoutTitle: string;
@@ -10,19 +11,28 @@ interface VisionAIExecutionProps {
 }
 
 interface Exercise {
+  id: string;
   name: string;
   targetReps: number;
   tempo: string;
   sets: number;
+  reps: number;
   restDuration: number;
+  rpe: number;
+  notes?: string;
+  category?: string;
 }
 
-const exercises: Exercise[] = [
-  { name: "BARBELL SQUAT", targetReps: 12, tempo: "3010", sets: 4, restDuration: 90 },
-  { name: "LEG PRESS", targetReps: 15, tempo: "2010", sets: 4, restDuration: 75 },
-  { name: "LEG CURL", targetReps: 12, tempo: "3011", sets: 4, restDuration: 60 },
-  { name: "CALF RAISE", targetReps: 20, tempo: "2010", sets: 4, restDuration: 45 },
-];
+// Use detailed exercises from mockData
+const exercises: Exercise[] = detailedExercises;
+
+// RPE color coding helper
+const getRPEColor = (rpe: number): { bg: string; text: string; border: string } => {
+  if (rpe <= 5) return { bg: "bg-green-500/20", text: "text-green-400", border: "border-green-500/50" };
+  if (rpe <= 7) return { bg: "bg-yellow-500/20", text: "text-yellow-400", border: "border-yellow-500/50" };
+  if (rpe <= 9) return { bg: "bg-orange-500/20", text: "text-orange-400", border: "border-orange-500/50" };
+  return { bg: "bg-red-500/20", text: "text-red-400", border: "border-red-500/50" };
+};
 
 const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) => {
   const [timer, setTimer] = useState(0);
@@ -36,8 +46,10 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [showWorkoutSummary, setShowWorkoutSummary] = useState(false);
   const [exerciseComplete, setExerciseComplete] = useState(false);
+  const [showCoachNote, setShowCoachNote] = useState(true);
   
   const exercise = exercises[currentExerciseIndex];
+  const rpeColors = getRPEColor(exercise.rpe);
 
   // Timer effect
   useEffect(() => {
@@ -404,30 +416,106 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             )}
           </AnimatePresence>
 
+          {/* RPE Badge - Top Right */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 }}
+            className={`absolute top-4 left-4 ${rpeColors.bg} ${rpeColors.border} border rounded-xl px-3 py-2`}
+          >
+            <div className="flex items-center gap-2">
+              <Target className={`w-4 h-4 ${rpeColors.text}`} />
+              <div>
+                <span className="text-[10px] text-muted-foreground block">HEDEF RPE</span>
+                <motion.span
+                  className={`font-display text-lg ${rpeColors.text}`}
+                  animate={exercise.rpe >= 8 ? { scale: [1, 1.05, 1] } : {}}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  {exercise.rpe}
+                </motion.span>
+              </div>
+            </div>
+          </motion.div>
+
           {/* Set Counter */}
-          <div className="absolute top-16 right-4 glass-card px-3 py-2">
+          <div className="absolute top-4 right-4 glass-card px-3 py-2"
+            style={{ marginTop: "60px" }}
+          >
             <span className="text-xs text-muted-foreground">SET</span>
             <p className="font-display text-lg text-foreground">
               {currentSet}/{exercise.sets}
             </p>
           </div>
 
-          {/* Coach Overlay */}
+          {/* Coach Overlay - with Notes */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-xl border border-yellow-500/30 rounded-xl p-3"
+            className="absolute bottom-4 left-4 right-4 space-y-2"
           >
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-[10px] text-yellow-500 font-medium tracking-wider">
-                KOÇ HEDEFİ
-              </span>
+            {/* Coach Notes (if available) */}
+            {exercise.notes && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-amber-500/10 backdrop-blur-xl border border-amber-500/30 rounded-xl overflow-hidden"
+              >
+                <button
+                  onClick={() => setShowCoachNote(!showCoachNote)}
+                  className="w-full px-3 py-2 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <Info className="w-4 h-4 text-amber-400" />
+                    <span className="text-[10px] text-amber-400 font-medium tracking-wider">
+                      KOÇ NOTU
+                    </span>
+                  </div>
+                  {showCoachNote ? (
+                    <ChevronUp className="w-4 h-4 text-amber-400" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-amber-400" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {showCoachNote && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="px-3 pb-3"
+                    >
+                      <p className="text-amber-100 text-sm leading-relaxed">
+                        {exercise.notes}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
+            {/* Category Tag + Target */}
+            <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-3">
+              {/* Category Badge */}
+              {exercise.category && (
+                <div className="mb-2">
+                  <span className="text-[10px] px-2 py-1 rounded-full bg-secondary text-muted-foreground">
+                    {exercise.category}
+                  </span>
+                </div>
+              )}
+              
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-2 h-2 rounded-full bg-primary" />
+                <span className="text-[10px] text-primary font-medium tracking-wider">
+                  KOÇ HEDEFİ
+                </span>
+              </div>
+              <p className="text-primary font-display text-sm tracking-wide">
+                {exercise.targetReps} Tekrar @ {exercise.tempo} Tempo
+              </p>
             </div>
-            <p className="text-yellow-500 font-display text-sm tracking-wide">
-              {exercise.targetReps} Tekrar @ {exercise.tempo} Tempo
-            </p>
           </motion.div>
         </div>
 
