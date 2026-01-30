@@ -1,6 +1,11 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { CreditCard, Calendar, AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { invoices } from "@/lib/mockData";
+import confetti from "canvas-confetti";
+import { invoices as initialInvoices } from "@/lib/mockData";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import PaymentModal from "@/components/PaymentModal";
 import type { Invoice } from "@/types/shared-models";
 
 const statusConfig = {
@@ -34,7 +39,59 @@ const formatCurrency = (amount: number) => {
   }).format(amount);
 };
 
+const fireConfetti = () => {
+  const count = 200;
+  const defaults = {
+    origin: { y: 0.7 },
+    zIndex: 9999,
+  };
+
+  function fire(particleRatio: number, opts: confetti.Options) {
+    confetti({
+      ...defaults,
+      ...opts,
+      particleCount: Math.floor(count * particleRatio),
+    });
+  }
+
+  fire(0.25, {
+    spread: 26,
+    startVelocity: 55,
+    colors: ["#CDDC39", "#8BC34A", "#4CAF50"],
+  });
+
+  fire(0.2, {
+    spread: 60,
+    colors: ["#CDDC39", "#8BC34A", "#4CAF50"],
+  });
+
+  fire(0.35, {
+    spread: 100,
+    decay: 0.91,
+    scalar: 0.8,
+    colors: ["#CDDC39", "#8BC34A", "#4CAF50"],
+  });
+
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 25,
+    decay: 0.92,
+    scalar: 1.2,
+    colors: ["#CDDC39", "#8BC34A", "#4CAF50"],
+  });
+
+  fire(0.1, {
+    spread: 120,
+    startVelocity: 45,
+    colors: ["#CDDC39", "#8BC34A", "#4CAF50"],
+  });
+};
+
 const Payments = () => {
+  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+
   const totalPending = invoices
     .filter((inv) => inv.status === "pending" || inv.status === "overdue")
     .reduce((sum, inv) => sum + inv.amount, 0);
@@ -42,6 +99,31 @@ const Payments = () => {
   const nextDueInvoice = invoices
     .filter((inv) => inv.status === "pending" && inv.dueDate)
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())[0];
+
+  const handlePayClick = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentSuccess = (invoiceId: string) => {
+    // Update invoice status to paid
+    setInvoices((current) =>
+      current.map((inv) =>
+        inv.id === invoiceId ? { ...inv, status: "paid" as const } : inv
+      )
+    );
+
+    // Fire confetti
+    setTimeout(() => {
+      fireConfetti();
+    }, 100);
+
+    // Show success toast
+    toast({
+      title: "Ödeme Başarılı! 🎉",
+      description: "Faturanız başarıyla ödendi. Teşekkür ederiz!",
+    });
+  };
 
   return (
     <div className="space-y-6 pb-24">
@@ -91,6 +173,7 @@ const Payments = () => {
         {invoices.map((invoice, index) => {
           const status = statusConfig[invoice.status];
           const StatusIcon = status.icon;
+          const canPay = invoice.status === "pending" || invoice.status === "overdue";
 
           return (
             <motion.div
@@ -116,14 +199,33 @@ const Payments = () => {
                     </p>
                   )}
                 </div>
-                <p className={`font-display text-lg ${invoice.status === "overdue" ? "text-red-400" : "text-foreground"}`}>
-                  {formatCurrency(invoice.amount)}
-                </p>
+                <div className="flex items-center gap-3">
+                  <p className={`font-display text-lg ${invoice.status === "overdue" ? "text-red-400" : "text-foreground"}`}>
+                    {formatCurrency(invoice.amount)}
+                  </p>
+                  {canPay && (
+                    <Button
+                      size="sm"
+                      onClick={() => handlePayClick(invoice)}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 font-display text-xs tracking-wider h-8 px-4"
+                    >
+                      ÖDE
+                    </Button>
+                  )}
+                </div>
               </div>
             </motion.div>
           );
         })}
       </div>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        invoice={selectedInvoice}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </div>
   );
 };

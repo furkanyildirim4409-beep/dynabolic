@@ -10,7 +10,9 @@ import {
   X,
   Focus,
   ScanBarcode,
-  Trash2, // Yeni eklenen ikon
+  Trash2,
+  Utensils,
+  Pill,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,10 @@ import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SupplementTracker from "@/components/SupplementTracker";
+import { assignedSupplements as initialSupplements } from "@/lib/mockData";
+import type { Supplement } from "@/components/SupplementTracker";
 
 // --- TİP TANIMLAMALARI ---
 interface FoodItem {
@@ -643,6 +649,19 @@ const Beslenme = () => {
   const [scannerMode, setScannerMode] = useState<ScannerMode>("meal");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedFood, setSelectedFood] = useState<SelectedFood | null>(null);
+  const [activeTab, setActiveTab] = useState("meals");
+  const [supplements, setSupplements] = useState<Supplement[]>(
+    initialSupplements.map(s => ({
+      id: s.id,
+      name: s.name,
+      dosage: s.dosage,
+      timing: s.timing,
+      servingsLeft: s.servingsLeft,
+      totalServings: s.totalServings,
+      takenToday: s.takenToday,
+      icon: s.icon,
+    }))
+  );
 
   const waterGoal = 3.5;
   const progress = (waterIntake / waterGoal) * 100;
@@ -758,6 +777,51 @@ const Beslenme = () => {
 
   const filteredFoods = foodDatabase.filter((f) => f.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
+  // Supplement handlers
+  const handleToggleSupplement = (id: string) => {
+    setSupplements((current) =>
+      current.map((sup) => {
+        if (sup.id !== id) return sup;
+        
+        const newTakenToday = !sup.takenToday;
+        const newServingsLeft = newTakenToday 
+          ? Math.max(0, sup.servingsLeft - 1) 
+          : Math.min(sup.totalServings, sup.servingsLeft + 1);
+
+        if (newTakenToday) {
+          toast({
+            title: "Alındı ✓",
+            description: `${sup.name} işaretlendi.`,
+          });
+        }
+
+        return {
+          ...sup,
+          takenToday: newTakenToday,
+          servingsLeft: newServingsLeft,
+        };
+      })
+    );
+  };
+
+  const handleRefillSupplement = (id: string) => {
+    setSupplements((current) =>
+      current.map((sup) => {
+        if (sup.id !== id) return sup;
+        
+        toast({
+          title: "Stok Yenilendi 📦",
+          description: `${sup.name} stoğu yenilendi.`,
+        });
+
+        return {
+          ...sup,
+          servingsLeft: sup.totalServings,
+        };
+      })
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background px-4 pt-6 pb-32">
       {/* HEADER */}
@@ -780,86 +844,120 @@ const Beslenme = () => {
           </div>
         </div>
 
-        {/* MACRO DASHBOARD - Below header, before action buttons */}
+        {/* MACRO DASHBOARD - Below header, before tabs */}
         <MacroDashboard meals={meals} />
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={openMealScanner}
-            className="flex items-center justify-center gap-2 bg-secondary border border-white/5 p-3 rounded-xl text-sm font-medium text-muted-foreground hover:border-primary/50 active:scale-95 transition-all"
-          >
-            <Camera className="w-4 h-4 text-primary" />
-            Öğün Tara
-          </button>
-          <button
-            onClick={() => setShowManualAdd(true)}
-            className="flex items-center justify-center gap-2 bg-secondary border border-white/5 p-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/5 active:scale-95 transition-all"
-          >
-            <Plus className="w-4 h-4 text-foreground" />
-            Manuel Ekle
-          </button>
-        </div>
-      </div>
+        {/* Tab Navigation */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full grid grid-cols-2 bg-white/[0.03] border border-white/5 p-1 h-12">
+            <TabsTrigger 
+              value="meals" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium gap-2 text-sm"
+            >
+              <Utensils className="w-4 h-4" />
+              ÖĞÜNLER
+            </TabsTrigger>
+            <TabsTrigger 
+              value="supplements" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-medium gap-2 text-sm"
+            >
+              <Pill className="w-4 h-4" />
+              SUPPLEMENTLER
+            </TabsTrigger>
+          </TabsList>
 
-      {/* WATER TRACKER */}
-      <div className="bg-secondary border border-white/5 rounded-2xl p-5 mb-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-              <Droplets className="w-4 h-4 text-blue-400" />
+          {/* Meals Tab Content */}
+          <TabsContent value="meals" className="mt-4 space-y-6">
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={openMealScanner}
+                className="flex items-center justify-center gap-2 bg-secondary border border-white/5 p-3 rounded-xl text-sm font-medium text-muted-foreground hover:border-primary/50 active:scale-95 transition-all"
+              >
+                <Camera className="w-4 h-4 text-primary" />
+                Öğün Tara
+              </button>
+              <button
+                onClick={() => setShowManualAdd(true)}
+                className="flex items-center justify-center gap-2 bg-secondary border border-white/5 p-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-white/5 active:scale-95 transition-all"
+              >
+                <Plus className="w-4 h-4 text-foreground" />
+                Manuel Ekle
+              </button>
             </div>
-            <span className="text-foreground font-bold text-sm">SU TAKİBİ</span>
-          </div>
-          <div className="text-right">
-            <span className="text-2xl font-display font-bold text-foreground">{waterIntake}L</span>
-            <span className="text-muted-foreground text-sm">/{waterGoal}L</span>
-          </div>
-        </div>
-        <div className="h-2 w-full bg-white/5 rounded-full mb-4 overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 1 }}
-            className="h-full bg-blue-500 rounded-full"
-          />
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="flex gap-1">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "w-3 h-6 rounded-sm border border-white/10 transition-colors",
-                  i < waterIntake * 2.5 ? "bg-blue-500 border-blue-500" : "bg-transparent",
-                )}
-              />
-            ))}
-          </div>
-          <Button
-            size="sm"
-            onClick={() => setWaterIntake((prev) => Math.min(prev + 0.25, 5))}
-            className="bg-blue-600 hover:bg-blue-500 text-white h-8 w-8 rounded-lg p-0"
-          >
-            <Plus size={16} />
-          </Button>
-        </div>
-      </div>
 
-      {/* MEAL LIST */}
-      <div className="flex items-center justify-between mb-3 px-1">
-        <h2 className="text-muted-foreground text-xs font-bold uppercase tracking-wider">BUGÜNKÜ ÖĞÜNLER</h2>
-      </div>
-      <div className="space-y-3 mb-6">
-        {meals.map((meal) => (
-          <ExpandableMealCard
-            key={meal.id}
-            meal={meal}
-            onUpdateFood={handleToggleFood}
-            onRemoveFood={handleRemoveFood}
-          />
-        ))}
+            {/* WATER TRACKER */}
+            <div className="bg-secondary border border-white/5 rounded-2xl p-5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full pointer-events-none" />
+              <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <Droplets className="w-4 h-4 text-blue-400" />
+                  </div>
+                  <span className="text-foreground font-bold text-sm">SU TAKİBİ</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-2xl font-display font-bold text-foreground">{waterIntake}L</span>
+                  <span className="text-muted-foreground text-sm">/{waterGoal}L</span>
+                </div>
+              </div>
+              <div className="h-2 w-full bg-white/5 rounded-full mb-4 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 1 }}
+                  className="h-full bg-blue-500 rounded-full"
+                />
+              </div>
+              <div className="flex justify-between items-center">
+                <div className="flex gap-1">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className={cn(
+                        "w-3 h-6 rounded-sm border border-white/10 transition-colors",
+                        i < waterIntake * 2.5 ? "bg-blue-500 border-blue-500" : "bg-transparent",
+                      )}
+                    />
+                  ))}
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => setWaterIntake((prev) => Math.min(prev + 0.25, 5))}
+                  className="bg-blue-600 hover:bg-blue-500 text-white h-8 w-8 rounded-lg p-0"
+                >
+                  <Plus size={16} />
+                </Button>
+              </div>
+            </div>
+
+            {/* MEAL LIST */}
+            <div>
+              <div className="flex items-center justify-between mb-3 px-1">
+                <h2 className="text-muted-foreground text-xs font-bold uppercase tracking-wider">BUGÜNKÜ ÖĞÜNLER</h2>
+              </div>
+              <div className="space-y-3">
+                {meals.map((meal) => (
+                  <ExpandableMealCard
+                    key={meal.id}
+                    meal={meal}
+                    onUpdateFood={handleToggleFood}
+                    onRemoveFood={handleRemoveFood}
+                  />
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Supplements Tab Content */}
+          <TabsContent value="supplements" className="mt-4">
+            <SupplementTracker
+              supplements={supplements}
+              onToggleTaken={handleToggleSupplement}
+              onRefill={handleRefillSupplement}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* CAMERA SCANNER */}
