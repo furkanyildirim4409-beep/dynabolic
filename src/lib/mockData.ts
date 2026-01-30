@@ -1255,3 +1255,71 @@ export const currentUser = {
   readinessScore: 85,
   streak: 14,
 };
+
+// ============================================
+// ASSIGNED SUPPLEMENTS DATA
+// ============================================
+
+export interface SupplementData {
+  id: string;
+  name: string;
+  dosage: string;
+  timing: string;
+  servingsLeft: number;
+  totalServings: number;
+  takenToday: boolean;
+  icon: string;
+}
+
+export const assignedSupplements: SupplementData[] = [
+  {
+    id: "sup-1",
+    name: "Kreatin Monohidrat",
+    dosage: "5g",
+    timing: "Antrenman Sonrası",
+    servingsLeft: 12,
+    totalServings: 30,
+    takenToday: true,
+    icon: "💪",
+  },
+  {
+    id: "sup-2",
+    name: "Whey Protein",
+    dosage: "30g (1 scoop)",
+    timing: "Antrenman Sonrası",
+    servingsLeft: 4,
+    totalServings: 30,
+    takenToday: false,
+    icon: "🥤",
+  },
+  {
+    id: "sup-3",
+    name: "Omega-3",
+    dosage: "2 kapsül",
+    timing: "Sabah",
+    servingsLeft: 18,
+    totalServings: 60,
+    takenToday: true,
+    icon: "🐟",
+  },
+  {
+    id: "sup-4",
+    name: "Vitamin D3",
+    dosage: "2000 IU",
+    timing: "Sabah",
+    servingsLeft: 3,
+    totalServings: 90,
+    takenToday: false,
+    icon: "☀️",
+  },
+  {
+    id: "sup-5",
+    name: "Magnezyum",
+    dosage: "400mg",
+    timing: "Akşam",
+    servingsLeft: 25,
+    totalServings: 60,
+    takenToday: false,
+    icon: "💊",
+  },
+];
