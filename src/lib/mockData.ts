@@ -1204,6 +1204,31 @@ export const flaggedBiomarkers: Record<string, FlaggedBiomarker[]> = {
 // WEARABLE DEVICE METRICS
 // ============================================
 
+export interface DailyMetricEntry {
+  day: string;
+  value: number;
+}
+
+export const rhrTrend: DailyMetricEntry[] = [
+  { day: "Pzt", value: 62 },
+  { day: "Sal", value: 60 },
+  { day: "Çar", value: 59 },
+  { day: "Per", value: 61 },
+  { day: "Cum", value: 58 },
+  { day: "Cmt", value: 57 },
+  { day: "Paz", value: 58 },
+];
+
+export const hrvTrend: DailyMetricEntry[] = [
+  { day: "Pzt", value: 35 },
+  { day: "Sal", value: 38 },
+  { day: "Çar", value: 40 },
+  { day: "Per", value: 37 },
+  { day: "Cum", value: 42 },
+  { day: "Cmt", value: 45 },
+  { day: "Paz", value: 42 },
+];
+
 export const wearableMetrics = {
   rhr: { value: 58, change: -2, unit: "bpm" },
   hrv: { value: 42, change: 5, unit: "ms" },

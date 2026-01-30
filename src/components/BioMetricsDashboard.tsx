@@ -1,11 +1,72 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Activity, Moon, Footprints, Clock } from "lucide-react";
-import { wearableMetrics } from "@/lib/mockData";
+import { Heart, Activity, Moon, Footprints, Clock, TrendingUp } from "lucide-react";
+import { wearableMetrics, rhrTrend, hrvTrend } from "@/lib/mockData";
 import { Progress } from "@/components/ui/progress";
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  Tooltip 
+} from "recharts";
 
 interface BioMetricsDashboardProps {
   isActive: boolean;
 }
+
+// Mini sparkline chart component
+const MiniTrendChart = ({ 
+  data, 
+  color, 
+  gradientId 
+}: { 
+  data: { day: string; value: number }[]; 
+  color: string; 
+  gradientId: string;
+}) => (
+  <div className="h-16 mt-2">
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 5, right: 5, left: 5, bottom: 0 }}>
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.4}/>
+            <stop offset="95%" stopColor={color} stopOpacity={0}/>
+          </linearGradient>
+        </defs>
+        <XAxis 
+          dataKey="day" 
+          axisLine={false} 
+          tickLine={false}
+          tick={{ fill: 'hsl(240 5% 50%)', fontSize: 9 }}
+          interval={0}
+        />
+        <YAxis hide domain={['auto', 'auto']} />
+        <Tooltip
+          contentStyle={{
+            backgroundColor: 'hsl(240 6% 10%)',
+            border: '1px solid hsl(240 5% 20%)',
+            borderRadius: '8px',
+            fontSize: '11px',
+            padding: '6px 10px'
+          }}
+          labelStyle={{ color: 'hsl(240 5% 65%)', marginBottom: '2px' }}
+          formatter={(value: number, name: string) => [value, name === 'value' ? '' : name]}
+          labelFormatter={(label) => label}
+        />
+        <Area
+          type="monotone"
+          dataKey="value"
+          stroke={color}
+          strokeWidth={2}
+          fill={`url(#${gradientId})`}
+          dot={false}
+          activeDot={{ r: 4, fill: color, strokeWidth: 0 }}
+        />
+      </AreaChart>
+    </ResponsiveContainer>
+  </div>
+);
 
 const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
   const metrics = isActive ? wearableMetrics : null;
@@ -21,6 +82,8 @@ const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
       color: "text-red-400",
       bgColor: "bg-red-500/10",
       borderColor: "border-red-500/30",
+      chartColor: "#f87171",
+      trendData: isActive ? rhrTrend : null,
     },
     {
       id: "hrv",
@@ -32,6 +95,8 @@ const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
       borderColor: "border-blue-500/30",
+      chartColor: "#60a5fa",
+      trendData: isActive ? hrvTrend : null,
     },
     {
       id: "sleep",
@@ -116,7 +181,7 @@ const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
                 </div>
 
                 {/* Change indicator or subtext */}
-                {card.change !== undefined && (
+                {card.change !== undefined && !card.trendData && (
                   <div className={`flex items-center gap-1 mt-1 text-xs ${
                     card.change > 0 ? "text-green-400" : "text-red-400"
                   }`}>
@@ -137,6 +202,15 @@ const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
                       {Math.round(card.progress)}% hedef
                     </p>
                   </div>
+                )}
+
+                {/* Mini trend chart for RHR and HRV */}
+                {card.trendData && card.chartColor && (
+                  <MiniTrendChart 
+                    data={card.trendData} 
+                    color={card.chartColor}
+                    gradientId={`${card.id}Gradient`}
+                  />
                 )}
               </motion.div>
             ))}
@@ -159,6 +233,37 @@ const BioMetricsDashboard = ({ isActive }: BioMetricsDashboardProps) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 7-Day Trend Summary */}
+      {isActive && metrics && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="mt-4 pt-4 border-t border-white/10"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-4 h-4 text-primary" />
+            <p className="text-xs text-muted-foreground">7 Günlük Trend Özeti</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 bg-secondary/30 rounded-xl">
+              <p className="text-[10px] text-muted-foreground mb-1">RHR Ortalaması</p>
+              <p className="font-display text-lg text-red-400">
+                {Math.round(rhrTrend.reduce((a, b) => a + b.value, 0) / rhrTrend.length)} bpm
+              </p>
+              <p className="text-[10px] text-green-400">↓4 geçen haftaya göre</p>
+            </div>
+            <div className="p-3 bg-secondary/30 rounded-xl">
+              <p className="text-[10px] text-muted-foreground mb-1">HRV Ortalaması</p>
+              <p className="font-display text-lg text-blue-400">
+                {Math.round(hrvTrend.reduce((a, b) => a + b.value, 0) / hrvTrend.length)} ms
+              </p>
+              <p className="text-[10px] text-green-400">↑7 geçen haftaya göre</p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Sleep Breakdown (shown when active) */}
       {isActive && metrics && (
