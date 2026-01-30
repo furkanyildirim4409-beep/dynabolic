@@ -19,6 +19,7 @@ import CoachProfile from "./pages/CoachProfile";
 import Akademi from "./pages/Akademi";
 import Tarifler from "./pages/Tarifler";
 import Payments from "./pages/Payments";
+import SaglikTrendleri from "./pages/SaglikTrendleri";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +59,7 @@ const App = () => {
                   <Route path="/akademi" element={<AppPage><Akademi /></AppPage>} />
                   <Route path="/tarifler" element={<AppPage><Tarifler /></AppPage>} />
                   <Route path="/odemeler" element={<AppPage><Payments /></AppPage>} />
+                  <Route path="/saglik-trendleri" element={<SaglikTrendleri />} />
                   
                   {/* Redirects for old routes */}
                   <Route path="/index" element={<Navigate to="/" replace />} />
