@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, History, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
+import ExerciseRestTimerOverlay from "./ExerciseRestTimerOverlay";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
 import { detailedExercises } from "@/lib/mockData";
@@ -46,6 +47,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [showComplete, setShowComplete] = useState(false);
   const [visionAIActive, setVisionAIActive] = useState(false);
   const [showRestTimer, setShowRestTimer] = useState(false);
+  const [showExerciseRestTimer, setShowExerciseRestTimer] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [showWorkoutSummary, setShowWorkoutSummary] = useState(false);
@@ -138,20 +140,8 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
         
         // Check if there are more exercises
         if (currentExerciseIndex < exercises.length - 1) {
-          toast.success("MÜKEMMEL! HAREKET TAMAMLANDI.", {
-            description: "SIRADAKİNE GEÇİLİYOR...",
-            duration: 2000,
-          });
-          
-          // Move to next exercise
-          setTimeout(() => {
-            setCurrentExerciseIndex((prev) => prev + 1);
-            setCurrentSet(1);
-            setTimer(0);
-            setReps(0);
-            setWeight(60);
-            setIsRunning(true);
-          }, 1500);
+          // Show exercise rest timer between exercises
+          setShowExerciseRestTimer(true);
         } else {
           // All exercises complete - show summary and trigger achievements
           setShowWorkoutSummary(true);
@@ -198,6 +188,27 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
     setTimer(0);
     setReps(0);
     setCurrentSet((prev) => prev + 1);
+    setIsRunning(true);
+  };
+
+  // Exercise rest timer handlers
+  const handleExerciseRestComplete = () => {
+    setShowExerciseRestTimer(false);
+    setCurrentExerciseIndex((prev) => prev + 1);
+    setCurrentSet(1);
+    setTimer(0);
+    setReps(0);
+    setWeight(60);
+    setIsRunning(true);
+  };
+
+  const handleExerciseRestSkip = () => {
+    setShowExerciseRestTimer(false);
+    setCurrentExerciseIndex((prev) => prev + 1);
+    setCurrentSet(1);
+    setTimer(0);
+    setReps(0);
+    setWeight(60);
     setIsRunning(true);
   };
 
@@ -883,7 +894,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
 
       </motion.div>
 
-      {/* Rest Timer Overlay */}
+      {/* Rest Timer Overlay (between sets) */}
       <AnimatePresence>
         {showRestTimer && (
           <RestTimerOverlay
@@ -892,6 +903,23 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             onSkip={handleSkipRest}
             setNumber={currentSet}
             totalSets={exercise.sets}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Exercise Rest Timer Overlay (between exercises) */}
+      <AnimatePresence>
+        {showExerciseRestTimer && currentExerciseIndex < exercises.length - 1 && (
+          <ExerciseRestTimerOverlay
+            duration={90}
+            onComplete={handleExerciseRestComplete}
+            onSkip={handleExerciseRestSkip}
+            completedExerciseName={exercise.name}
+            nextExerciseName={exercises[currentExerciseIndex + 1].name}
+            nextExerciseSets={exercises[currentExerciseIndex + 1].sets}
+            nextExerciseReps={exercises[currentExerciseIndex + 1].reps}
+            currentExerciseNumber={currentExerciseIndex + 1}
+            totalExercises={exercises.length}
           />
         )}
       </AnimatePresence>
