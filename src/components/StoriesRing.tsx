@@ -10,36 +10,39 @@ interface StoriesRingProps {
 }
 
 const categoryConfig: Record<StoryCategory, { icon: React.ReactNode; gradient: string }> = {
-  "Değişimler": {
-    icon: <RefreshCw className="w-5 h-5" />,
+  Değişimler: {
+    icon: <RefreshCw className="w-4 h-4" />,
     gradient: "from-pink-500 to-rose-500",
   },
   "Soru-Cevap": {
-    icon: <HelpCircle className="w-5 h-5" />,
+    icon: <HelpCircle className="w-4 h-4" />,
     gradient: "from-blue-500 to-cyan-500",
   },
-  "Başarılar": {
-    icon: <Trophy className="w-5 h-5" />,
+  Başarılar: {
+    icon: <Trophy className="w-4 h-4" />,
     gradient: "from-yellow-500 to-amber-500",
   },
-  "Antrenman": {
-    icon: <Dumbbell className="w-5 h-5" />,
+  Antrenman: {
+    icon: <Dumbbell className="w-4 h-4" />,
     gradient: "from-green-500 to-emerald-500",
   },
-  "Motivasyon": {
-    icon: <Zap className="w-5 h-5" />,
+  Motivasyon: {
+    icon: <Zap className="w-4 h-4" />,
     gradient: "from-purple-500 to-violet-500",
   },
 };
 
 // Group stories by category
-const groupedStories = coachStories.reduce((acc, story) => {
-  if (!acc[story.category]) {
-    acc[story.category] = [];
-  }
-  acc[story.category].push(story);
-  return acc;
-}, {} as Record<StoryCategory, CoachStory[]>);
+const groupedStories = coachStories.reduce(
+  (acc, story) => {
+    if (!acc[story.category]) {
+      acc[story.category] = [];
+    }
+    acc[story.category].push(story);
+    return acc;
+  },
+  {} as Record<StoryCategory, CoachStory[]>,
+);
 
 const categories = Object.keys(groupedStories) as StoryCategory[];
 
@@ -60,19 +63,19 @@ const StoriesRing = ({ className = "" }: StoriesRingProps) => {
   const handleCategoryClick = (category: StoryCategory) => {
     const config = categoryConfig[category];
     const stories = convertToStories(groupedStories[category]);
-    
+
     openStories(stories, 0, {
       categoryLabel: category,
       categoryIcon: config.icon,
       categoryGradient: config.gradient,
     });
-    
+
     setViewedCategories((prev) => new Set([...prev, category]));
   };
 
   return (
     <div className={`overflow-x-auto scrollbar-hide ${className}`}>
-      <div className="flex gap-3 px-1 py-2">
+      <div className="flex gap-2.5 px-1 py-2">
         {categories.map((category, index) => {
           const config = categoryConfig[category];
           const isViewed = viewedCategories.has(category);
@@ -84,26 +87,22 @@ const StoriesRing = ({ className = "" }: StoriesRingProps) => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => handleCategoryClick(category)}
-              className="flex flex-col items-center gap-1.5 min-w-[72px]"
+              className="flex flex-col items-center gap-1.5 min-w-[62px]"
             >
               {/* Ring */}
               <div
                 className={`p-0.5 rounded-full ${
-                  isViewed
-                    ? "bg-muted/50"
-                    : "bg-gradient-to-tr from-primary via-primary/80 to-primary neon-glow-sm"
+                  isViewed ? "bg-muted/50" : "bg-gradient-to-tr from-primary via-primary/80 to-primary neon-glow-sm"
                 }`}
               >
                 <div
-                  className={`w-14 h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
+                  className={`w-12 h-12 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
                 >
                   {config.icon}
                 </div>
               </div>
               {/* Label */}
-              <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[72px]">
-                {category}
-              </span>
+              <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[62px]">{category}</span>
             </motion.button>
           );
         })}

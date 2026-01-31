@@ -1,7 +1,17 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck, AlertCircle, Calendar } from "lucide-react";
+import {
+  Bell,
+  X,
+  Trophy,
+  Settings,
+  MessageCircle,
+  ChevronRight,
+  ClipboardCheck,
+  AlertCircle,
+  Calendar,
+} from "lucide-react";
 import PerformanceRing from "@/components/PerformanceRing";
 import NextMissionCard from "@/components/NextMissionCard";
 import QuickStatsRow, { StatType } from "@/components/QuickStatsRow";
@@ -47,10 +57,10 @@ const Kokpit = () => {
     localStorage.setItem("acknowledgedAdjustments", JSON.stringify(updated));
   };
 
-  const unreadCount = notifications.filter(n => !n.read && !readNotifications[n.id]).length;
+  const unreadCount = notifications.filter((n) => !n.read && !readNotifications[n.id]).length;
 
   const handleNotificationClick = (notificationId: string, coachId?: string) => {
-    setReadNotifications(prev => ({ ...prev, [notificationId]: true }));
+    setReadNotifications((prev) => ({ ...prev, [notificationId]: true }));
     if (coachId) {
       setShowNotifications(false);
       navigate(`/coach/${coachId}`);
@@ -68,20 +78,16 @@ const Kokpit = () => {
   return (
     <div className="space-y-6 pb-24">
       {/* Minimalist Header */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
         <div>
-          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-0.5">
-            {getGreeting()}
-          </p>
-          <h1 className="font-display text-xl font-bold text-foreground">
-            {currentUser.name.split(' ')[0]}
-          </h1>
+          <p className="text-muted-foreground text-xs uppercase tracking-widest mb-0.5">{getGreeting()}</p>
+          <h1 className="font-display text-xl font-bold text-foreground">{currentUser.name.split(" ")[0]}</h1>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {/* Dispute Notifications Bell */}
           <DisputeNotificationBell />
@@ -133,26 +139,15 @@ const Kokpit = () => {
 
       {/* Coach Adjustment Banner - Urgent Alert */}
       {latestAdjustment && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-        >
-          <CoachAdjustmentBanner
-            adjustment={latestAdjustment}
-            onDismiss={handleDismissAdjustment}
-          />
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          <CoachAdjustmentBanner adjustment={latestAdjustment} onDismiss={handleDismissAdjustment} />
         </motion.div>
       )}
 
       {/* Payment Reminder Banner */}
       {reminders.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <button 
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          <button
             onClick={() => navigate("/odemeler")}
             className="w-full glass-card p-3 flex items-center gap-3 border-l-4 border-l-amber-500 hover:bg-white/[0.03] transition-colors"
           >
@@ -161,14 +156,19 @@ const Kokpit = () => {
             </div>
             <div className="flex-1 text-left">
               <p className="text-foreground text-sm font-medium">
-                {reminders[0].isOverdue 
-                  ? "Gecikmiş ödemeniz var!" 
-                  : reminders[0].daysUntilDue === 0 
-                    ? "Bugün son ödeme günü!" 
+                {reminders[0].isOverdue
+                  ? "Gecikmiş ödemeniz var!"
+                  : reminders[0].daysUntilDue === 0
+                    ? "Bugün son ödeme günü!"
                     : `Ödemenize ${reminders[0].daysUntilDue} gün kaldı`}
               </p>
               <p className="text-muted-foreground text-xs">
-                {reminders[0].serviceType} • {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", minimumFractionDigits: 0 }).format(reminders[0].amount)}
+                {reminders[0].serviceType} •{" "}
+                {new Intl.NumberFormat("tr-TR", {
+                  style: "currency",
+                  currency: "TRY",
+                  minimumFractionDigits: 0,
+                }).format(reminders[0].amount)}
               </p>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
@@ -176,45 +176,23 @@ const Kokpit = () => {
         </motion.div>
       )}
 
-      {/* Stories Ring - Mobile Optimized */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="-mx-4 px-4"
-      >
+      {/* Stories Ring - Smaller & Elegant */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
         <StoriesRing />
       </motion.div>
 
       {/* Performance Ring - The Hero Stat */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <PerformanceRing 
-          score={85}
-          label="HAZIRSIN"
-          sublabel="Yüksek yoğunluklu antrenman için uygun"
-        />
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+        <PerformanceRing score={85} label="HAZIRSIN" sublabel="Yüksek yoğunluklu antrenman için uygun" />
       </motion.div>
 
       {/* Streak & Tier Widget */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.25 }}
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
         <StreakTierWidget />
       </motion.div>
 
       {/* Next Mission Card */}
-      <NextMissionCard
-        title="GÖĞÜS & SIRT"
-        duration="45 dk"
-        calories="350 kcal"
-        coach="Koç Serdar"
-      />
+      <NextMissionCard title="GÖĞÜS & SIRT" duration="45 dk" calories="350 kcal" coach="Koç Serdar" />
 
       {/* Quick Stats Row */}
       <QuickStatsRow onStatClick={(stat) => setSelectedStat(stat)} />
@@ -255,24 +233,16 @@ const Kokpit = () => {
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-foreground text-sm font-medium truncate">Koç Serdar</p>
-          <p className="text-muted-foreground text-xs truncate">
-            Bugün bacak antrenmanında tempoyu düşürme...
-          </p>
+          <p className="text-muted-foreground text-xs truncate">Bugün bacak antrenmanında tempoyu düşürme...</p>
         </div>
         <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
       </motion.button>
 
       {/* Bento Stats Grid */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }}>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <h2 className="text-muted-foreground text-xs uppercase tracking-widest font-medium">
-            Sağlık Verileri
-          </h2>
+          <h2 className="text-muted-foreground text-xs uppercase tracking-widest font-medium">Sağlık Verileri</h2>
         </div>
         <BentoStats />
       </motion.div>
@@ -281,32 +251,21 @@ const Kokpit = () => {
       <CoachChat isOpen={showChat} onClose={() => setShowChat(false)} />
 
       {/* Daily Check-In Modal */}
-      <DailyCheckIn 
-        isOpen={showDailyCheckIn} 
-        onClose={() => setShowDailyCheckIn(false)} 
-      />
+      <DailyCheckIn isOpen={showDailyCheckIn} onClose={() => setShowDailyCheckIn(false)} />
 
       {/* Stat Detail Modal */}
-      <StatDetailModal 
-        isOpen={!!selectedStat} 
-        onClose={() => setSelectedStat(null)} 
-        statType={selectedStat} 
-      />
+      <StatDetailModal isOpen={!!selectedStat} onClose={() => setSelectedStat(null)} statType={selectedStat} />
 
       {/* Weekly Recap Modal */}
-      <WeeklyRecapModal
-        isOpen={showRecap}
-        onClose={dismissRecap}
-        data={recapData}
-      />
+      <WeeklyRecapModal isOpen={showRecap} onClose={dismissRecap} data={recapData} />
 
-      {/* Weekly Recap Test Button (Dev Only) - Positioned above dock */}
+      {/* Weekly Recap Test Button (Dev Only) */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         onClick={triggerRecap}
-        className="fixed bottom-36 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
+        className="fixed bottom-24 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
         title="Haftalık Özeti Test Et"
       >
         <Calendar className="w-5 h-5" />
@@ -345,7 +304,7 @@ const Kokpit = () => {
               <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-80px)]">
                 {notifications.map((notification, index) => {
                   const isRead = notification.read || readNotifications[notification.id];
-                  
+
                   return (
                     <motion.button
                       key={notification.id}
@@ -357,11 +316,15 @@ const Kokpit = () => {
                         !isRead ? "border-l-2 border-l-primary" : ""
                       }`}
                     >
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        notification.type === "coach" ? "bg-primary/20" :
-                        notification.type === "achievement" ? "bg-yellow-500/20" :
-                        "bg-secondary"
-                      }`}>
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          notification.type === "coach"
+                            ? "bg-primary/20"
+                            : notification.type === "achievement"
+                              ? "bg-yellow-500/20"
+                              : "bg-secondary"
+                        }`}
+                      >
                         {notification.type === "coach" && <MessageCircle className="w-5 h-5 text-primary" />}
                         {notification.type === "achievement" && <Trophy className="w-5 h-5 text-yellow-500" />}
                         {notification.type === "system" && <Settings className="w-5 h-5 text-muted-foreground" />}
@@ -371,16 +334,10 @@ const Kokpit = () => {
                           <p className={`font-medium text-sm ${isRead ? "text-muted-foreground" : "text-foreground"}`}>
                             {notification.title}
                           </p>
-                          {!isRead && (
-                            <div className="w-2 h-2 rounded-full bg-primary" />
-                          )}
+                          {!isRead && <div className="w-2 h-2 rounded-full bg-primary" />}
                         </div>
-                        <p className="text-muted-foreground text-xs mt-1 line-clamp-2">
-                          {notification.message}
-                        </p>
-                        <p className="text-muted-foreground/50 text-[10px] mt-2">
-                          {notification.time}
-                        </p>
+                        <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{notification.message}</p>
+                        <p className="text-muted-foreground/50 text-[10px] mt-2">{notification.time}</p>
                       </div>
                     </motion.button>
                   );
