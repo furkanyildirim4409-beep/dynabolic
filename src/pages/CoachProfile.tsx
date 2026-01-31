@@ -19,12 +19,26 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { getCoachById, coaches } from "@/lib/mockData";
 import ProductDetail from "@/components/ProductDetail";
 import { useStory, type Story } from "@/context/StoryContext";
 import { useCart } from "@/context/CartContext";
 import { hapticLight } from "@/lib/haptics";
+
+// Bio-Coin Constants (matching SupplementShop)
+const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL
+const USER_BIO_COINS = 2450; // Mock user balance
+
+const calculateMaxDiscount = (productPrice: number, userCoins: number): number => {
+  const maxPossibleDiscount = userCoins * COIN_TO_TL_RATE;
+  return Math.min(maxPossibleDiscount, productPrice * 0.2); // Max 20% discount
+};
+
+const calculateCoinsNeeded = (discountAmount: number): number => {
+  return Math.ceil(discountAmount / COIN_TO_TL_RATE);
+};
 
 const CoachProfile = () => {
   const navigate = useNavigate();
@@ -36,6 +50,10 @@ const CoachProfile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
+  
+  // Bio-Coin state for products
+  const [bioCoins, setBioCoins] = useState(USER_BIO_COINS);
+  const [coinDiscounts, setCoinDiscounts] = useState<Record<string, boolean>>({});
 
   // Get coach by ID - fallback to first coach if not found
   const coach = getCoachById(coachId || "1") || coaches[0];
@@ -84,15 +102,26 @@ const CoachProfile = () => {
     setShowProductDetail(true);
   };
 
-  const handleAddToCart = (product: any) => {
+  const handleAddToCart = (product: any, useCoins: boolean = false) => {
+    const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
+    const coinsNeeded = calculateCoinsNeeded(maxDiscount);
+    
     addToCart({
-      id: `coach-product-${product.id}-${coach.id}`,
+      id: `coach-product-${product.id}-${coach.id}-${Date.now()}`,
       title: product.title,
       price: product.price,
+      discountedPrice: useCoins ? Math.round(product.price - maxDiscount) : undefined,
+      coinsUsed: useCoins ? coinsNeeded : undefined,
       image: product.image,
       coachName: coach.name,
       type: "product",
     });
+    
+    // Deduct coins if used
+    if (useCoins) {
+      setBioCoins((prev) => prev - coinsNeeded);
+      setCoinDiscounts((prev) => ({ ...prev, [product.id]: false }));
+    }
   };
 
   const handleFollow = () => {
@@ -110,11 +139,14 @@ const CoachProfile = () => {
     });
   };
 
+  // Coaching packages: NO Bio-Coin discount allowed
   const handlePackageSelect = (pkg: { id: string; title: string; price: number; description: string }) => {
     addToCart({
-      id: `coach-package-${pkg.id}-${coach.id}`,
+      id: `coach-package-${pkg.id}-${coach.id}-${Date.now()}`,
       title: pkg.title,
       price: pkg.price,
+      discountedPrice: undefined, // No discount for coaching
+      coinsUsed: 0, // Explicitly block coin usage
       image: coach.avatar,
       coachName: coach.name,
       type: "coaching",
@@ -354,55 +386,130 @@ const CoachProfile = () => {
 
           {/* Shop Tab */}
           <TabsContent value="shop" className="mt-0 p-4">
-            {/* Cart button removed - using global FloatingCartButton */}
+            {/* Bio-Coin Balance Display */}
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-3 flex items-center justify-between mb-4"
+            >
+              <div className="flex items-center gap-2">
+                <Coins className="w-5 h-5 text-primary" />
+                <span className="text-foreground text-sm">Bakiyen:</span>
+              </div>
+              <span className="font-display text-lg text-primary">{bioCoins.toLocaleString()} BIO</span>
+            </motion.div>
 
             <div className="grid grid-cols-2 gap-3">
-              {coach.products.map((product) => (
-                <motion.div
-                  key={product.id}
-                  whileHover={{ scale: 1.02 }}
-                  className="glass-card overflow-hidden cursor-pointer"
-                  onClick={() => handleProductClick(product)}
-                >
-                  <div className="aspect-square bg-muted relative overflow-hidden">
-                    <img 
-                      src={product.image} 
-                      alt={product.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute top-2 right-2">
-                      <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                        {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="p-3">
-                    <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
-                      {product.title}
-                    </p>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-primary font-display text-sm">{product.price}₺</span>
-                      {product.bioCoins && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Coins className="w-3 h-3" />
-                          <span className="text-[10px]">{product.bioCoins}</span>
+              {coach.products.map((product) => {
+                const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
+                const isDiscountActive = coinDiscounts[product.id] || false;
+                const coinsNeeded = calculateCoinsNeeded(maxDiscount);
+                const discountedPrice = product.price - maxDiscount;
+                const remainingCoins = bioCoins - coinsNeeded;
+                
+                return (
+                  <motion.div
+                    key={product.id}
+                    whileHover={{ scale: 1.02 }}
+                    className="glass-card overflow-hidden cursor-pointer"
+                    onClick={() => handleProductClick(product)}
+                  >
+                    <div className="aspect-square bg-muted relative overflow-hidden">
+                      <img 
+                        src={product.image} 
+                        alt={product.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-2 right-2">
+                        <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                          {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
+                        </span>
+                      </div>
+                      {isDiscountActive && (
+                        <div className="absolute top-2 left-2">
+                          <span className="bg-stat-hrv text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                            -{Math.round(maxDiscount)}₺
+                          </span>
                         </div>
                       )}
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAddToCart(product);
-                      }}
-                      className="w-full mt-3 py-2 bg-primary text-primary-foreground font-display text-xs rounded-lg"
-                    >
-                      SEPETE EKLE
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
+                    <div className="p-3">
+                      <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
+                        {product.title}
+                      </p>
+                      
+                      {/* Price Display */}
+                      <div className="flex items-center justify-between mt-2">
+                        {isDiscountActive ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground text-xs line-through">{product.price}₺</span>
+                            <span className="text-primary font-display text-sm">{Math.round(discountedPrice)}₺</span>
+                          </div>
+                        ) : (
+                          <span className="text-primary font-display text-sm">{product.price}₺</span>
+                        )}
+                      </div>
+                      
+                      {/* Bio-Coin Toggle (only if user has coins and discount available) */}
+                      {maxDiscount > 0 && (
+                        <div 
+                          className="mt-2 p-2 bg-secondary/50 rounded-lg"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                              <Coins className="w-3 h-3 text-primary flex-shrink-0" />
+                              <span className="text-[10px] text-muted-foreground truncate">
+                                Bio-Coin Kullan
+                              </span>
+                            </div>
+                            <Switch
+                              checked={isDiscountActive}
+                              onCheckedChange={(checked) => {
+                                hapticLight();
+                                setCoinDiscounts((prev) => ({ ...prev, [product.id]: checked }));
+                              }}
+                              className="scale-75"
+                            />
+                          </div>
+                          {isDiscountActive && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              className="mt-1.5 pt-1.5 border-t border-white/10"
+                            >
+                              <div className="flex justify-between text-[9px]">
+                                <span className="text-muted-foreground">Kullanılacak:</span>
+                                <span className="text-primary font-medium">{coinsNeeded.toLocaleString()} BIO</span>
+                              </div>
+                              <div className="flex justify-between text-[9px]">
+                                <span className="text-muted-foreground">Kalan Bakiye:</span>
+                                <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
+                              </div>
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(product, isDiscountActive);
+                        }}
+                        className={`w-full mt-3 py-2 font-display text-xs rounded-lg transition-colors ${
+                          isDiscountActive
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-primary/20 text-primary border border-primary/30 hover:bg-primary/30"
+                        }`}
+                      >
+                        SEPETE EKLE
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </TabsContent>
 
