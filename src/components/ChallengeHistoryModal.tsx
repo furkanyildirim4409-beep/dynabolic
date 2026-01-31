@@ -217,9 +217,9 @@ const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryMod
           </Tabs>
         </div>
 
-        {/* Challenge History List */}
-        <ScrollArea className="flex-1 px-4 py-3">
-          <div className="space-y-2 pb-4">
+        {/* Challenge History List - Scrollable */}
+        <ScrollArea className="flex-1 min-h-0 px-4 py-3">
+          <div className="space-y-2 pb-8">
             {filteredHistory.map((challenge, index) => (
               <motion.div
                 key={challenge.id}

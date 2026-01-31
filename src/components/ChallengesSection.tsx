@@ -99,13 +99,13 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="space-y-4"
+        className="flex flex-col space-y-3"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2">
-            <Swords className="w-5 h-5 text-primary" />
-            <h2 className="font-display text-lg text-foreground tracking-wide">
+            <Swords className="w-4 h-4 text-primary" />
+            <h2 className="font-display text-base text-foreground tracking-wide">
               MEYDAN OKUMALAR
             </h2>
             {pendingCount > 0 && (
@@ -121,56 +121,60 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
           <Button
             size="sm"
             onClick={() => { hapticMedium(); setShowCreateModal(true); }}
-            className="h-9 px-4 bg-primary hover:bg-primary/90"
+            className="h-8 px-3 bg-primary hover:bg-primary/90 text-xs"
           >
-            <Plus className="w-4 h-4 mr-1" />
+            <Plus className="w-3 h-3 mr-1" />
             Meydan Oku
           </Button>
         </div>
 
-        {/* Challenge Streak Banner */}
-        <ChallengeStreakBanner showDevTools={true} />
+        {/* Challenge Streak Banner - Compact */}
+        <div className="shrink-0">
+          <ChallengeStreakBanner showDevTools={true} />
+        </div>
 
-        {/* Filters */}
-        <Tabs value={filter} onValueChange={(v) => { hapticLight(); setFilter(v as FilterType); }}>
-          <TabsList className="w-full grid grid-cols-4 bg-secondary/50 border border-white/5">
-            <TabsTrigger 
-              value="all" 
-              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-            >
-              Tümü
-            </TabsTrigger>
-            <TabsTrigger 
-              value="pending"
-              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
-            >
-              <Clock className="w-3 h-3" />
-              Bekleyen
-              {pendingCount > 0 && (
-                <span className="w-4 h-4 rounded-full bg-yellow-500 text-background text-[8px] font-bold flex items-center justify-center">
-                  {pendingCount}
-                </span>
-              )}
-            </TabsTrigger>
-            <TabsTrigger 
-              value="active"
-              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
-            >
-              <Swords className="w-3 h-3" />
-              Aktif
-            </TabsTrigger>
-            <TabsTrigger 
-              value="completed"
-              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
-            >
-              <CheckCircle className="w-3 h-3" />
-              Biten
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Filters - Compact */}
+        <div className="shrink-0">
+          <Tabs value={filter} onValueChange={(v) => { hapticLight(); setFilter(v as FilterType); }}>
+            <TabsList className="w-full grid grid-cols-4 bg-secondary/50 border border-white/5">
+              <TabsTrigger 
+                value="all" 
+                className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              >
+                Tümü
+              </TabsTrigger>
+              <TabsTrigger 
+                value="pending"
+                className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              >
+                <Clock className="w-3 h-3" />
+                Bekleyen
+                {pendingCount > 0 && (
+                  <span className="w-4 h-4 rounded-full bg-yellow-500 text-background text-[8px] font-bold flex items-center justify-center">
+                    {pendingCount}
+                  </span>
+                )}
+              </TabsTrigger>
+              <TabsTrigger 
+                value="active"
+                className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              >
+                <Swords className="w-3 h-3" />
+                Aktif
+              </TabsTrigger>
+              <TabsTrigger 
+                value="completed"
+                className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              >
+                <CheckCircle className="w-3 h-3" />
+                Biten
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
 
-        {/* Challenge List */}
-        <div className="space-y-3">
+        {/* Challenge List - Scrollable */}
+        <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
           <AnimatePresence mode="popLayout">
             {filteredChallenges.length > 0 ? (
               filteredChallenges.map((challenge, index) => (
