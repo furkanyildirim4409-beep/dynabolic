@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, History, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, History, ChevronLeft, ChevronRight, Heart } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
@@ -51,9 +51,28 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [showWorkoutSummary, setShowWorkoutSummary] = useState(false);
   const [exerciseComplete, setExerciseComplete] = useState(false);
   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
+  const [simulatedHeartRate, setSimulatedHeartRate] = useState(72);
   
   const exercise = exercises[currentExerciseIndex];
   const rpeColors = getRPEColor(exercise.rpe);
+
+  // Simulated heart rate effect - varies based on workout intensity
+  useEffect(() => {
+    if (!isRunning) return;
+    
+    const baseHR = 72;
+    const intensityBoost = exercise.rpe * 8; // Higher RPE = higher HR
+    const setBoost = currentSet * 3; // HR increases with sets
+    
+    const interval = setInterval(() => {
+      // Add some randomness to simulate real HR variation
+      const variation = Math.random() * 10 - 5;
+      const targetHR = baseHR + intensityBoost + setBoost + variation;
+      setSimulatedHeartRate(Math.round(Math.min(Math.max(targetHR, 65), 185)));
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, [isRunning, exercise.rpe, currentSet]);
 
   // Timer effect
   useEffect(() => {
@@ -348,7 +367,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
           )}
         </AnimatePresence>
 
-        {/* Header - Mission Control */}
+        {/* Header - Mission Control with Heart Rate */}
         <div className="px-4 py-3 flex items-center justify-between border-b border-white/10">
           <div className="flex items-center gap-2">
             <motion.div
@@ -360,12 +379,33 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
               GÖREV KONTROL: CANLI
             </span>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
-          >
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
+
+          {/* Live Heart Rate Widget */}
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-500/30"
+              animate={{ scale: [1, 1.02, 1] }}
+              transition={{ duration: 0.8, repeat: Infinity }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 0.8, repeat: Infinity }}
+              >
+                <Heart className="w-3.5 h-3.5 text-red-400 fill-red-400" />
+              </motion.div>
+              <span className="font-display text-sm text-red-400 tabular-nums min-w-[32px]">
+                {simulatedHeartRate}
+              </span>
+              <span className="text-[10px] text-red-400/70">bpm</span>
+            </motion.div>
+
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
         </div>
         {/* Exercise Progress Dots */}
         <div className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2 bg-card/50">
