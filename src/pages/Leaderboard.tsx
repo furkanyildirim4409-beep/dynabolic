@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Trophy, Flame, Dumbbell, Coins, ChevronLeft, Crown, Medal, Award, TrendingUp, TrendingDown, Minus, Swords } from "lucide-react";
@@ -150,6 +150,11 @@ const Leaderboard = () => {
   const [metric, setMetric] = useState<MetricType>("bioCoins");
   const [activeTab, setActiveTab] = useState<"leaderboard" | "challenges">("leaderboard");
   const [selectedAthlete, setSelectedAthlete] = useState<typeof mockAthletes[0] | null>(null);
+
+  // Force scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const handleAthleteClick = (athlete: typeof mockAthletes[0]) => {
     hapticLight();
