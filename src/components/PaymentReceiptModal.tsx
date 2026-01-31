@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Download, Receipt, CheckCircle2, Calendar, CreditCard } from "lucide-react";
+import { X, Download, Receipt, CheckCircle2, CreditCard } from "lucide-react";
+import { jsPDF } from "jspdf";
 import { Button } from "@/components/ui/button";
 import type { Invoice } from "@/types/shared-models";
 
@@ -26,43 +27,137 @@ const PaymentReceiptModal = ({ isOpen, onClose, invoice }: PaymentReceiptModalPr
   if (!invoice) return null;
 
   const handleDownload = () => {
-    // Create receipt content
-    const receiptContent = `
-=====================================
-           DYNABOLIC
-        ÖDEME MAKBUZU
-=====================================
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
-Makbuz No: RCP-${invoice.id}
-Tarih: ${formatDate(invoice.date)}
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    let yPos = 30;
 
--------------------------------------
-Hizmet: ${invoice.serviceType}
-Tutar: ${formatCurrency(invoice.amount)}
--------------------------------------
+    // Header background
+    doc.setFillColor(205, 220, 57); // Primary lime color
+    doc.rect(0, 0, pageWidth, 45, "F");
 
-Durum: ✓ ÖDENDİ
+    // Logo/Brand
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(28);
+    doc.setFont("helvetica", "bold");
+    doc.text("DYNABOLIC", pageWidth / 2, 22, { align: "center" });
+    
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    doc.text("ÖDEME MAKBUZU", pageWidth / 2, 35, { align: "center" });
 
-Ödeme Yöntemi: Kredi Kartı
-İşlem ID: TXN-${Date.now().toString(36).toUpperCase()}
+    yPos = 60;
 
--------------------------------------
-Dynabolic Fitness
-www.dynabolic.app
-info@dynabolic.app
-=====================================
-    `;
+    // Receipt number and date
+    doc.setTextColor(100, 100, 100);
+    doc.setFontSize(10);
+    doc.text(`Makbuz No: RCP-${invoice.id}`, margin, yPos);
+    doc.text(`Tarih: ${formatDate(invoice.date)}`, pageWidth - margin, yPos, { align: "right" });
 
-    // Create and download file
-    const blob = new Blob([receiptContent], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `dynabolic-makbuz-${invoice.id}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    yPos += 15;
+
+    // Divider line
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(margin, yPos, pageWidth - margin, yPos);
+
+    yPos += 15;
+
+    // Service details section
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("HİZMET DETAYLARI", margin, yPos);
+
+    yPos += 10;
+
+    // Service info box
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 25, 3, 3, "F");
+
+    yPos += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Hizmet:", margin + 5, yPos);
+    doc.setTextColor(50, 50, 50);
+    doc.text(invoice.serviceType || "Hizmet", margin + 30, yPos);
+
+    yPos += 10;
+    doc.setTextColor(100, 100, 100);
+    doc.text("Durum:", margin + 5, yPos);
+    doc.setTextColor(76, 175, 80); // Green
+    doc.text("✓ ÖDENDİ", margin + 30, yPos);
+
+    yPos += 20;
+
+    // Payment details section
+    doc.setTextColor(50, 50, 50);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("ÖDEME BİLGİLERİ", margin, yPos);
+
+    yPos += 10;
+
+    // Payment info box
+    doc.setFillColor(245, 245, 245);
+    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 35, 3, 3, "F");
+
+    yPos += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    
+    doc.setTextColor(100, 100, 100);
+    doc.text("Ödeme Yöntemi:", margin + 5, yPos);
+    doc.setTextColor(50, 50, 50);
+    doc.text("Kredi Kartı", margin + 45, yPos);
+
+    yPos += 10;
+    doc.setTextColor(100, 100, 100);
+    doc.text("İşlem ID:", margin + 5, yPos);
+    doc.setTextColor(50, 50, 50);
+    doc.text(`TXN-${Date.now().toString(36).toUpperCase()}`, margin + 45, yPos);
+
+    yPos += 10;
+    doc.setTextColor(100, 100, 100);
+    doc.text("İşlem Tarihi:", margin + 5, yPos);
+    doc.setTextColor(50, 50, 50);
+    doc.text(formatDate(invoice.date), margin + 45, yPos);
+
+    yPos += 25;
+
+    // Total amount box
+    doc.setFillColor(205, 220, 57); // Primary lime
+    doc.roundedRect(margin, yPos, pageWidth - margin * 2, 30, 3, 3, "F");
+
+    yPos += 12;
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12);
+    doc.text("TOPLAM TUTAR", margin + 10, yPos);
+    
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text(formatCurrency(invoice.amount), pageWidth - margin - 10, yPos + 5, { align: "right" });
+
+    // Footer
+    const footerY = doc.internal.pageSize.getHeight() - 30;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, footerY - 10, pageWidth - margin, footerY - 10);
+
+    doc.setTextColor(150, 150, 150);
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("Dynabolic Fitness", pageWidth / 2, footerY, { align: "center" });
+    doc.text("www.dynabolic.app | info@dynabolic.app", pageWidth / 2, footerY + 5, { align: "center" });
+    doc.text("Bu belge elektronik olarak oluşturulmuştur.", pageWidth / 2, footerY + 10, { align: "center" });
+
+    // Save PDF
+    doc.save(`dynabolic-makbuz-${invoice.id}.pdf`);
   };
 
   return (
