@@ -1,0 +1,196 @@
+import { motion } from "framer-motion";
+import { Flame, Shield, Star, Crown, Sparkles, ChevronRight, Trophy } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { 
+  userGamificationStats, 
+  getCurrentTier, 
+  getNextTier, 
+  getTierProgress,
+  userTiers 
+} from "@/lib/gamificationData";
+import { hapticLight } from "@/lib/haptics";
+
+interface StreakTierWidgetProps {
+  compact?: boolean;
+}
+
+const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
+  const navigate = useNavigate();
+  const currentTier = getCurrentTier(userGamificationStats.currentXP);
+  const nextTier = getNextTier(userGamificationStats.currentXP);
+  const tierProgress = getTierProgress(userGamificationStats.currentXP);
+
+  // Check if streak is active (mock: within last 24h)
+  const isStreakActive = true; // In real app, calculate from lastWorkoutDate
+
+  const handleNavigateToAchievements = () => {
+    hapticLight();
+    navigate('/achievements');
+  };
+
+  if (compact) {
+    return (
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleNavigateToAchievements}
+        className="glass-card p-3 flex items-center justify-between w-full"
+      >
+        <div className="flex items-center gap-3">
+          {/* Streak */}
+          <div className="flex items-center gap-1.5">
+            <motion.div
+              animate={isStreakActive ? { scale: [1, 1.1, 1] } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <Flame className={`w-5 h-5 ${isStreakActive ? 'text-orange-500' : 'text-muted-foreground'}`} />
+            </motion.div>
+            <span className={`font-display text-lg ${isStreakActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {userGamificationStats.currentStreak}
+            </span>
+            <span className="text-muted-foreground text-xs">gün</span>
+          </div>
+
+          <div className="w-px h-6 bg-white/10" />
+
+          {/* Tier */}
+          <div className="flex items-center gap-1.5">
+            <currentTier.icon className={`w-4 h-4 ${currentTier.color}`} />
+            <span className={`font-display text-sm ${currentTier.color}`}>
+              {currentTier.name}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">{userGamificationStats.currentXP} XP</span>
+          <ChevronRight className="w-4 h-4 text-muted-foreground" />
+        </div>
+      </motion.button>
+    );
+  }
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="glass-card p-4 space-y-4"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Trophy className="w-4 h-4 text-primary" />
+          <h3 className="font-display text-sm text-foreground tracking-wider">
+            SEVİYE & SERİ
+          </h3>
+        </div>
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleNavigateToAchievements}
+          className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium"
+        >
+          Rozetler
+        </motion.button>
+      </div>
+
+      {/* Streak Counter */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <motion.div
+            animate={isStreakActive ? { 
+              scale: [1, 1.15, 1],
+              filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)']
+            } : {}}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+              isStreakActive 
+                ? 'bg-gradient-to-br from-orange-500/30 to-red-500/30 border border-orange-500/50' 
+                : 'bg-secondary border border-white/10'
+            }`}
+          >
+            <Flame className={`w-7 h-7 ${isStreakActive ? 'text-orange-500' : 'text-muted-foreground'}`} />
+          </motion.div>
+          <div>
+            <p className={`font-display text-3xl ${isStreakActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+              {userGamificationStats.currentStreak}
+            </p>
+            <p className="text-muted-foreground text-xs">gün seri</p>
+          </div>
+        </div>
+
+        <div className="text-right">
+          <p className="text-muted-foreground text-[10px]">EN UZUN</p>
+          <p className="font-display text-lg text-foreground">
+            {userGamificationStats.longestStreak} gün
+          </p>
+        </div>
+      </div>
+
+      {/* Tier Progress */}
+      <div className="space-y-2">
+        {/* Tier Labels */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <currentTier.icon className={`w-5 h-5 ${currentTier.color}`} />
+            <span className={`font-display text-sm ${currentTier.color}`}>
+              {currentTier.name}
+            </span>
+          </div>
+          {nextTier && (
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground text-xs">Sonraki:</span>
+              <nextTier.icon className={`w-4 h-4 ${nextTier.color}`} />
+              <span className={`text-xs ${nextTier.color}`}>{nextTier.name}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Progress Bar with Tier Markers */}
+        <div className="relative">
+          <div className="h-3 bg-secondary rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${tierProgress}%` }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className={`h-full bg-gradient-to-r ${currentTier.gradient} rounded-full relative`}
+            >
+              {/* Animated glow */}
+              <motion.div
+                className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-r from-transparent to-white/30 rounded-full"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 1.5, repeat: Infinity }}
+              />
+            </motion.div>
+          </div>
+
+          {/* Tier Markers */}
+          <div className="absolute top-0 left-0 right-0 h-3 flex items-center">
+            {userTiers.slice(1).map((tier, index) => {
+              const position = ((tier.minXP - userTiers[0].minXP) / (userTiers[userTiers.length - 1].maxXP - userTiers[0].minXP)) * 100;
+              return (
+                <div
+                  key={tier.name}
+                  className="absolute w-0.5 h-full bg-white/20"
+                  style={{ left: `${Math.min(position, 100)}%` }}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* XP Info */}
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-primary font-medium">{userGamificationStats.currentXP} XP</span>
+          {nextTier && (
+            <span className="text-muted-foreground">
+              {nextTier.minXP - userGamificationStats.currentXP} XP kaldı
+            </span>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default StreakTierWidget;
