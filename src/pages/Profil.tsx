@@ -7,6 +7,7 @@ import BodyScanUpload from "@/components/BodyScanUpload";
 import BloodworkUpload from "@/components/BloodworkUpload";
 import WearableDeviceSync from "@/components/WearableDeviceSync";
 import BioMetricsDashboard from "@/components/BioMetricsDashboard";
+import TransformationTimeline from "@/components/profile/TransformationTimeline";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -322,22 +323,31 @@ const Profil = () => {
         </div>
       </motion.div>
 
-      {/* Body Scan Upload Section */}
+      {/* Transformation Timeline - Enhanced Body Scan Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
+      >
+        <TransformationTimeline />
+      </motion.div>
+
+      {/* Body Scan Upload Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.32 }}
         className="glass-card p-4"
       >
         <div className="flex items-center gap-2 mb-4">
           <Camera className="w-5 h-5 text-primary" />
           <h2 className="font-display text-lg text-foreground tracking-wide">
-            VÜCUT TARAMA
+            YENİ FOTOĞRAF EKLE
           </h2>
         </div>
         
         <p className="text-muted-foreground text-sm mb-4">
-          İlerlemenizi takip etmek için koçunuza güncel vücut fotoğraflarınızı gönderin.
+          İlerlemenizi takip etmek için güncel vücut fotoğraflarınızı ekleyin.
         </p>
         
         <Button 
