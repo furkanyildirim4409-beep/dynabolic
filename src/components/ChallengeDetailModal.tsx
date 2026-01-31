@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, Swords, Trophy, Clock, Send, Flame, Dumbbell, 
   TrendingUp, MessageCircle, History, Target, Award,
-  ChevronRight, CheckCircle, AlertCircle
+  ChevronRight, CheckCircle, AlertCircle, Camera
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import ChallengeProofSubmission, { ProofSubmission } from "./ChallengeProofSubmission";
 import { 
   Challenge, 
   getChallengeTypeIcon, 
@@ -121,9 +122,10 @@ const ChallengeDetailModal = ({
   onAccept,
   onDecline
 }: ChallengeDetailModalProps) => {
-  const [activeTab, setActiveTab] = useState<"progress" | "messages" | "history">("progress");
+  const [activeTab, setActiveTab] = useState<"progress" | "proof" | "messages" | "history">("progress");
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState(mockMessages);
+  const [proofs, setProofs] = useState<ProofSubmission[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Simulate live progress updates
@@ -404,24 +406,31 @@ const ChallengeDetailModal = ({
           onValueChange={(v) => { hapticLight(); setActiveTab(v as typeof activeTab); }}
           className="flex-1 flex flex-col overflow-hidden"
         >
-          <TabsList className="mx-4 mt-2 grid grid-cols-3 bg-secondary/50 border border-white/5 shrink-0">
+          <TabsList className="mx-4 mt-2 grid grid-cols-4 bg-secondary/50 border border-white/5 shrink-0">
             <TabsTrigger 
               value="progress"
-              className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
             >
               <TrendingUp className="w-3 h-3" />
               İlerleme
             </TabsTrigger>
             <TabsTrigger 
+              value="proof"
+              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+            >
+              <Camera className="w-3 h-3" />
+              Kanıt
+            </TabsTrigger>
+            <TabsTrigger 
               value="messages"
-              className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
             >
               <MessageCircle className="w-3 h-3" />
-              Mesajlar
+              Mesaj
             </TabsTrigger>
             <TabsTrigger 
               value="history"
-              className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
             >
               <History className="w-3 h-3" />
               Geçmiş
@@ -485,7 +494,17 @@ const ChallengeDetailModal = ({
             </div>
           </TabsContent>
 
-          {/* Messages Tab */}
+          {/* Proof Tab */}
+          <TabsContent value="proof" className="flex-1 overflow-auto px-4 pb-4 mt-4">
+            <ChallengeProofSubmission
+              challengeId={challenge.id}
+              challengeType={challenge.type}
+              exercise={challenge.exercise}
+              targetValue={challenge.targetValue}
+              existingProofs={proofs}
+              onProofSubmitted={(proof) => setProofs(prev => [...prev, proof])}
+            />
+          </TabsContent>
           <TabsContent value="messages" className="flex-1 flex flex-col overflow-hidden px-4 pb-4 mt-0">
             <ScrollArea className="flex-1 -mx-4 px-4">
               <div className="space-y-3 py-4">
