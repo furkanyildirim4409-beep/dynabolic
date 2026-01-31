@@ -8,9 +8,12 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import ChallengeProofSubmission, { ProofSubmission } from "./ChallengeProofSubmission";
 import { 
   Challenge, 
@@ -254,21 +257,8 @@ const ChallengeDetailModal = ({
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 100 }}
-        className="fixed bottom-0 left-0 right-0 z-[9999] bg-background rounded-t-3xl border-t border-white/10 max-h-[90vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] p-0 gap-0 bg-background border-white/10 overflow-hidden flex flex-col [&>button]:hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-3">
@@ -547,8 +537,9 @@ const ChallengeDetailModal = ({
               opponentAvatar={opponent.avatar}
             />
           </TabsContent>
-          <TabsContent value="messages" className="flex-1 flex flex-col overflow-hidden px-4 pb-4 mt-0">
-            <ScrollArea className="flex-1 -mx-4 px-4">
+          <TabsContent value="messages" className="flex-1 flex flex-col min-h-0 px-4 pb-4 mt-0">
+            {/* Messages Container - Scrollable */}
+            <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 -mx-4 px-4">
               <div className="space-y-3 py-4">
                 {messages.map((msg, index) => {
                   const isMe = msg.senderId === "current";
@@ -583,9 +574,9 @@ const ChallengeDetailModal = ({
                 })}
                 <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+            </div>
             
-            {/* Message Input */}
+            {/* Message Input - Fixed at bottom */}
             <div className="flex items-center gap-2 pt-3 border-t border-white/10 shrink-0">
               <Input
                 value={newMessage}
@@ -718,8 +709,8 @@ const ChallengeDetailModal = ({
             </Button>
           </div>
         )}
-      </motion.div>
-    </AnimatePresence>
+      </DialogContent>
+    </Dialog>
   );
 };
 
