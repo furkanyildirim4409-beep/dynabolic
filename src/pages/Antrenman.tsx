@@ -1,15 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dumbbell, Calendar, TrendingUp, Clock, Target, History, X, CheckCircle2, Timer, Flame, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
+import { Dumbbell, Calendar, TrendingUp, Clock, Target, History, X, CheckCircle2, Timer, Flame, ChevronDown, ChevronUp, AlertCircle, List, CalendarDays } from "lucide-react";
 import WorkoutCard from "@/components/WorkoutCard";
 import VisionAIExecution from "@/components/VisionAIExecution";
+import WorkoutCalendar from "@/components/WorkoutCalendar";
 import { workoutHistory, assignedWorkouts, WorkoutHistoryEntry } from "@/lib/mockData";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const Antrenman = () => {
   const [activeWorkout, setActiveWorkout] = useState<string | null>(null);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedWorkout, setSelectedWorkout] = useState<WorkoutHistoryEntry | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   const weeklyStats = [
     { label: "Tamamlanan", value: "5", icon: Target },
@@ -34,14 +37,39 @@ const Antrenman = () => {
             <h1 className="font-display text-2xl text-foreground">ANTRENMAN</h1>
             <p className="text-muted-foreground text-sm">Vision AI Eğitim Merkezi</p>
           </div>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowHistory(true)}
-            className="p-3 glass-card border border-primary/30 hover:bg-primary/10 transition-colors"
-          >
-            <History className="w-5 h-5 text-primary" />
-          </motion.button>
+          <div className="flex items-center gap-2">
+            {/* View Toggle */}
+            <ToggleGroup 
+              type="single" 
+              value={viewMode} 
+              onValueChange={(value) => value && setViewMode(value as 'list' | 'calendar')}
+              className="glass-card p-1"
+            >
+              <ToggleGroupItem 
+                value="list" 
+                aria-label="Liste Görünümü"
+                className="data-[state=on]:bg-primary/20 data-[state=on]:text-primary px-2 py-1.5"
+              >
+                <List className="w-4 h-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="calendar" 
+                aria-label="Takvim Görünümü"
+                className="data-[state=on]:bg-primary/20 data-[state=on]:text-primary px-2 py-1.5"
+              >
+                <CalendarDays className="w-4 h-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowHistory(true)}
+              className="p-3 glass-card border border-primary/30 hover:bg-primary/10 transition-colors"
+            >
+              <History className="w-5 h-5 text-primary" />
+            </motion.button>
+          </div>
         </div>
 
         {/* Vision AI Banner */}
@@ -97,36 +125,59 @@ const Antrenman = () => {
           </div>
         </motion.div>
 
-        {/* Assigned Workouts */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg text-foreground tracking-wide">
-              ATANAN ANTRENMANLAR
-            </h2>
-            <span className="text-xs text-primary">{assignedWorkouts.length} Görev</span>
-          </div>
-          
-          <div className="space-y-4">
-            {assignedWorkouts.map((workout, index) => (
-              <motion.div
-                key={workout.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + index * 0.1 }}
-              >
-                <WorkoutCard
-                  title={workout.title}
-                  day={workout.day}
-                  exercises={workout.exercises}
-                  duration={workout.duration}
-                  intensity={workout.intensity}
-                  coachNote={workout.coachNote}
-                  onStart={() => setActiveWorkout(workout.title)}
-                />
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        {/* Conditional View: List or Calendar */}
+        <AnimatePresence mode="wait">
+          {viewMode === 'list' ? (
+            <motion.div
+              key="list-view"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Assigned Workouts */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="font-display text-lg text-foreground tracking-wide">
+                    ATANAN ANTRENMANLAR
+                  </h2>
+                  <span className="text-xs text-primary">{assignedWorkouts.length} Görev</span>
+                </div>
+                
+                <div className="space-y-4">
+                  {assignedWorkouts.map((workout, index) => (
+                    <motion.div
+                      key={workout.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.2 + index * 0.1 }}
+                    >
+                      <WorkoutCard
+                        title={workout.title}
+                        day={workout.day}
+                        exercises={workout.exercises}
+                        duration={workout.duration}
+                        intensity={workout.intensity}
+                        coachNote={workout.coachNote}
+                        onStart={() => setActiveWorkout(workout.title)}
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="calendar-view"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+            >
+              <WorkoutCalendar />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Vision AI Execution Overlay */}
