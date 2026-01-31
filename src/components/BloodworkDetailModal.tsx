@@ -44,30 +44,24 @@ const BloodworkDetailModal = ({ report, isOpen, onClose }: BloodworkDetailModalP
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex flex-col"
+          onClick={onClose}
         >
           <motion.div
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            drag="y"
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.3 }}
-            onDragEnd={(_, info) => {
-              if (info.offset.y > 150 || info.velocity.y > 500) {
-                onClose();
-              }
-            }}
-            className="absolute inset-0 h-full bg-background overflow-y-auto touch-pan-y overscroll-contain"
+            onClick={(e) => e.stopPropagation()}
+            className="mt-auto h-[85vh] bg-background rounded-t-3xl flex flex-col"
           >
             {/* Drag Handle */}
-            <div className="flex justify-center pt-3 pb-1">
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
             </div>
 
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-white/10 p-4 flex items-center justify-between">
+            <div className="flex-shrink-0 bg-background border-b border-white/10 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-red-400" />
                 <h2 className="font-display text-lg text-foreground">RAPOR DETAYI</h2>
@@ -80,7 +74,9 @@ const BloodworkDetailModal = ({ report, isOpen, onClose }: BloodworkDetailModalP
               </button>
             </div>
 
-            <div className="p-4 pb-40 space-y-6">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto overscroll-contain min-h-0">
+              <div className="p-4 pb-20 space-y-6">
               {/* Report Info Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -271,6 +267,7 @@ const BloodworkDetailModal = ({ report, isOpen, onClose }: BloodworkDetailModalP
                   </p>
                 </motion.div>
               )}
+              </div>
             </div>
           </motion.div>
         </motion.div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
-import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, ChevronDown, ChevronUp, History, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, History, ChevronLeft, ChevronRight } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
@@ -50,7 +50,6 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [showWorkoutSummary, setShowWorkoutSummary] = useState(false);
   const [exerciseComplete, setExerciseComplete] = useState(false);
-  const [showCoachNote, setShowCoachNote] = useState(true);
   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
   
   const exercise = exercises[currentExerciseIndex];
@@ -600,48 +599,18 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
               </div>
             </div>
 
-            {/* Coach Notes (Collapsible) */}
+            {/* Coach Notes (No Scroll - Full Display) */}
             {exercise.notes && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setShowCoachNote(!showCoachNote)}
-                  className="w-full px-3 py-2 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <Info className="w-3.5 h-3.5 text-amber-400" />
-                    <span className="text-[10px] text-amber-400 font-medium tracking-wider">
-                      KOÇ NOTU
-                    </span>
-                  </div>
-                  {showCoachNote ? (
-                    <ChevronUp className="w-4 h-4 text-amber-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-amber-400" />
-                  )}
-                </button>
-                <AnimatePresence>
-                  {showCoachNote && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="px-3 pb-2 overflow-hidden"
-                    >
-                      <p className="text-amber-100 text-xs leading-relaxed max-h-16 overflow-y-auto">
-                        {exercise.notes}
-                      </p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            )}
-
-            {/* Category Badge */}
-            {exercise.category && (
-              <div className="flex items-center gap-2">
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
-                  {exercise.category}
-                </span>
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <Info className="w-3.5 h-3.5 text-amber-400" />
+                  <span className="text-[10px] text-amber-400 font-medium tracking-wider">
+                    KOÇ NOTU
+                  </span>
+                </div>
+                <p className="text-amber-100 text-xs leading-relaxed">
+                  {exercise.notes}
+                </p>
               </div>
             )}
           </div>
