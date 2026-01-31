@@ -265,7 +265,7 @@ const Kokpit = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         onClick={triggerRecap}
-        className="fixed bottom-24 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
+        className="fixed bottom-44 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
         title="Haftalık Özeti Test Et"
       >
         <Calendar className="w-5 h-5" />
