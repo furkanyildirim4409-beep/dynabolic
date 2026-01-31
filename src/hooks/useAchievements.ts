@@ -11,7 +11,9 @@ export type AchievementTrigger =
   | "daily_checkin"
   | "vision_ai_workout"
   | "first_workout"
-  | "workout_count_100";
+  | "workout_count_100"
+  | "challenge_streak_5"
+  | "challenge_streak_10";
 
 const triggerToAchievementMap: Record<AchievementTrigger, string[]> = {
   workout_complete: ["first-workout"],
@@ -24,6 +26,8 @@ const triggerToAchievementMap: Record<AchievementTrigger, string[]> = {
   vision_ai_workout: ["vision-ai-pioneer"],
   first_workout: ["first-workout"],
   workout_count_100: ["century"],
+  challenge_streak_5: ["challenge-streak-5"],
+  challenge_streak_10: ["challenge-streak-10"],
 };
 
 const userProgress: Record<string, number> = {
@@ -38,6 +42,8 @@ const userProgress: Record<string, number> = {
   "century": 45,
   "year-warrior": 45,
   "vision-ai-pioneer": 3,
+  "challenge-streak-5": 0,
+  "challenge-streak-10": 0,
 };
 
 const checkAchievementUnlock = (achievementId: string): boolean => {
@@ -65,6 +71,10 @@ const checkAchievementUnlock = (achievementId: string): boolean => {
       return progress >= 100;
     case "vision-ai-pioneer":
       return progress >= 10;
+    case "challenge-streak-5":
+      return true; // Triggered directly when streak reaches 5
+    case "challenge-streak-10":
+      return true; // Triggered directly when streak reaches 10
     default:
       return false;
   }

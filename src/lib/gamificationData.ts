@@ -1,4 +1,4 @@
-import { LucideIcon, Dumbbell, Sunrise, Flame, Trophy, Zap, Target, Calendar, Crown, Star, Award, Shield, Sparkles } from "lucide-react";
+import { LucideIcon, Dumbbell, Sunrise, Flame, Trophy, Zap, Target, Calendar, Crown, Star, Award, Shield, Sparkles, Swords } from "lucide-react";
 
 export interface Achievement {
   id: string;
@@ -210,6 +210,34 @@ export const achievements: Achievement[] = [
     progress: 30,
     progressText: "3/10 antrenman",
     xpReward: 200,
+  },
+
+  // Challenge Badges
+  {
+    id: "challenge-streak-5",
+    name: "Beşli Seri",
+    description: "Meydan okumalarda seriye gir",
+    requirement: "Art arda 5 meydan okuma kazan",
+    icon: Swords,
+    category: "special",
+    tier: "gold",
+    unlocked: false,
+    progress: 0,
+    progressText: "0/5 kazanç",
+    xpReward: 250,
+  },
+  {
+    id: "challenge-streak-10",
+    name: "Efsane Savaşçı",
+    description: "Meydan okumalarda yenilmez ol",
+    requirement: "Art arda 10 meydan okuma kazan",
+    icon: Crown,
+    category: "special",
+    tier: "platinum",
+    unlocked: false,
+    progress: 0,
+    progressText: "0/10 kazanç",
+    xpReward: 500,
   },
 ];
 
