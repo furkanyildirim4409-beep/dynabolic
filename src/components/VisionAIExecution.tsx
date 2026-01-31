@@ -297,8 +297,8 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
           </button>
         </div>
 
-        {/* Vision Area - Top Half */}
-        <div className="flex-1 relative bg-black overflow-hidden">
+        {/* Vision Area - 55% height, clean canvas */}
+        <div className="h-[55%] relative bg-black overflow-hidden">
           {/* Video/GIF Placeholder */}
           <div className="absolute inset-0 flex items-center justify-center">
             {!visionAIActive ? (
@@ -315,14 +315,13 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                 >
                   <div className="text-center">
                     <motion.div
-                      className="w-32 h-32 mx-auto mb-4 rounded-full bg-secondary/50 border border-white/10 flex items-center justify-center"
+                      className="w-24 h-24 mx-auto mb-3 rounded-full bg-secondary/50 border border-white/10 flex items-center justify-center"
                       animate={{ scale: [1, 1.05, 1] }}
                       transition={{ duration: 2, repeat: Infinity }}
                     >
-                      <Play className="w-12 h-12 text-primary ml-1" />
+                      <Play className="w-10 h-10 text-primary ml-1" />
                     </motion.div>
-                    <p className="text-muted-foreground text-sm">Egzersiz Formu Görüntüsü</p>
-                    <p className="text-muted-foreground/60 text-xs mt-1">Döngülü Video/GIF</p>
+                    <p className="text-muted-foreground text-xs">Egzersiz Formu</p>
                   </div>
                 </motion.div>
 
@@ -368,108 +367,123 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             )}
           </div>
 
-          {/* Vision AI Toggle Button */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            onClick={() => setVisionAIActive(!visionAIActive)}
-            className={`absolute top-4 right-4 flex items-center gap-2 px-3 py-2 rounded-xl border transition-all ${
-              visionAIActive 
-                ? "bg-primary/20 border-primary/50 text-primary" 
-                : "bg-black/50 border-white/10 text-muted-foreground hover:border-primary/30 hover:text-primary"
-            }`}
-          >
-            {visionAIActive ? (
-              <Eye className="w-4 h-4" />
-            ) : (
-              <EyeOff className="w-4 h-4" />
-            )}
-            <span className="text-[10px] font-display tracking-wider">
-              VISION AI {visionAIActive ? "AÇIK" : "AÇ"} (BETA)
-            </span>
-          </motion.button>
-
-          {/* HUD Data - Only visible when Vision AI is active */}
+          {/* TOP LEFT: Vision AI Stats (only when active) */}
           <AnimatePresence>
             {visionAIActive && (
               <motion.div
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -20, opacity: 0 }}
-                className="absolute top-4 left-4 space-y-2"
+                className="absolute top-3 left-3 flex gap-2"
               >
-                <div className="glass-card px-3 py-2">
-                  <div className="flex items-center gap-2">
+                <div className="bg-black/70 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5">
+                  <div className="flex items-center gap-1.5 mb-0.5">
                     <Activity className="w-3 h-3 text-primary" />
-                    <span className="text-xs text-muted-foreground">HAREKET ARALIĞI</span>
+                    <span className="text-[9px] text-muted-foreground uppercase">ROM</span>
                   </div>
-                  <p className="font-display text-lg text-primary">%98</p>
+                  <p className="font-display text-base text-primary leading-none">98%</p>
                 </div>
 
-                <div className="glass-card px-3 py-2">
-                  <div className="flex items-center gap-2">
+                <div className="bg-black/70 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5">
+                  <div className="flex items-center gap-1.5 mb-0.5">
                     <Target className="w-3 h-3 text-stat-strain" />
-                    <span className="text-xs text-muted-foreground">HIZ</span>
+                    <span className="text-[9px] text-muted-foreground uppercase">Hız</span>
                   </div>
-                  <p className="font-display text-lg text-stat-strain">0.45 m/sn</p>
+                  <p className="font-display text-base text-stat-strain leading-none">0.45</p>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* RPE Badge - Top Right */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className={`absolute top-4 left-4 ${rpeColors.bg} ${rpeColors.border} border rounded-xl px-3 py-2`}
-          >
-            <div className="flex items-center gap-2">
-              <Target className={`w-4 h-4 ${rpeColors.text}`} />
+          {/* TOP RIGHT: Vision AI Toggle + Set Counter */}
+          <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
+            {/* Vision AI Toggle Button */}
+            <motion.button
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              onClick={() => setVisionAIActive(!visionAIActive)}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border transition-all ${
+                visionAIActive 
+                  ? "bg-primary/20 border-primary/50 text-primary" 
+                  : "bg-black/60 border-white/10 text-muted-foreground hover:border-primary/30"
+              }`}
+            >
+              {visionAIActive ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+              <span className="text-[9px] font-display tracking-wider">
+                {visionAIActive ? "AI ON" : "AI"}
+              </span>
+            </motion.button>
+
+            {/* Set Counter */}
+            <div className="bg-black/70 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1.5 text-center">
+              <span className="text-[9px] text-muted-foreground uppercase block">Set</span>
+              <p className="font-display text-base text-foreground leading-none">
+                {currentSet}/{exercise.sets}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Info Panel - 45% height, scrollable */}
+        <div className="h-[45%] bg-card border-t border-white/10 flex flex-col overflow-hidden">
+          {/* Scrollable Info Section */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {/* Exercise Name + History */}
+            <div className="flex items-center justify-between">
               <div>
-                <span className="text-[10px] text-muted-foreground block">HEDEF RPE</span>
-                <motion.span
-                  className={`font-display text-lg ${rpeColors.text}`}
-                  animate={exercise.rpe >= 8 ? { scale: [1, 1.05, 1] } : {}}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  {exercise.rpe}
-                </motion.span>
+                <h2 className="font-display text-lg text-foreground tracking-wider leading-tight">
+                  {exercise.name}
+                </h2>
+                <p className="text-muted-foreground text-[10px]">{workoutTitle}</p>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowExerciseHistory(true)}
+                className="p-2 rounded-lg bg-secondary/50 border border-primary/30 hover:bg-primary/10 transition-colors"
+                aria-label="Egzersiz Geçmişi"
+              >
+                <History className="w-4 h-4 text-primary" />
+              </motion.button>
+            </div>
+
+            {/* RPE + Coach Target Row */}
+            <div className="flex gap-2">
+              {/* RPE Badge */}
+              <div className={`flex-1 ${rpeColors.bg} ${rpeColors.border} border rounded-xl px-3 py-2`}>
+                <div className="flex items-center gap-2">
+                  <Target className={`w-4 h-4 ${rpeColors.text}`} />
+                  <div>
+                    <span className="text-[9px] text-muted-foreground block">HEDEF RPE</span>
+                    <span className={`font-display text-lg ${rpeColors.text} leading-none`}>
+                      {exercise.rpe}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Coach Target */}
+              <div className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-2">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="text-[9px] text-primary tracking-wider">KOÇ HEDEFİ</span>
+                </div>
+                <p className="text-primary font-display text-sm leading-tight">
+                  {exercise.targetReps}x @ {exercise.tempo}
+                </p>
               </div>
             </div>
-          </motion.div>
 
-          {/* Set Counter */}
-          <div className="absolute top-4 right-4 glass-card px-3 py-2"
-            style={{ marginTop: "60px" }}
-          >
-            <span className="text-xs text-muted-foreground">SET</span>
-            <p className="font-display text-lg text-foreground">
-              {currentSet}/{exercise.sets}
-            </p>
-          </div>
-
-          {/* Coach Overlay - with Notes */}
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.7 }}
-            className="absolute bottom-4 left-4 right-4 space-y-2"
-          >
-            {/* Coach Notes (if available) */}
+            {/* Coach Notes (Collapsible) */}
             {exercise.notes && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-amber-500/10 backdrop-blur-xl border border-amber-500/30 rounded-xl overflow-hidden"
-              >
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl overflow-hidden">
                 <button
                   onClick={() => setShowCoachNote(!showCoachNote)}
                   className="w-full px-3 py-2 flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <Info className="w-4 h-4 text-amber-400" />
+                    <Info className="w-3.5 h-3.5 text-amber-400" />
                     <span className="text-[10px] text-amber-400 font-medium tracking-wider">
                       KOÇ NOTU
                     </span>
@@ -486,151 +500,105 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      className="px-3 pb-3"
+                      className="px-3 pb-2 overflow-hidden"
                     >
-                      <p className="text-amber-100 text-sm leading-relaxed">
+                      <p className="text-amber-100 text-xs leading-relaxed max-h-16 overflow-y-auto">
                         {exercise.notes}
                       </p>
                     </motion.div>
                   )}
                 </AnimatePresence>
-              </motion.div>
+              </div>
             )}
 
-            {/* Category Tag + Target */}
-            <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-xl p-3">
-              {/* Category Badge */}
-              {exercise.category && (
-                <div className="mb-2">
-                  <span className="text-[10px] px-2 py-1 rounded-full bg-secondary text-muted-foreground">
-                    {exercise.category}
-                  </span>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-2 mb-1">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <span className="text-[10px] text-primary font-medium tracking-wider">
-                  KOÇ HEDEFİ
+            {/* Category Badge */}
+            {exercise.category && (
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                  {exercise.category}
                 </span>
               </div>
-              <p className="text-primary font-display text-sm tracking-wide">
-                {exercise.targetReps} Tekrar @ {exercise.tempo} Tempo
-              </p>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Controls - Bottom Half */}
-        <div className="bg-card border-t border-white/10 p-4 space-y-4">
-          {/* Exercise Name with History Button */}
-          <div className="flex items-center justify-center gap-3">
-            <div className="text-center flex-1">
-              <h2 className="font-display text-xl text-foreground tracking-wider">
-                {exercise.name}
-              </h2>
-              <p className="text-muted-foreground text-xs">{workoutTitle}</p>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowExerciseHistory(true)}
-              className="p-2 rounded-lg bg-secondary/50 border border-primary/30 hover:bg-primary/10 transition-colors"
-              aria-label="Egzersiz Geçmişi"
-            >
-              <History className="w-5 h-5 text-primary" />
-            </motion.button>
+            )}
           </div>
 
-          {/* Inputs Row */}
-          <div className="flex items-center justify-center gap-6">
-            {/* Weight Input */}
-            <div className="text-center">
-              <div className="flex items-center gap-2">
+          {/* Fixed Controls Section */}
+          <div className="flex-shrink-0 p-3 pt-2 border-t border-white/5 space-y-3">
+            {/* Inputs Row */}
+            <div className="flex items-center justify-center gap-4">
+              {/* Weight Input */}
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setWeight((w) => Math.max(0, w - 2.5))}
-                  className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display"
+                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
                 >
                   -
                 </button>
-                <div className="w-20">
-                  <p className="font-display text-3xl text-foreground">{weight}</p>
-                  <p className="text-muted-foreground text-xs">KG</p>
+                <div className="w-16 text-center">
+                  <p className="font-display text-2xl text-foreground leading-none">{weight}</p>
+                  <p className="text-muted-foreground text-[9px]">KG</p>
                 </div>
                 <button
                   onClick={() => setWeight((w) => w + 2.5)}
-                  className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display"
+                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
                 >
                   +
                 </button>
               </div>
-            </div>
 
-            {/* Divider */}
-            <div className="w-px h-12 bg-white/10" />
+              {/* Timer */}
+              <div className="flex items-center gap-1.5 px-2">
+                <button
+                  onClick={() => setIsRunning(!isRunning)}
+                  className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
+                >
+                  {isRunning ? <Pause className="w-3.5 h-3.5 text-foreground" /> : <Play className="w-3.5 h-3.5 text-foreground" />}
+                </button>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                  <p className="font-display text-lg text-foreground tracking-wider">{formatTime(timer)}</p>
+                </div>
+                <button
+                  onClick={() => setTimer(0)}
+                  className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
+                </button>
+              </div>
 
-            {/* Reps Input */}
-            <div className="text-center">
-              <div className="flex items-center gap-2">
+              {/* Reps Input */}
+              <div className="flex items-center gap-1.5">
                 <button
                   onClick={() => setReps((r) => Math.max(0, r - 1))}
-                  className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display"
+                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
                 >
                   -
                 </button>
-                <div className="w-20">
-                  <p className="font-display text-3xl text-foreground">{reps}</p>
-                  <p className="text-muted-foreground text-xs">TEKRAR</p>
+                <div className="w-16 text-center">
+                  <p className="font-display text-2xl text-foreground leading-none">{reps}</p>
+                  <p className="text-muted-foreground text-[9px]">TEKRAR</p>
                 </div>
                 <button
                   onClick={() => setReps((r) => r + 1)}
-                  className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display"
+                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
                 >
                   +
                 </button>
               </div>
             </div>
-          </div>
 
-          {/* Timer */}
-          <div className="flex items-center justify-center gap-4">
-            <button
-              onClick={() => setIsRunning(!isRunning)}
-              className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center"
+            {/* Confirm Set Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleConfirmSet}
+              disabled={reps === 0}
+              className="w-full py-3.5 bg-primary text-primary-foreground font-display text-base tracking-wider rounded-xl neon-glow disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isRunning ? (
-                <Pause className="w-4 h-4 text-foreground" />
-              ) : (
-                <Play className="w-4 h-4 text-foreground" />
-              )}
-            </button>
-            
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-muted-foreground" />
-              <p className="font-display text-2xl text-foreground tracking-widest">
-                {formatTime(timer)}
-              </p>
-            </div>
-
-            <button
-              onClick={() => setTimer(0)}
-              className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center"
-            >
-              <RotateCcw className="w-4 h-4 text-muted-foreground" />
-            </button>
+              SETİ ONAYLA
+            </motion.button>
           </div>
-
-          {/* Confirm Set Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleConfirmSet}
-            disabled={reps === 0}
-            className="w-full py-4 bg-primary text-primary-foreground font-display text-lg tracking-wider rounded-xl neon-glow disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            SETİ ONAYLA
-          </motion.button>
         </div>
+
       </motion.div>
 
       {/* Rest Timer Overlay */}
