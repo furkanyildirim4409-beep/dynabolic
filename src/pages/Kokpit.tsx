@@ -14,6 +14,7 @@ import DailyCheckIn from "@/components/DailyCheckIn";
 import CoachAdjustmentBanner from "@/components/dashboard/CoachAdjustmentBanner";
 import StreakTierWidget from "@/components/StreakTierWidget";
 import WeeklyRecapModal from "@/components/WeeklyRecapModal";
+import DisputeNotificationBell from "@/components/DisputeNotificationBell";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
 import { usePaymentReminders } from "@/hooks/usePaymentReminders";
@@ -82,6 +83,9 @@ const Kokpit = () => {
         </div>
         
         <div className="flex items-center gap-2">
+          {/* Dispute Notifications Bell */}
+          <DisputeNotificationBell />
+
           {/* Chat Button */}
           <motion.button
             whileHover={{ scale: 1.05 }}
