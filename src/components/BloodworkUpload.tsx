@@ -43,9 +43,10 @@ const formatDate = (dateStr: string) => {
 
 interface BloodworkUploadProps {
   className?: string;
+  disabled?: boolean;
 }
 
-const BloodworkUpload = ({ className }: BloodworkUploadProps) => {
+const BloodworkUpload = ({ className, disabled = false }: BloodworkUploadProps) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [expandedReport, setExpandedReport] = useState<string | null>(null);
@@ -114,10 +115,16 @@ const BloodworkUpload = ({ className }: BloodworkUploadProps) => {
           </h2>
         </div>
         <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleUploadClick}
-          className="flex items-center gap-2 px-3 py-2 bg-primary/20 text-primary rounded-xl text-sm font-medium hover:bg-primary/30 transition-colors"
+          whileHover={disabled ? {} : { scale: 1.05 }}
+          whileTap={disabled ? {} : { scale: 0.95 }}
+          onClick={disabled ? undefined : handleUploadClick}
+          disabled={disabled}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+            disabled 
+              ? "bg-secondary text-muted-foreground cursor-not-allowed opacity-50" 
+              : "bg-primary/20 text-primary hover:bg-primary/30"
+          }`}
+          title={disabled ? "İnternet bağlantısı gerekli" : undefined}
         >
           <Plus className="w-4 h-4" />
           YÜKLE

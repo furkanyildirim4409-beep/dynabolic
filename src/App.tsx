@@ -9,12 +9,15 @@ import { motion } from "framer-motion";
 import { StoryProvider } from "./context/StoryContext";
 import { CartProvider } from "./context/CartContext";
 import { AchievementProvider } from "./hooks/useAchievements";
+import { OfflineProvider } from "./context/OfflineContext";
+import { SettingsProvider } from "./context/SettingsContext";
 import SplashScreen from "./components/SplashScreen";
 import AppShell from "./components/AppShell";
 import StoryViewer from "./components/StoryViewer";
 import UniversalCartDrawer from "./components/UniversalCartDrawer";
 import FloatingCartButton from "./components/FloatingCartButton";
 import AchievementNotificationLayer from "./components/AchievementNotificationLayer";
+import OfflineBanner from "./components/OfflineBanner";
 import Kokpit from "./pages/Kokpit";
 import Antrenman from "./pages/Antrenman";
 import Beslenme from "./pages/Beslenme";
@@ -43,17 +46,20 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CartProvider>
-          <StoryProvider>
-            <AchievementProvider>
-              <Toaster />
-              <Sonner />
-            
-            {/* OVERLAY ARCHITECTURE: Both layers render simultaneously */}
-            <div className="relative w-full h-full">
-              
-              {/* LAYER 1: Main App (always mounted, z-index: 0) */}
-              <div className="relative z-0">
+        <SettingsProvider>
+          <OfflineProvider>
+            <CartProvider>
+              <StoryProvider>
+                <AchievementProvider>
+                  <Toaster />
+                  <Sonner />
+                  <OfflineBanner />
+                
+                {/* OVERLAY ARCHITECTURE: Both layers render simultaneously */}
+                <div className="relative w-full h-full">
+                  
+                  {/* LAYER 1: Main App (always mounted, z-index: 0) */}
+                  <div className="relative z-0">
                 <BrowserRouter>
                   <Routes>
                     {/* Root now goes directly to Kokpit - bypass login */}
@@ -106,9 +112,11 @@ const App = () => {
 
             {/* LAYER 5: Achievement Unlock Notifications */}
             <AchievementNotificationLayer />
-            </AchievementProvider>
-          </StoryProvider>
-        </CartProvider>
+                </AchievementProvider>
+              </StoryProvider>
+            </CartProvider>
+          </OfflineProvider>
+        </SettingsProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
