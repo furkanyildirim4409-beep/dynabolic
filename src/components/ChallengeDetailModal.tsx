@@ -138,6 +138,20 @@ const ChallengeDetailModal = ({
       submittedBy: "opponent",
       submittedByName: "Ahmet Yılmaz",
       submittedByAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+    },
+    // Mock my rejected proof for testing dispute
+    {
+      id: "mock-my-rejected-proof",
+      type: "photo",
+      url: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=300&fit=crop",
+      weight: 140,
+      note: "PR denemesi",
+      timestamp: new Date(Date.now() - 7200000).toISOString(),
+      status: "rejected",
+      submittedBy: "current",
+      submittedByName: "Sen",
+      submittedByAvatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop",
+      rejectionReason: "Video açısı uygun değil, ağırlık plakları net görünmüyor",
     }
   ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
