@@ -6,6 +6,7 @@ import { exerciseHistory, ExerciseHistoryRecord } from "@/lib/mockData";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { tr } from "date-fns/locale";
 import ExerciseGoalModal, { ExerciseGoal } from "./ExerciseGoalModal";
+import { hapticCelebration } from "@/lib/haptics";
 
 interface ExerciseHistoryModalProps {
   exerciseName: string;
@@ -104,6 +105,15 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
   const goalProgress = currentGoal && personalBest
     ? Math.min(100, Math.round((personalBest.weight / currentGoal.targetWeight) * 100))
     : 0;
+
+  const goalAchieved = goalProgress >= 100;
+
+  // Trigger celebration haptic when goal is achieved
+  useEffect(() => {
+    if (isOpen && goalAchieved) {
+      hapticCelebration();
+    }
+  }, [isOpen, goalAchieved]);
 
   const daysRemaining = currentGoal
     ? differenceInDays(new Date(currentGoal.targetDate), new Date())
