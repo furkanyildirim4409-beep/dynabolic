@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, ChevronDown, ChevronUp, History } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
+import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
 import { detailedExercises } from "@/lib/mockData";
 
@@ -47,6 +48,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [showWorkoutSummary, setShowWorkoutSummary] = useState(false);
   const [exerciseComplete, setExerciseComplete] = useState(false);
   const [showCoachNote, setShowCoachNote] = useState(true);
+  const [showExerciseHistory, setShowExerciseHistory] = useState(false);
   
   const exercise = exercises[currentExerciseIndex];
   const rpeColors = getRPEColor(exercise.rpe);
@@ -521,12 +523,23 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
 
         {/* Controls - Bottom Half */}
         <div className="bg-card border-t border-white/10 p-4 space-y-4">
-          {/* Exercise Name */}
-          <div className="text-center">
-            <h2 className="font-display text-xl text-foreground tracking-wider">
-              {exercise.name}
-            </h2>
-            <p className="text-muted-foreground text-xs">{workoutTitle}</p>
+          {/* Exercise Name with History Button */}
+          <div className="flex items-center justify-center gap-3">
+            <div className="text-center flex-1">
+              <h2 className="font-display text-xl text-foreground tracking-wider">
+                {exercise.name}
+              </h2>
+              <p className="text-muted-foreground text-xs">{workoutTitle}</p>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setShowExerciseHistory(true)}
+              className="p-2 rounded-lg bg-secondary/50 border border-primary/30 hover:bg-primary/10 transition-colors"
+              aria-label="Egzersiz Geçmişi"
+            >
+              <History className="w-5 h-5 text-primary" />
+            </motion.button>
           </div>
 
           {/* Inputs Row */}
@@ -632,6 +645,13 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
           />
         )}
       </AnimatePresence>
+
+      {/* Exercise History Modal */}
+      <ExerciseHistoryModal
+        exerciseName={exercise.name}
+        isOpen={showExerciseHistory}
+        onClose={() => setShowExerciseHistory(false)}
+      />
     </>
   );
 };

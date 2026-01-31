@@ -1439,3 +1439,121 @@ export const shopSupplements: ShopSupplement[] = [
     category: "amino",
   },
 ];
+
+// ============================================
+// EXERCISE HISTORY (12 weeks of data for progressive overload tracking)
+// ============================================
+
+export interface ExerciseHistoryRecord {
+  exerciseName: string;
+  date: string; // ISO format
+  sets: {
+    weight: number;
+    reps: number;
+    isFailure?: boolean;
+  }[];
+}
+
+export const exerciseHistory: ExerciseHistoryRecord[] = [
+  // Bench Press - 12 weeks
+  { exerciseName: "Bench Press", date: "2026-01-27", sets: [{ weight: 100, reps: 12 }, { weight: 100, reps: 10 }, { weight: 100, reps: 8, isFailure: true }, { weight: 90, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2026-01-20", sets: [{ weight: 97.5, reps: 10 }, { weight: 97.5, reps: 10 }, { weight: 95, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2026-01-13", sets: [{ weight: 95, reps: 10 }, { weight: 95, reps: 10 }, { weight: 90, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2026-01-06", sets: [{ weight: 92.5, reps: 10 }, { weight: 92.5, reps: 8 }, { weight: 90, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2025-12-30", sets: [{ weight: 90, reps: 10 }, { weight: 90, reps: 10 }, { weight: 87.5, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2025-12-23", sets: [{ weight: 87.5, reps: 10 }, { weight: 87.5, reps: 8 }, { weight: 85, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2025-12-16", sets: [{ weight: 85, reps: 10 }, { weight: 85, reps: 10 }, { weight: 82.5, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2025-12-09", sets: [{ weight: 82.5, reps: 10 }, { weight: 82.5, reps: 10 }, { weight: 80, reps: 12 }] },
+  { exerciseName: "Bench Press", date: "2025-12-02", sets: [{ weight: 80, reps: 12 }, { weight: 80, reps: 10 }, { weight: 80, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2025-11-25", sets: [{ weight: 77.5, reps: 12 }, { weight: 80, reps: 10 }, { weight: 77.5, reps: 10 }] },
+  { exerciseName: "Bench Press", date: "2025-11-18", sets: [{ weight: 75, reps: 12 }, { weight: 77.5, reps: 10 }, { weight: 75, reps: 12 }] },
+  { exerciseName: "Bench Press", date: "2025-11-11", sets: [{ weight: 72.5, reps: 12 }, { weight: 75, reps: 10 }, { weight: 72.5, reps: 12 }] },
+
+  // Squat - 12 weeks
+  { exerciseName: "Squat", date: "2026-01-25", sets: [{ weight: 140, reps: 8 }, { weight: 150, reps: 6 }, { weight: 160, reps: 4 }, { weight: 140, reps: 8 }] },
+  { exerciseName: "Squat", date: "2026-01-18", sets: [{ weight: 135, reps: 8 }, { weight: 145, reps: 6 }, { weight: 155, reps: 5 }] },
+  { exerciseName: "Squat", date: "2026-01-11", sets: [{ weight: 130, reps: 8 }, { weight: 140, reps: 6 }, { weight: 150, reps: 5 }] },
+  { exerciseName: "Squat", date: "2026-01-04", sets: [{ weight: 125, reps: 10 }, { weight: 135, reps: 8 }, { weight: 145, reps: 6 }] },
+  { exerciseName: "Squat", date: "2025-12-28", sets: [{ weight: 120, reps: 10 }, { weight: 130, reps: 8 }, { weight: 140, reps: 6 }] },
+  { exerciseName: "Squat", date: "2025-12-21", sets: [{ weight: 115, reps: 10 }, { weight: 125, reps: 8 }, { weight: 135, reps: 6 }] },
+  { exerciseName: "Squat", date: "2025-12-14", sets: [{ weight: 110, reps: 10 }, { weight: 120, reps: 8 }, { weight: 130, reps: 6 }] },
+  { exerciseName: "Squat", date: "2025-12-07", sets: [{ weight: 105, reps: 10 }, { weight: 115, reps: 10 }, { weight: 125, reps: 8 }] },
+  { exerciseName: "Squat", date: "2025-11-30", sets: [{ weight: 100, reps: 12 }, { weight: 110, reps: 10 }, { weight: 120, reps: 8 }] },
+  { exerciseName: "Squat", date: "2025-11-23", sets: [{ weight: 100, reps: 10 }, { weight: 105, reps: 10 }, { weight: 115, reps: 8 }] },
+  { exerciseName: "Squat", date: "2025-11-16", sets: [{ weight: 95, reps: 10 }, { weight: 100, reps: 10 }, { weight: 110, reps: 8 }] },
+  { exerciseName: "Squat", date: "2025-11-09", sets: [{ weight: 90, reps: 12 }, { weight: 100, reps: 10 }, { weight: 105, reps: 8 }] },
+
+  // Deadlift - 12 weeks
+  { exerciseName: "Deadlift", date: "2026-01-23", sets: [{ weight: 180, reps: 5 }, { weight: 200, reps: 3 }, { weight: 180, reps: 5 }] },
+  { exerciseName: "Deadlift", date: "2026-01-16", sets: [{ weight: 175, reps: 5 }, { weight: 190, reps: 3 }, { weight: 175, reps: 5 }] },
+  { exerciseName: "Deadlift", date: "2026-01-09", sets: [{ weight: 170, reps: 5 }, { weight: 185, reps: 4 }, { weight: 170, reps: 5 }] },
+  { exerciseName: "Deadlift", date: "2026-01-02", sets: [{ weight: 165, reps: 5 }, { weight: 180, reps: 4 }, { weight: 165, reps: 6 }] },
+  { exerciseName: "Deadlift", date: "2025-12-26", sets: [{ weight: 160, reps: 6 }, { weight: 175, reps: 4 }, { weight: 160, reps: 6 }] },
+  { exerciseName: "Deadlift", date: "2025-12-19", sets: [{ weight: 155, reps: 6 }, { weight: 170, reps: 5 }, { weight: 155, reps: 6 }] },
+  { exerciseName: "Deadlift", date: "2025-12-12", sets: [{ weight: 150, reps: 6 }, { weight: 165, reps: 5 }, { weight: 150, reps: 6 }] },
+  { exerciseName: "Deadlift", date: "2025-12-05", sets: [{ weight: 145, reps: 6 }, { weight: 160, reps: 5 }, { weight: 145, reps: 6 }] },
+  { exerciseName: "Deadlift", date: "2025-11-28", sets: [{ weight: 140, reps: 8 }, { weight: 155, reps: 5 }, { weight: 140, reps: 8 }] },
+  { exerciseName: "Deadlift", date: "2025-11-21", sets: [{ weight: 135, reps: 8 }, { weight: 150, reps: 5 }, { weight: 135, reps: 8 }] },
+  { exerciseName: "Deadlift", date: "2025-11-14", sets: [{ weight: 130, reps: 8 }, { weight: 145, reps: 6 }, { weight: 130, reps: 8 }] },
+  { exerciseName: "Deadlift", date: "2025-11-07", sets: [{ weight: 125, reps: 8 }, { weight: 140, reps: 6 }, { weight: 125, reps: 8 }] },
+
+  // Overhead Press
+  { exerciseName: "Overhead Press", date: "2026-01-21", sets: [{ weight: 60, reps: 8 }, { weight: 65, reps: 6 }, { weight: 55, reps: 10 }] },
+  { exerciseName: "Overhead Press", date: "2026-01-14", sets: [{ weight: 57.5, reps: 8 }, { weight: 62.5, reps: 6 }, { weight: 55, reps: 8 }] },
+  { exerciseName: "Overhead Press", date: "2026-01-07", sets: [{ weight: 55, reps: 10 }, { weight: 60, reps: 8 }, { weight: 52.5, reps: 10 }] },
+  { exerciseName: "Overhead Press", date: "2025-12-31", sets: [{ weight: 52.5, reps: 10 }, { weight: 57.5, reps: 8 }, { weight: 50, reps: 10 }] },
+  { exerciseName: "Overhead Press", date: "2025-12-24", sets: [{ weight: 50, reps: 10 }, { weight: 55, reps: 8 }, { weight: 50, reps: 10 }] },
+  { exerciseName: "Overhead Press", date: "2025-12-17", sets: [{ weight: 47.5, reps: 10 }, { weight: 52.5, reps: 8 }, { weight: 47.5, reps: 10 }] },
+
+  // Barbell Row
+  { exerciseName: "Bent Over Row", date: "2026-01-23", sets: [{ weight: 80, reps: 10 }, { weight: 85, reps: 8 }, { weight: 90, reps: 6, isFailure: true }] },
+  { exerciseName: "Bent Over Row", date: "2026-01-16", sets: [{ weight: 77.5, reps: 10 }, { weight: 82.5, reps: 8 }, { weight: 85, reps: 8 }] },
+  { exerciseName: "Bent Over Row", date: "2026-01-09", sets: [{ weight: 75, reps: 10 }, { weight: 80, reps: 10 }, { weight: 82.5, reps: 8 }] },
+  { exerciseName: "Bent Over Row", date: "2026-01-02", sets: [{ weight: 72.5, reps: 10 }, { weight: 77.5, reps: 10 }, { weight: 80, reps: 8 }] },
+  { exerciseName: "Bent Over Row", date: "2025-12-26", sets: [{ weight: 70, reps: 12 }, { weight: 75, reps: 10 }, { weight: 77.5, reps: 8 }] },
+  { exerciseName: "Bent Over Row", date: "2025-12-19", sets: [{ weight: 67.5, reps: 12 }, { weight: 72.5, reps: 10 }, { weight: 75, reps: 10 }] },
+
+  // Lat Pulldown
+  { exerciseName: "Lat Pulldown", date: "2026-01-23", sets: [{ weight: 70, reps: 12 }, { weight: 80, reps: 10 }, { weight: 85, reps: 8 }] },
+  { exerciseName: "Lat Pulldown", date: "2026-01-16", sets: [{ weight: 67.5, reps: 12 }, { weight: 77.5, reps: 10 }, { weight: 82.5, reps: 8 }] },
+  { exerciseName: "Lat Pulldown", date: "2026-01-09", sets: [{ weight: 65, reps: 12 }, { weight: 75, reps: 10 }, { weight: 80, reps: 10 }] },
+  { exerciseName: "Lat Pulldown", date: "2026-01-02", sets: [{ weight: 62.5, reps: 12 }, { weight: 72.5, reps: 12 }, { weight: 77.5, reps: 10 }] },
+
+  // Leg Press
+  { exerciseName: "Leg Press", date: "2026-01-25", sets: [{ weight: 250, reps: 12 }, { weight: 280, reps: 10 }, { weight: 300, reps: 8, isFailure: true }] },
+  { exerciseName: "Leg Press", date: "2026-01-18", sets: [{ weight: 240, reps: 12 }, { weight: 270, reps: 10 }, { weight: 290, reps: 8 }] },
+  { exerciseName: "Leg Press", date: "2026-01-11", sets: [{ weight: 230, reps: 12 }, { weight: 260, reps: 10 }, { weight: 280, reps: 8 }] },
+  { exerciseName: "Leg Press", date: "2026-01-04", sets: [{ weight: 220, reps: 12 }, { weight: 250, reps: 10 }, { weight: 270, reps: 10 }] },
+
+  // Barbell Curl
+  { exerciseName: "Barbell Curl", date: "2026-01-23", sets: [{ weight: 30, reps: 12 }, { weight: 35, reps: 10 }, { weight: 40, reps: 8, isFailure: true }] },
+  { exerciseName: "Barbell Curl", date: "2026-01-16", sets: [{ weight: 27.5, reps: 12 }, { weight: 32.5, reps: 10 }, { weight: 37.5, reps: 8 }] },
+  { exerciseName: "Barbell Curl", date: "2026-01-09", sets: [{ weight: 25, reps: 12 }, { weight: 30, reps: 12 }, { weight: 35, reps: 10 }] },
+  { exerciseName: "Barbell Curl", date: "2026-01-02", sets: [{ weight: 25, reps: 12 }, { weight: 27.5, reps: 12 }, { weight: 32.5, reps: 10 }] },
+
+  // BARBELL SQUAT (matches detailedExercises)
+  { exerciseName: "BARBELL SQUAT", date: "2026-01-27", sets: [{ weight: 140, reps: 12 }, { weight: 145, reps: 10 }, { weight: 150, reps: 8 }, { weight: 140, reps: 12 }] },
+  { exerciseName: "BARBELL SQUAT", date: "2026-01-20", sets: [{ weight: 135, reps: 12 }, { weight: 140, reps: 10 }, { weight: 145, reps: 8 }] },
+  { exerciseName: "BARBELL SQUAT", date: "2026-01-13", sets: [{ weight: 130, reps: 12 }, { weight: 135, reps: 10 }, { weight: 140, reps: 10 }] },
+  { exerciseName: "BARBELL SQUAT", date: "2026-01-06", sets: [{ weight: 125, reps: 12 }, { weight: 130, reps: 12 }, { weight: 135, reps: 10 }] },
+  { exerciseName: "BARBELL SQUAT", date: "2025-12-30", sets: [{ weight: 120, reps: 12 }, { weight: 125, reps: 12 }, { weight: 130, reps: 10 }] },
+  { exerciseName: "BARBELL SQUAT", date: "2025-12-23", sets: [{ weight: 115, reps: 12 }, { weight: 120, reps: 12 }, { weight: 125, reps: 10 }] },
+
+  // LEG PRESS (matches detailedExercises)
+  { exerciseName: "LEG PRESS", date: "2026-01-27", sets: [{ weight: 260, reps: 15 }, { weight: 280, reps: 12 }, { weight: 300, reps: 10 }, { weight: 280, reps: 12 }] },
+  { exerciseName: "LEG PRESS", date: "2026-01-20", sets: [{ weight: 250, reps: 15 }, { weight: 270, reps: 12 }, { weight: 290, reps: 10 }] },
+  { exerciseName: "LEG PRESS", date: "2026-01-13", sets: [{ weight: 240, reps: 15 }, { weight: 260, reps: 15 }, { weight: 280, reps: 12 }] },
+  { exerciseName: "LEG PRESS", date: "2026-01-06", sets: [{ weight: 230, reps: 15 }, { weight: 250, reps: 15 }, { weight: 270, reps: 12 }] },
+
+  // LEG CURL (matches detailedExercises)
+  { exerciseName: "LEG CURL", date: "2026-01-27", sets: [{ weight: 55, reps: 12 }, { weight: 60, reps: 10 }, { weight: 65, reps: 8, isFailure: true }, { weight: 55, reps: 12 }] },
+  { exerciseName: "LEG CURL", date: "2026-01-20", sets: [{ weight: 52.5, reps: 12 }, { weight: 57.5, reps: 10 }, { weight: 62.5, reps: 10 }] },
+  { exerciseName: "LEG CURL", date: "2026-01-13", sets: [{ weight: 50, reps: 12 }, { weight: 55, reps: 12 }, { weight: 60, reps: 10 }] },
+  { exerciseName: "LEG CURL", date: "2026-01-06", sets: [{ weight: 47.5, reps: 15 }, { weight: 52.5, reps: 12 }, { weight: 57.5, reps: 10 }] },
+
+  // CALF RAISE (matches detailedExercises)
+  { exerciseName: "CALF RAISE", date: "2026-01-27", sets: [{ weight: 100, reps: 20 }, { weight: 110, reps: 18 }, { weight: 120, reps: 15 }, { weight: 100, reps: 20 }] },
+  { exerciseName: "CALF RAISE", date: "2026-01-20", sets: [{ weight: 95, reps: 20 }, { weight: 105, reps: 18 }, { weight: 115, reps: 15 }] },
+  { exerciseName: "CALF RAISE", date: "2026-01-13", sets: [{ weight: 90, reps: 20 }, { weight: 100, reps: 20 }, { weight: 110, reps: 18 }] },
+  { exerciseName: "CALF RAISE", date: "2026-01-06", sets: [{ weight: 85, reps: 20 }, { weight: 95, reps: 20 }, { weight: 105, reps: 18 }] },
+];
