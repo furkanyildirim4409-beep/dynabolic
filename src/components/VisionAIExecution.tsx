@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, ChevronDown, ChevronUp, History } from "lucide-react";
+import { motion, AnimatePresence, PanInfo } from "framer-motion";
+import { X, Play, Pause, RotateCcw, Check, Activity, Target, Clock, Eye, EyeOff, Trophy, Info, ChevronDown, ChevronUp, History, ChevronLeft, ChevronRight } from "lucide-react";
 import RestTimerOverlay from "./RestTimerOverlay";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
 import { detailedExercises } from "@/lib/mockData";
+import { hapticLight, hapticMedium } from "@/lib/haptics";
 
 interface VisionAIExecutionProps {
   workoutTitle: string;
@@ -159,6 +160,56 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
     setIsRunning(true);
   };
 
+  // Swipe navigation handlers
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+
+  const handleSwipeEnd = (_: any, info: PanInfo) => {
+    const threshold = 80;
+    const velocity = 300;
+
+    if (info.offset.x < -threshold || info.velocity.x < -velocity) {
+      // Swipe left -> next exercise
+      if (currentExerciseIndex < exercises.length - 1) {
+        hapticMedium();
+        setSwipeDirection('left');
+        goToExercise(currentExerciseIndex + 1);
+      }
+    } else if (info.offset.x > threshold || info.velocity.x > velocity) {
+      // Swipe right -> previous exercise
+      if (currentExerciseIndex > 0) {
+        hapticMedium();
+        setSwipeDirection('right');
+        goToExercise(currentExerciseIndex - 1);
+      }
+    }
+  };
+
+  const goToExercise = (index: number) => {
+    setCurrentExerciseIndex(index);
+    setCurrentSet(1);
+    setTimer(0);
+    setReps(0);
+    setWeight(60);
+    setIsRunning(true);
+    setTimeout(() => setSwipeDirection(null), 300);
+  };
+
+  const handlePrevExercise = () => {
+    if (currentExerciseIndex > 0) {
+      hapticLight();
+      setSwipeDirection('right');
+      goToExercise(currentExerciseIndex - 1);
+    }
+  };
+
+  const handleNextExercise = () => {
+    if (currentExerciseIndex < exercises.length - 1) {
+      hapticLight();
+      setSwipeDirection('left');
+      goToExercise(currentExerciseIndex + 1);
+    }
+  };
+
   return (
     <>
       <motion.div
@@ -296,9 +347,62 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             <X className="w-4 h-4 text-muted-foreground" />
           </button>
         </div>
+        {/* Exercise Progress Dots */}
+        <div className="flex-shrink-0 flex items-center justify-center gap-1.5 py-2 bg-card/50">
+          {exercises.map((_, index) => (
+            <motion.button
+              key={index}
+              onClick={() => {
+                hapticLight();
+                setSwipeDirection(index > currentExerciseIndex ? 'left' : 'right');
+                goToExercise(index);
+              }}
+              className={`h-1.5 rounded-full transition-all ${
+                index === currentExerciseIndex
+                  ? 'w-6 bg-primary'
+                  : index < currentExerciseIndex
+                    ? 'w-1.5 bg-primary/50'
+                    : 'w-1.5 bg-muted-foreground/30'
+              }`}
+            />
+          ))}
+        </div>
 
-        {/* Vision Area - 55% height, clean canvas */}
-        <div className="h-[55%] relative bg-black overflow-hidden">
+        {/* Vision Area - 55% height, clean canvas with swipe */}
+        <motion.div 
+          className="h-[55%] relative bg-black overflow-hidden touch-pan-y"
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          dragElastic={0.2}
+          onDragEnd={handleSwipeEnd}
+        >
+          {/* Swipe Hint Arrows */}
+          <AnimatePresence>
+            {currentExerciseIndex > 0 && (
+              <motion.button
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 0.6, x: 0 }}
+                exit={{ opacity: 0, x: -10 }}
+                onClick={handlePrevExercise}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/10"
+              >
+                <ChevronLeft className="w-5 h-5 text-foreground" />
+              </motion.button>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {currentExerciseIndex < exercises.length - 1 && (
+              <motion.button
+                initial={{ opacity: 0, x: 10 }}
+                animate={{ opacity: 0.6, x: 0 }}
+                exit={{ opacity: 0, x: 10 }}
+                onClick={handleNextExercise}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 p-2 rounded-full bg-black/50 backdrop-blur-sm border border-white/10"
+              >
+                <ChevronRight className="w-5 h-5 text-foreground" />
+              </motion.button>
+            )}
+          </AnimatePresence>
           {/* Video/GIF Placeholder */}
           <div className="absolute inset-0 flex items-center justify-center">
             {!visionAIActive ? (
@@ -423,7 +527,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
               </p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Info Panel - 45% height, scrollable */}
         <div className="h-[45%] bg-card border-t border-white/10 flex flex-col overflow-hidden">
