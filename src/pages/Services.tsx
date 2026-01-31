@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 import PaymentModal, { PaymentDetails } from "@/components/PaymentModal";
 import { toast } from "@/hooks/use-toast";
+import { hapticLight } from "@/lib/haptics";
 
 interface CoachingPackage {
   id: string;
@@ -133,11 +134,12 @@ const Services = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center gap-4 px-4 py-4">
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5">
+        <div className="flex items-center gap-4 px-4 py-4 relative z-50">
           <button
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+            onClick={() => { hapticLight(); navigate(-1); }}
+            className="relative z-50 flex items-center justify-center w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 transition-all"
+            aria-label="Geri Dön"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </button>

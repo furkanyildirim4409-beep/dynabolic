@@ -24,6 +24,7 @@ import { getCoachById, coaches } from "@/lib/mockData";
 import ProductDetail from "@/components/ProductDetail";
 import CartView, { CartItem } from "@/components/CartView";
 import { useStory, type Story } from "@/context/StoryContext";
+import { hapticLight } from "@/lib/haptics";
 
 const CoachProfile = () => {
   const navigate = useNavigate();
@@ -152,10 +153,11 @@ const CoachProfile = () => {
       <div className="min-h-screen bg-background pb-8">
         {/* Header with Back Button */}
         <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/10">
-          <div className="px-4 py-3 flex items-center gap-4">
+          <div className="px-4 py-3 flex items-center gap-4 relative z-50">
             <button 
-              onClick={() => navigate(-1)}
-              className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center"
+              onClick={() => { hapticLight(); navigate(-1); }}
+              className="relative z-50 flex items-center justify-center w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 transition-all"
+              aria-label="Geri Dön"
             >
               <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>

@@ -53,16 +53,15 @@ const Achievements = () => {
   return (
     <div className="min-h-screen bg-background pb-32">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-white/10">
-        <div className="px-4 py-3 flex items-center gap-3">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate(-1)}
-            className="p-2 rounded-lg bg-secondary"
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-white/10">
+        <div className="px-4 py-3 flex items-center gap-3 relative z-50">
+          <button
+            onClick={() => { hapticLight(); navigate(-1); }}
+            className="relative z-50 flex items-center justify-center w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 transition-all"
+            aria-label="Geri Dön"
           >
             <ChevronLeft className="w-5 h-5 text-foreground" />
-          </motion.button>
+          </button>
           <div>
             <h1 className="font-display text-xl text-foreground tracking-wider">BAŞARIMLAR</h1>
             <p className="text-muted-foreground text-xs">
