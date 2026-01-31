@@ -4,6 +4,7 @@ import { X, Target, Calendar, Trophy, TrendingUp, Minus, Plus } from "lucide-rea
 import { toast } from "sonner";
 import { format, addWeeks } from "date-fns";
 import { tr } from "date-fns/locale";
+import { hapticSuccess, hapticLight, hapticWarning } from "@/lib/haptics";
 
 interface ExerciseGoalModalProps {
   exerciseName: string;
@@ -52,6 +53,7 @@ const ExerciseGoalModal = ({
       targetDate,
       createdAt: existingGoal?.createdAt || new Date().toISOString(),
     };
+    hapticSuccess();
     onSave(goal);
     toast.success("Hedef kaydedildi!", {
       description: `${targetWeight}kg x ${targetReps} tekrar`,
@@ -61,10 +63,16 @@ const ExerciseGoalModal = ({
 
   const handleDelete = () => {
     if (onDelete) {
+      hapticWarning();
       onDelete();
       toast.success("Hedef silindi");
       onClose();
     }
+  };
+
+  const handleAdjustValue = (setter: (fn: (v: number) => number) => void, delta: number, min?: number) => {
+    hapticLight();
+    setter((v) => min !== undefined ? Math.max(min, v + delta) : v + delta);
   };
 
   // Calculate improvement percentage
@@ -138,7 +146,7 @@ const ExerciseGoalModal = ({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setTargetWeight((w) => Math.max(0, w - 2.5))}
+                    onClick={() => handleAdjustValue(setTargetWeight, -2.5, 0)}
                     className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-foreground"
                   >
                     <Minus className="w-5 h-5" />
@@ -150,7 +158,7 @@ const ExerciseGoalModal = ({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setTargetWeight((w) => w + 2.5)}
+                    onClick={() => handleAdjustValue(setTargetWeight, 2.5)}
                     className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-foreground"
                   >
                     <Plus className="w-5 h-5" />
@@ -173,7 +181,7 @@ const ExerciseGoalModal = ({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setTargetReps((r) => Math.max(1, r - 1))}
+                    onClick={() => handleAdjustValue(setTargetReps, -1, 1)}
                     className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-foreground"
                   >
                     <Minus className="w-5 h-5" />
@@ -185,7 +193,7 @@ const ExerciseGoalModal = ({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setTargetReps((r) => r + 1)}
+                    onClick={() => handleAdjustValue(setTargetReps, 1)}
                     className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-foreground"
                   >
                     <Plus className="w-5 h-5" />
@@ -202,7 +210,7 @@ const ExerciseGoalModal = ({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setTargetWeeks((w) => Math.max(1, w - 1))}
+                    onClick={() => handleAdjustValue(setTargetWeeks, -1, 1)}
                     className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-foreground"
                   >
                     <Minus className="w-5 h-5" />
@@ -214,7 +222,7 @@ const ExerciseGoalModal = ({
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
-                    onClick={() => setTargetWeeks((w) => w + 1)}
+                    onClick={() => handleAdjustValue(setTargetWeeks, 1)}
                     className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center text-foreground"
                   >
                     <Plus className="w-5 h-5" />
