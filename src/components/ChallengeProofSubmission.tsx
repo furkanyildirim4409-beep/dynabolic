@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { hapticLight, hapticSuccess, hapticMedium, hapticError } from "@/lib/haptics";
 import { toast } from "@/hooks/use-toast";
+import { useDisputeNotifications } from "@/hooks/useDisputeNotifications";
 
 export interface ProofSubmission {
   id: string;
@@ -58,6 +59,7 @@ const ChallengeProofSubmission = ({
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [selectedProofForDispute, setSelectedProofForDispute] = useState<ProofSubmission | null>(null);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
+  const { simulateStatusChange } = useDisputeNotifications();
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<"photo" | "video" | null>(null);
@@ -735,14 +737,37 @@ const ChallengeProofSubmission = ({
           
           setDisputes(prev => [...prev, newDispute]);
           
-          // Simulate coach reviewing after a delay
+          // Simulate coach reviewing after a delay and trigger notifications
           setTimeout(() => {
             setDisputes(prev => prev.map(d => 
               d.id === newDispute.id 
                 ? { ...d, status: "under_review" as const, reviewerId: "coach-serdar", reviewerName: "Koç Serdar", reviewerRole: "coach" as const }
                 : d
             ));
+            // Trigger notification for status change to "under_review"
+            simulateStatusChange(newDispute.id, "under_review", "pending", challengeType, exercise);
           }, 3000);
+          
+          // Simulate resolution after more time (for demo purposes)
+          setTimeout(() => {
+            const isApproved = Math.random() > 0.3; // 70% chance of approval for demo
+            const newStatus = isApproved ? "resolved_approved" as const : "resolved_rejected" as const;
+            
+            setDisputes(prev => prev.map(d => 
+              d.id === newDispute.id 
+                ? { 
+                    ...d, 
+                    status: newStatus,
+                    reviewedAt: new Date().toISOString(),
+                    resolution: isApproved 
+                      ? "Kanıt incelendi ve geçerli bulundu. Düello sonucu güncellenecek." 
+                      : "Kanıt yetersiz bulundu. Video açısı ve ağırlık plakalarının görünürlüğü kriterleri karşılamıyor."
+                  }
+                : d
+            ));
+            // Trigger notification for resolution
+            simulateStatusChange(newDispute.id, newStatus, "under_review", challengeType, exercise);
+          }, 8000);
         }}
         onSendMessage={(disputeId, message) => {
           setDisputes(prev => prev.map(d => 
