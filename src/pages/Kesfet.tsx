@@ -12,17 +12,26 @@ import { useStory, type Story } from "@/context/StoryContext";
 import { useCart } from "@/context/CartContext";
 import SupplementShop from "@/components/SupplementShop";
 
-// Bio-Coin Discount Calculator
-const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
+// Bio-Coin Discount Calculator (GLOBAL RULE: Max 20% discount)
+const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL
+const MAX_DISCOUNT_PERCENTAGE = 0.20; // 20% cap on all physical products
 const USER_BIO_COINS = 2450; // Mock user balance
 
 const calculateMaxDiscount = (productPrice: number, userCoins: number): number => {
-  const maxPossibleDiscount = userCoins * COIN_TO_TL_RATE;
-  return Math.min(maxPossibleDiscount, productPrice - 10); // Keep minimum 10 TL price
+  const maxAllowedByPercentage = productPrice * MAX_DISCOUNT_PERCENTAGE;
+  const maxPossibleFromCoins = userCoins * COIN_TO_TL_RATE;
+  return Math.min(maxPossibleFromCoins, maxAllowedByPercentage);
 };
 
 const calculateCoinsNeeded = (discountAmount: number): number => {
   return Math.ceil(discountAmount / COIN_TO_TL_RATE);
+};
+
+// Check if user has more coins than the 20% cap allows
+const hasExcessCoins = (productPrice: number, userCoins: number): boolean => {
+  const maxAllowedByPercentage = productPrice * MAX_DISCOUNT_PERCENTAGE;
+  const maxPossibleFromCoins = userCoins * COIN_TO_TL_RATE;
+  return maxPossibleFromCoins > maxAllowedByPercentage;
 };
 
 interface BioCoinWalletProps {
@@ -540,6 +549,11 @@ const Kesfet = () => {
                                     <span className="text-muted-foreground">Kalan Bakiye:</span>
                                     <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
                                   </div>
+                                  {hasExcessCoins(product.price, bioCoins) && (
+                                    <div className="mt-1 text-[8px] text-primary/70 italic">
+                                      Maksimum %20 indirim uygulanabilir
+                                    </div>
+                                  )}
                                 </motion.div>
                               )}
                             </div>
