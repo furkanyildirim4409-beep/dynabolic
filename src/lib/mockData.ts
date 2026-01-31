@@ -1021,8 +1021,8 @@ export const invoices: Invoice[] = [
     clientName: "Ahmet Yılmaz",
     amount: 300, 
     status: "pending", 
-    date: "2026-01-27", 
-    dueDate: "2026-02-01", 
+    date: "2026-01-28", 
+    dueDate: "2026-02-02", // 2 days from now (current date is 2026-01-31)
     serviceType: "E-Kitap" 
   },
   { 
