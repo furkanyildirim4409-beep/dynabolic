@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Apple, Dumbbell, Check, Star, Shield, ArrowLeft } from "lucide-react";
+import { User, Calendar, Apple, Dumbbell, Check, Star, Shield, ArrowLeft, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import confetti from "canvas-confetti";
-import PaymentModal, { PaymentDetails } from "@/components/PaymentModal";
-import { toast } from "@/hooks/use-toast";
-import { hapticLight } from "@/lib/haptics";
+import { useCart } from "@/context/CartContext";
+import { hapticLight, hapticSuccess } from "@/lib/haptics";
 
 interface CoachingPackage {
   id: string;
@@ -87,48 +85,20 @@ const coachingPackages: CoachingPackage[] = [
   },
 ];
 
-const fireConfetti = () => {
-  const count = 200;
-  const defaults = { origin: { y: 0.7 }, zIndex: 9999 };
-
-  function fire(particleRatio: number, opts: confetti.Options) {
-    confetti({ ...defaults, ...opts, particleCount: Math.floor(count * particleRatio) });
-  }
-
-  fire(0.25, { spread: 26, startVelocity: 55, colors: ["#CDDC39", "#8BC34A", "#4CAF50"] });
-  fire(0.2, { spread: 60, colors: ["#CDDC39", "#8BC34A", "#4CAF50"] });
-  fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: ["#CDDC39", "#8BC34A", "#4CAF50"] });
-  fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ["#CDDC39", "#8BC34A", "#4CAF50"] });
-};
-
 const Services = () => {
   const navigate = useNavigate();
-  const [selectedPackage, setSelectedPackage] = useState<CoachingPackage | null>(null);
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const { addToCart } = useCart();
 
-  const handlePurchase = (pkg: CoachingPackage) => {
-    setSelectedPackage(pkg);
-    setShowPaymentModal(true);
-  };
-
-  const getPaymentDetails = (): PaymentDetails | null => {
-    if (!selectedPackage) return null;
-    return {
-      amount: selectedPackage.price,
-      title: selectedPackage.title,
-      description: `${selectedPackage.duration} • ${selectedPackage.subtitle}`,
+  const handleAddToCart = (pkg: CoachingPackage) => {
+    hapticSuccess();
+    addToCart({
+      id: `coaching-${pkg.id}`,
+      title: pkg.title,
+      price: pkg.price,
+      image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=200&h=200&fit=crop",
+      coachName: "Koç Serdar",
       type: "coaching",
-      referenceId: selectedPackage.id,
-    };
-  };
-
-  const handlePaymentSuccess = () => {
-    fireConfetti();
-    toast({
-      title: "Paket Satın Alındı! 🎉",
-      description: `${selectedPackage?.title} başarıyla aktif edildi.`,
     });
-    setSelectedPackage(null);
   };
 
   return (
@@ -225,16 +195,17 @@ const Services = () => {
                     ))}
                   </div>
 
-                  {/* Purchase Button */}
+                  {/* Add to Cart Button */}
                   <Button
-                    onClick={() => handlePurchase(pkg)}
-                    className={`w-full mt-4 h-10 font-display text-sm tracking-wider ${
+                    onClick={() => handleAddToCart(pkg)}
+                    className={`w-full mt-4 h-10 font-display text-sm tracking-wider gap-2 ${
                       pkg.popular 
                         ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                         : "bg-white/10 text-foreground hover:bg-white/20"
                     }`}
                   >
-                    SATIN AL
+                    <ShoppingCart className="w-4 h-4" />
+                    SEPETE EKLE
                   </Button>
                 </div>
               </div>
@@ -266,13 +237,7 @@ const Services = () => {
         </motion.div>
       </div>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-        payment={getPaymentDetails()}
-        onPaymentSuccess={handlePaymentSuccess}
-      />
+      {/* Cart is now global - handled by UniversalCartDrawer in App.tsx */}
     </div>
   );
 };
