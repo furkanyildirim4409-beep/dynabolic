@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Trophy, Flame, Dumbbell, Coins, ChevronLeft, Crown, Medal, Award, TrendingUp } from "lucide-react";
+import { Trophy, Flame, Dumbbell, Coins, ChevronLeft, Crown, Medal, Award, TrendingUp, Swords } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
+import ChallengesSection from "@/components/ChallengesSection";
 
 // Mock Turkish athlete data
 const mockAthletes = [
@@ -92,6 +93,7 @@ const getPodiumStyle = (rank: number) => {
 const Leaderboard = () => {
   const navigate = useNavigate();
   const [metric, setMetric] = useState<MetricType>("bioCoins");
+  const [activeTab, setActiveTab] = useState<"leaderboard" | "challenges">("leaderboard");
 
   // Sort athletes by current metric
   const sortedAthletes = [...mockAthletes].sort((a, b) => 
@@ -119,35 +121,65 @@ const Leaderboard = () => {
           <h1 className="font-display text-lg text-foreground tracking-wider">ATLET LİGİ</h1>
           <div className="w-10" />
         </div>
+
+        {/* Main Tabs: Leaderboard vs Challenges */}
+        <div className="px-4 pb-3">
+          <Tabs value={activeTab} onValueChange={(v) => { hapticLight(); setActiveTab(v as "leaderboard" | "challenges"); }}>
+            <TabsList className="w-full grid grid-cols-2 bg-secondary/50 border border-white/5">
+              <TabsTrigger 
+                value="leaderboard" 
+                className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              >
+                <Trophy className="w-3 h-3" />
+                SIRALAMA
+              </TabsTrigger>
+              <TabsTrigger 
+                value="challenges"
+                className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+              >
+                <Swords className="w-3 h-3" />
+                MEYDAN OKUMA
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
 
       <div className="p-4 pb-32 space-y-6">
-        {/* Metric Tabs */}
-        <Tabs value={metric} onValueChange={(v) => { hapticLight(); setMetric(v as MetricType); }}>
-          <TabsList className="w-full grid grid-cols-3 bg-secondary/50 border border-white/5">
-            <TabsTrigger 
-              value="bioCoins" 
-              className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
-            >
-              <Coins className="w-3 h-3" />
-              BİO-COİN
-            </TabsTrigger>
-            <TabsTrigger 
-              value="volume"
-              className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
-            >
-              <Dumbbell className="w-3 h-3" />
-              TONAJ
-            </TabsTrigger>
-            <TabsTrigger 
-              value="streak"
-              className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
-            >
-              <Flame className="w-3 h-3" />
-              SERİ
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Challenges Tab */}
+        {activeTab === "challenges" && (
+          <ChallengesSection athletes={mockAthletes} />
+        )}
+
+        {/* Leaderboard Tab */}
+        {activeTab === "leaderboard" && (
+          <>
+            {/* Metric Tabs */}
+            <Tabs value={metric} onValueChange={(v) => { hapticLight(); setMetric(v as MetricType); }}>
+              <TabsList className="w-full grid grid-cols-3 bg-secondary/50 border border-white/5">
+                <TabsTrigger 
+                  value="bioCoins" 
+                  className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+                >
+                  <Coins className="w-3 h-3" />
+                  BİO-COİN
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="volume"
+                  className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+                >
+                  <Dumbbell className="w-3 h-3" />
+                  TONAJ
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="streak"
+                  className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+                >
+                  <Flame className="w-3 h-3" />
+                  SERİ
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
         {/* Top 3 Podium */}
         <motion.div
@@ -285,8 +317,10 @@ const Leaderboard = () => {
                 </div>
               </motion.div>
             );
-          })}
-        </motion.div>
+            })}
+          </motion.div>
+          </>
+        )}
       </div>
 
       {/* Fixed Bottom Bar - My Rank */}
