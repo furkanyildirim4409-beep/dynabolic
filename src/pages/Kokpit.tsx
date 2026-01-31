@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck } from "lucide-react";
+import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck, AlertCircle } from "lucide-react";
 import PerformanceRing from "@/components/PerformanceRing";
 import NextMissionCard from "@/components/NextMissionCard";
 import QuickStatsRow, { StatType } from "@/components/QuickStatsRow";
@@ -14,6 +14,7 @@ import DailyCheckIn from "@/components/DailyCheckIn";
 import CoachAdjustmentBanner from "@/components/dashboard/CoachAdjustmentBanner";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
+import { usePaymentReminders } from "@/hooks/usePaymentReminders";
 
 const Kokpit = () => {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ const Kokpit = () => {
 
   // Get the latest unacknowledged coach adjustment
   const latestAdjustment = getLatestAdjustment("user-001", acknowledgedAdjustments);
+
+  // Payment reminders hook - triggers toast notifications on mount
+  const { reminders } = usePaymentReminders();
 
   const handleDismissAdjustment = (adjustmentId: string) => {
     const updated = [...acknowledgedAdjustments, adjustmentId];
@@ -128,6 +132,37 @@ const Kokpit = () => {
             adjustment={latestAdjustment}
             onDismiss={handleDismissAdjustment}
           />
+        </motion.div>
+      )}
+
+      {/* Payment Reminder Banner */}
+      {reminders.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <button 
+            onClick={() => navigate("/odemeler")}
+            className="w-full glass-card p-3 flex items-center gap-3 border-l-4 border-l-amber-500 hover:bg-white/[0.03] transition-colors"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+              <AlertCircle className="w-5 h-5 text-amber-400" />
+            </div>
+            <div className="flex-1 text-left">
+              <p className="text-foreground text-sm font-medium">
+                {reminders[0].isOverdue 
+                  ? "Gecikmiş ödemeniz var!" 
+                  : reminders[0].daysUntilDue === 0 
+                    ? "Bugün son ödeme günü!" 
+                    : `Ödemenize ${reminders[0].daysUntilDue} gün kaldı`}
+              </p>
+              <p className="text-muted-foreground text-xs">
+                {reminders[0].serviceType} • {new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY", minimumFractionDigits: 0 }).format(reminders[0].amount)}
+              </p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+          </button>
         </motion.div>
       )}
 
