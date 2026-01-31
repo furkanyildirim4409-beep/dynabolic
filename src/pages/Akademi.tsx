@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { hapticLight } from "@/lib/haptics";
 
 interface VideoItem {
   id: number;
@@ -74,17 +75,16 @@ const Akademi = () => {
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-white/5"
+        className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5"
       >
-        <div className="flex items-center gap-4 px-4 py-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="text-muted-foreground hover:text-foreground"
+        <div className="flex items-center gap-4 px-4 py-4 relative z-50">
+          <button
+            onClick={() => { hapticLight(); navigate(-1); }}
+            className="relative z-50 flex items-center justify-center w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 transition-all"
+            aria-label="Geri Dön"
           >
-            <ArrowLeft className="w-6 h-6" />
-          </Button>
+            <ArrowLeft className="w-6 h-6 text-foreground" />
+          </button>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-primary" />
