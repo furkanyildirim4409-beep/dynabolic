@@ -80,7 +80,7 @@ const BloodworkDetailModal = ({ report, isOpen, onClose }: BloodworkDetailModalP
               </button>
             </div>
 
-            <div className="p-4 pb-24 space-y-6">
+            <div className="p-4 pb-40 space-y-6">
               {/* Report Info Card */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}

@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { User, Calendar, Apple, Dumbbell, Check, Star, Shield, ArrowLeft, ShoppingCart } from "lucide-react";
+import { User, Calendar, Apple, Dumbbell, Check, Star, Shield, ArrowLeft, ShoppingCart, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { hapticLight, hapticSuccess } from "@/lib/haptics";
+
+// GLOBAL RULE: Coaching services are INELIGIBLE for Bio-Coin discounts
+const COACHING_BIOCOIN_ELIGIBLE = false;
 
 interface CoachingPackage {
   id: string;
@@ -194,6 +197,16 @@ const Services = () => {
                       </div>
                     ))}
                   </div>
+
+                  {/* Bio-Coin Ineligibility Notice */}
+                  {!COACHING_BIOCOIN_ELIGIBLE && (
+                    <div className="mt-3 flex items-center gap-2 p-2 bg-muted/30 rounded-lg border border-white/5">
+                      <Info className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                      <span className="text-[10px] text-muted-foreground">
+                        Bio-Coin koçluk hizmetlerinde kullanılamaz
+                      </span>
+                    </div>
+                  )}
 
                   {/* Add to Cart Button */}
                   <Button

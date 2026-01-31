@@ -15,7 +15,8 @@ import {
   Grid3X3,
   Play,
   Coins,
-  Check
+  Check,
+  Info
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -563,6 +564,14 @@ const CoachProfile = () => {
                     </li>
                   ))}
                 </ul>
+
+                {/* Bio-Coin Ineligibility Notice */}
+                <div className="mb-4 flex items-center gap-2 p-2 bg-muted/30 rounded-lg border border-white/5">
+                  <Info className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                  <span className="text-[10px] text-muted-foreground">
+                    Bio-Coin koçluk hizmetlerinde kullanılamaz
+                  </span>
+                </div>
 
                 <motion.button
                   whileHover={{ scale: 1.02 }}
