@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Flame, Zap, BarChart3, ChevronRight, X } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { hapticSuccess } from "@/lib/haptics";
 import type { CoachAdjustment } from "@/types/shared-models";
 
 interface CoachAdjustmentBannerProps {
@@ -8,7 +11,9 @@ interface CoachAdjustmentBannerProps {
 }
 
 const CoachAdjustmentBanner = ({ adjustment, onDismiss }: CoachAdjustmentBannerProps) => {
-  if (!adjustment) return null;
+  const [isVisible, setIsVisible] = useState(true);
+
+  if (!adjustment || !isVisible) return null;
 
   const typeConfig = {
     calories: {
@@ -43,83 +48,98 @@ const CoachAdjustmentBanner = ({ adjustment, onDismiss }: CoachAdjustmentBannerP
   const config = typeConfig[adjustment.type];
   const Icon = config.icon;
 
+  const handleDismiss = () => {
+    // Immediate UI feedback
+    hapticSuccess();
+    setIsVisible(false);
+    
+    // Persist to localStorage via parent
+    onDismiss(adjustment.id);
+    
+    // Show toast notification
+    toast({
+      title: "Koç ayarlaması onaylandı ✓",
+      description: `${config.label} güncellendi`,
+    });
+  };
+
   return (
-    <AnimatePresence>
+    <motion.div
+      key={adjustment.id}
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ type: "spring", damping: 20, stiffness: 300 }}
+      className={`relative z-10 backdrop-blur-xl bg-white/[0.03] border ${config.borderColor} rounded-2xl p-4 overflow-hidden shadow-lg ${config.glowColor}`}
+    >
+      {/* Animated Glow Border Effect */}
       <motion.div
-        initial={{ opacity: 0, y: -20, scale: 0.95 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-        className={`relative backdrop-blur-xl bg-white/[0.03] border ${config.borderColor} rounded-2xl p-4 overflow-hidden shadow-lg ${config.glowColor}`}
+        className={`absolute inset-0 ${config.bgColor} opacity-20 pointer-events-none`}
+        animate={{ opacity: [0.1, 0.2, 0.1] }}
+        transition={{ duration: 2, repeat: Infinity }}
+      />
+
+      {/* Close Button */}
+      <button
+        onClick={handleDismiss}
+        className="absolute top-3 right-3 z-20 p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] transition-colors active:scale-95"
+        aria-label="Kapat"
       >
-        {/* Animated Glow Border Effect */}
+        <X className="w-4 h-4 text-muted-foreground" />
+      </button>
+
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-3">
         <motion.div
-          className={`absolute inset-0 ${config.bgColor} opacity-20`}
-          animate={{ opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-
-        {/* Close Button */}
-        <button
-          onClick={() => onDismiss(adjustment.id)}
-          className="absolute top-3 right-3 p-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] transition-colors"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+          className={`w-8 h-8 rounded-lg ${config.bgColor} flex items-center justify-center`}
         >
-          <X className="w-4 h-4 text-muted-foreground" />
-        </button>
+          <Icon className={`w-4 h-4 ${config.color}`} />
+        </motion.div>
+        <span className={`text-xs font-display tracking-wider ${config.color}`}>
+          KOÇ AYARLAMASI
+        </span>
+      </div>
 
-        {/* Header */}
-        <div className="flex items-center gap-2 mb-3">
-          <motion.div
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className={`w-8 h-8 rounded-lg ${config.bgColor} flex items-center justify-center`}
-          >
-            <Icon className={`w-4 h-4 ${config.color}`} />
-          </motion.div>
-          <span className={`text-xs font-display tracking-wider ${config.color}`}>
-            KOÇ AYARLAMASI
-          </span>
-        </div>
+      {/* Type Label */}
+      <p className="font-display text-sm text-foreground tracking-wide mb-3">
+        {config.label}
+      </p>
 
-        {/* Type Label */}
-        <p className="font-display text-sm text-foreground tracking-wide mb-3">
-          {config.label}
+      {/* Value Comparison */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className="font-display text-lg text-muted-foreground line-through">
+          {config.formatValue(adjustment.previousValue)}
+        </span>
+        <motion.div
+          animate={{ x: [0, 5, 0] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        >
+          <ChevronRight className={`w-5 h-5 ${config.color}`} />
+        </motion.div>
+        <span className={`font-display text-2xl ${config.color}`}>
+          {config.formatValue(adjustment.value)}
+        </span>
+      </div>
+
+      {/* Coach Message */}
+      <div className={`${config.bgColor} rounded-xl p-3 mb-4`}>
+        <p className="text-foreground/90 text-sm italic leading-relaxed">
+          "{adjustment.message}"
         </p>
+      </div>
 
-        {/* Value Comparison */}
-        <div className="flex items-center gap-3 mb-4">
-          <span className="font-display text-lg text-muted-foreground line-through">
-            {config.formatValue(adjustment.previousValue)}
-          </span>
-          <motion.div
-            animate={{ x: [0, 5, 0] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            <ChevronRight className={`w-5 h-5 ${config.color}`} />
-          </motion.div>
-          <span className={`font-display text-2xl ${config.color}`}>
-            {config.formatValue(adjustment.value)}
-          </span>
-        </div>
-
-        {/* Coach Message */}
-        <div className={`${config.bgColor} rounded-xl p-3 mb-4`}>
-          <p className="text-foreground/90 text-sm italic leading-relaxed">
-            "{adjustment.message}"
-          </p>
-        </div>
-
-        {/* Acknowledge Button */}
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onDismiss(adjustment.id)}
-          className={`w-full py-3 ${config.bgColor} border ${config.borderColor} rounded-xl font-display text-sm ${config.color} tracking-wider hover:bg-opacity-30 transition-all`}
-        >
-          ANLADIM
-        </motion.button>
-      </motion.div>
-    </AnimatePresence>
+      {/* Acknowledge Button */}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleDismiss}
+        className={`relative z-20 w-full py-3 ${config.bgColor} border ${config.borderColor} rounded-xl font-display text-sm ${config.color} tracking-wider hover:bg-opacity-30 transition-all active:scale-[0.98]`}
+      >
+        ANLADIM
+      </motion.button>
+    </motion.div>
   );
 };
 
