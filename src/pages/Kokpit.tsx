@@ -55,6 +55,15 @@ const Kokpit = () => {
   // Scroll direction hook for hiding/showing weekly recap button
   const { scrollDirection, isAtTop } = useScrollDirection({ threshold: 20 });
 
+  // Listen for coach chat open event from EliteDock
+  useEffect(() => {
+    const handleOpenCoachChat = () => {
+      setShowChat(true);
+    };
+    window.addEventListener('openCoachChat', handleOpenCoachChat);
+    return () => window.removeEventListener('openCoachChat', handleOpenCoachChat);
+  }, []);
+
   const handleDismissAdjustment = (adjustmentId: string) => {
     const updated = [...acknowledgedAdjustments, adjustmentId];
     setAcknowledgedAdjustments(updated);
