@@ -75,7 +75,7 @@ const StoriesRing = ({ className = "" }: StoriesRingProps) => {
 
   return (
     <div className={`${className}`}>
-      <div className="flex justify-center gap-3 py-2">
+      <div className="flex justify-center gap-4 py-2">
         {categories.map((category, index) => {
           const config = categoryConfig[category];
           const isViewed = viewedCategories.has(category);
@@ -87,22 +87,22 @@ const StoriesRing = ({ className = "" }: StoriesRingProps) => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => handleCategoryClick(category)}
-              className="flex flex-col items-center gap-1"
+              className="flex flex-col items-center gap-1.5"
             >
               {/* Ring */}
               <div
-                className={`p-0.5 rounded-full ${
+                className={`p-[3px] rounded-full ${
                   isViewed ? "bg-muted/50" : "bg-gradient-to-tr from-primary via-primary/80 to-primary neon-glow-sm"
                 }`}
               >
                 <div
-                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
+                  className={`w-14 h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
                 >
-                  {config.icon}
+                  <span className="[&>svg]:w-5 [&>svg]:h-5">{config.icon}</span>
                 </div>
               </div>
               {/* Label */}
-              <span className="text-[9px] sm:text-[10px] text-muted-foreground font-medium truncate max-w-[50px] sm:max-w-[60px]">{category}</span>
+              <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[60px]">{category}</span>
             </motion.button>
           );
         })}
