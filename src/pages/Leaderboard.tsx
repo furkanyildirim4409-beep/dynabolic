@@ -284,10 +284,10 @@ const Leaderboard = () => {
                   style={{ order: style.order }}
                 >
                   {/* Avatar */}
-                  <div className={`relative ${style.glow}`}>
-                    <Avatar className={`${style.size} ${style.ring}`}>
-                      <AvatarImage src={athlete.avatar} alt={athlete.name} className="object-cover" />
-                      <AvatarFallback className="bg-primary/20 text-primary font-display">
+                  <div className={`relative ${style.glow} rounded-full`}>
+                    <Avatar className={`${style.size} ${style.ring} bg-transparent`}>
+                      <AvatarImage src={athlete.avatar} alt={athlete.name} className="object-cover rounded-full" />
+                      <AvatarFallback className="bg-primary/20 text-primary font-display rounded-full">
                         {athlete.name.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
