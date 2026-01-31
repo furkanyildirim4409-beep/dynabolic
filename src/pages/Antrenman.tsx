@@ -4,6 +4,7 @@ import { Dumbbell, Calendar, TrendingUp, Clock, Target, History, X, CheckCircle2
 import WorkoutCard from "@/components/WorkoutCard";
 import VisionAIExecution from "@/components/VisionAIExecution";
 import WorkoutCalendar from "@/components/WorkoutCalendar";
+import ExerciseGoalsSection from "@/components/ExerciseGoalsSection";
 import { workoutHistory, assignedWorkouts, WorkoutHistoryEntry } from "@/lib/mockData";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -124,6 +125,9 @@ const Antrenman = () => {
             ))}
           </div>
         </motion.div>
+
+        {/* Exercise Goals Section */}
+        <ExerciseGoalsSection />
 
         {/* Conditional View: List or Calendar */}
         <AnimatePresence mode="wait">
