@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Shield, Star, Crown, Sparkles, ChevronRight, Trophy } from "lucide-react";
+import { Flame, Crown, ChevronRight, Trophy, Dumbbell, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { 
   userGamificationStats, 
@@ -8,7 +9,8 @@ import {
   getTierProgress,
   userTiers 
 } from "@/lib/gamificationData";
-import { hapticLight } from "@/lib/haptics";
+import { hapticLight, hapticMedium } from "@/lib/haptics";
+import PersonalRecords from "@/components/PersonalRecords";
 
 interface StreakTierWidgetProps {
   compact?: boolean;
@@ -16,6 +18,8 @@ interface StreakTierWidgetProps {
 
 const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
   const navigate = useNavigate();
+  const [showPRModal, setShowPRModal] = useState(false);
+  
   const currentTier = getCurrentTier(userGamificationStats.currentXP);
   const nextTier = getNextTier(userGamificationStats.currentXP);
   const tierProgress = getTierProgress(userGamificationStats.currentXP);
@@ -26,6 +30,16 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
   const handleNavigateToAchievements = () => {
     hapticLight();
     navigate('/achievements');
+  };
+
+  const handleNavigateToLeaderboard = () => {
+    hapticLight();
+    navigate('/leaderboard');
+  };
+
+  const handleOpenPRModal = () => {
+    hapticMedium();
+    setShowPRModal(true);
   };
 
   if (compact) {
@@ -71,64 +85,85 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="glass-card p-4 space-y-4"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Trophy className="w-4 h-4 text-primary" />
-          <h3 className="font-display text-sm text-foreground tracking-wider">
-            SEVİYE & SERİ
-          </h3>
-        </div>
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={handleNavigateToAchievements}
-          className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium"
-        >
-          Rozetler
-        </motion.button>
-      </div>
-
-      {/* Streak Counter */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <motion.div
-            animate={isStreakActive ? { 
-              scale: [1, 1.15, 1],
-              filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)']
-            } : {}}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-              isStreakActive 
-                ? 'bg-gradient-to-br from-orange-500/30 to-red-500/30 border border-orange-500/50' 
-                : 'bg-secondary border border-white/10'
-            }`}
-          >
-            <Flame className={`w-7 h-7 ${isStreakActive ? 'text-orange-500' : 'text-muted-foreground'}`} />
-          </motion.div>
-          <div>
-            <p className={`font-display text-3xl ${isStreakActive ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {userGamificationStats.currentStreak}
-            </p>
-            <p className="text-muted-foreground text-xs">gün seri</p>
+    <>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-card p-4 space-y-4"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-primary" />
+            <h3 className="font-display text-sm text-foreground tracking-wider">
+              SEVİYE & SERİ
+            </h3>
+          </div>
+          <div className="flex gap-2">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleOpenPRModal}
+              className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-500 text-xs font-medium flex items-center gap-1"
+            >
+              <Dumbbell className="w-3 h-3" />
+              PR
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleNavigateToLeaderboard}
+              className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium flex items-center gap-1"
+            >
+              <Users className="w-3 h-3" />
+              Lig
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleNavigateToAchievements}
+              className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium"
+            >
+              Rozetler
+            </motion.button>
           </div>
         </div>
 
-        <div className="text-right">
-          <p className="text-muted-foreground text-[10px]">EN UZUN</p>
-          <p className="font-display text-lg text-foreground">
-            {userGamificationStats.longestStreak} gün
-          </p>
-        </div>
-      </div>
+        {/* Streak Counter */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <motion.div
+              animate={isStreakActive ? { 
+                scale: [1, 1.15, 1],
+                filter: ['brightness(1)', 'brightness(1.3)', 'brightness(1)']
+              } : {}}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
+                isStreakActive 
+                  ? 'bg-gradient-to-br from-orange-500/30 to-red-500/30 border border-orange-500/50' 
+                  : 'bg-secondary border border-white/10'
+              }`}
+            >
+              <Flame className={`w-7 h-7 ${isStreakActive ? 'text-orange-500' : 'text-muted-foreground'}`} />
+            </motion.div>
+            <div>
+              <p className={`font-display text-3xl ${isStreakActive ? 'text-foreground' : 'text-muted-foreground'}`}>
+                {userGamificationStats.currentStreak}
+              </p>
+              <p className="text-muted-foreground text-xs">gün seri</p>
+            </div>
+          </div>
 
-      {/* Tier Progress */}
-      <div className="space-y-2">
+          <div className="text-right">
+            <p className="text-muted-foreground text-[10px]">EN UZUN</p>
+            <p className="font-display text-lg text-foreground">
+              {userGamificationStats.longestStreak} gün
+            </p>
+          </div>
+        </div>
+
+        {/* Tier Progress */}
+        <div className="space-y-2">
         {/* Tier Labels */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -189,7 +224,11 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
           )}
         </div>
       </div>
-    </motion.div>
+      </motion.div>
+
+      {/* PR Modal */}
+      <PersonalRecords isOpen={showPRModal} onClose={() => setShowPRModal(false)} />
+    </>
   );
 };
 
