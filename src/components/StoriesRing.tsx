@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { RefreshCw, HelpCircle, Trophy, Dumbbell, Zap } from "lucide-react";
 import { coachStories } from "@/lib/mockData";
@@ -32,7 +32,7 @@ const categoryConfig: Record<StoryCategory, { icon: React.ReactNode; gradient: s
   },
 };
 
-// Group stories by category
+// 1. Hikayeleri kategorilerine göre grupla
 const groupedStories = coachStories.reduce(
   (acc, story) => {
     if (!acc[story.category]) {
@@ -46,25 +46,38 @@ const groupedStories = coachStories.reduce(
 
 const categories = Object.keys(groupedStories) as StoryCategory[];
 
-// Convert CoachStory to Story format for context
-const convertToStories = (coachStories: CoachStory[]): Story[] => {
-  return coachStories.map((story) => ({
-    id: story.id,
-    title: story.title,
-    thumbnail: story.thumbnail,
-    content: story.content,
-  }));
-};
-
 const StoriesRing = ({ className = "" }: StoriesRingProps) => {
   const [viewedCategories, setViewedCategories] = useState<Set<StoryCategory>>(new Set());
   const { openStories } = useStory();
 
-  const handleCategoryClick = (category: StoryCategory) => {
-    const config = categoryConfig[category];
-    const stories = convertToStories(groupedStories[category]);
+  // 2. Tüm hikayeleri tek bir düz liste (Flat List) haline getir
+  // Bu sayede bir kategori bitince otomatik diğerine geçer.
+  const allStoriesFlat = useMemo(() => {
+    return categories.flatMap((cat) =>
+      groupedStories[cat].map((story) => ({
+        id: story.id,
+        title: story.title,
+        thumbnail: story.thumbnail,
+        content: story.content,
+        // Story içine kategori bilgisini de gömelim (Header'ın değişmesi gerekirse Viewer buradan okuyabilir)
+        category: cat,
+        categoryConfig: categoryConfig[cat],
+      })),
+    );
+  }, []);
 
-    openStories(stories, 0, {
+  const handleCategoryClick = (category: StoryCategory) => {
+    // 3. Tıklanan kategorinin "Büyük Liste" içindeki başlangıç indeksini bul
+    let startIndex = 0;
+    for (const cat of categories) {
+      if (cat === category) break;
+      startIndex += groupedStories[cat].length;
+    }
+
+    const config = categoryConfig[category];
+
+    // 4. Tüm listeyi gönder ama 'startIndex' ile doğru yerden başlat
+    openStories(allStoriesFlat, startIndex, {
       categoryLabel: category,
       categoryIcon: config.icon,
       categoryGradient: config.gradient,
