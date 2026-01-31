@@ -7,45 +7,51 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 import ChallengesSection from "@/components/ChallengesSection";
 
-// Mock Turkish athlete data
+// Mock Turkish athlete data with challenge stats
 const mockAthletes = [
-  { id: "1", name: "Ahmet Yılmaz", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", bioCoins: 8450, volume: 125000, streak: 45 },
-  { id: "2", name: "Mehmet Demir", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", bioCoins: 7890, volume: 118500, streak: 38 },
-  { id: "3", name: "Zeynep Kaya", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", bioCoins: 7200, volume: 95000, streak: 42 },
-  { id: "4", name: "Burak Şahin", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", bioCoins: 6950, volume: 112000, streak: 35 },
-  { id: "5", name: "Elif Çelik", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", bioCoins: 6700, volume: 88000, streak: 30 },
-  { id: "6", name: "Oğuz Acar", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", bioCoins: 6200, volume: 105000, streak: 28 },
-  { id: "7", name: "Selin Yıldız", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", bioCoins: 5980, volume: 92000, streak: 33 },
-  { id: "8", name: "Emre Koç", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop", bioCoins: 5600, volume: 99000, streak: 25 },
-  { id: "9", name: "Deniz Arslan", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop", bioCoins: 5400, volume: 85000, streak: 27 },
-  { id: "10", name: "Can Özdemir", avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=100&h=100&fit=crop", bioCoins: 5100, volume: 78000, streak: 22 },
-  { id: "11", name: "Ayşe Polat", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", bioCoins: 4800, volume: 72000, streak: 20 },
-  { id: "12", name: "Murat Kılıç", avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop", bioCoins: 4500, volume: 68000, streak: 19 },
-  { id: "13", name: "Gizem Erdoğan", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", bioCoins: 4200, volume: 65000, streak: 18 },
-  { id: "current", name: "Ahmet Kaya", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop", bioCoins: 3950, volume: 62000, streak: 17, isCurrentUser: true },
-  { id: "15", name: "Serkan Yalçın", avatar: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=100&h=100&fit=crop", bioCoins: 3700, volume: 58000, streak: 15 },
-  { id: "16", name: "Burcu Aksoy", avatar: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop", bioCoins: 3500, volume: 55000, streak: 14 },
-  { id: "17", name: "Tolga Güneş", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop", bioCoins: 3200, volume: 52000, streak: 12 },
-  { id: "18", name: "Merve Aslan", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop", bioCoins: 2900, volume: 48000, streak: 10 },
-  { id: "19", name: "Enes Korkmaz", avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop", bioCoins: 2600, volume: 45000, streak: 8 },
-  { id: "20", name: "İrem Bakır", avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&h=100&fit=crop", bioCoins: 2300, volume: 42000, streak: 6 },
+  { id: "1", name: "Ahmet Yılmaz", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", bioCoins: 8450, volume: 125000, streak: 45, challengeWins: 28, winStreak: 7 },
+  { id: "2", name: "Mehmet Demir", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", bioCoins: 7890, volume: 118500, streak: 38, challengeWins: 32, winStreak: 5 },
+  { id: "3", name: "Zeynep Kaya", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", bioCoins: 7200, volume: 95000, streak: 42, challengeWins: 24, winStreak: 9 },
+  { id: "4", name: "Burak Şahin", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", bioCoins: 6950, volume: 112000, streak: 35, challengeWins: 21, winStreak: 4 },
+  { id: "5", name: "Elif Çelik", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", bioCoins: 6700, volume: 88000, streak: 30, challengeWins: 19, winStreak: 6 },
+  { id: "6", name: "Oğuz Acar", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", bioCoins: 6200, volume: 105000, streak: 28, challengeWins: 17, winStreak: 3 },
+  { id: "7", name: "Selin Yıldız", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", bioCoins: 5980, volume: 92000, streak: 33, challengeWins: 22, winStreak: 8 },
+  { id: "8", name: "Emre Koç", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop", bioCoins: 5600, volume: 99000, streak: 25, challengeWins: 15, winStreak: 2 },
+  { id: "9", name: "Deniz Arslan", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop", bioCoins: 5400, volume: 85000, streak: 27, challengeWins: 18, winStreak: 4 },
+  { id: "10", name: "Can Özdemir", avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=100&h=100&fit=crop", bioCoins: 5100, volume: 78000, streak: 22, challengeWins: 14, winStreak: 1 },
+  { id: "11", name: "Ayşe Polat", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", bioCoins: 4800, volume: 72000, streak: 20, challengeWins: 12, winStreak: 3 },
+  { id: "12", name: "Murat Kılıç", avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop", bioCoins: 4500, volume: 68000, streak: 19, challengeWins: 11, winStreak: 2 },
+  { id: "13", name: "Gizem Erdoğan", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", bioCoins: 4200, volume: 65000, streak: 18, challengeWins: 10, winStreak: 1 },
+  { id: "current", name: "Ahmet Kaya", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop", bioCoins: 3950, volume: 62000, streak: 17, challengeWins: 8, winStreak: 3, isCurrentUser: true },
+  { id: "15", name: "Serkan Yalçın", avatar: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=100&h=100&fit=crop", bioCoins: 3700, volume: 58000, streak: 15, challengeWins: 7, winStreak: 0 },
+  { id: "16", name: "Burcu Aksoy", avatar: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop", bioCoins: 3500, volume: 55000, streak: 14, challengeWins: 6, winStreak: 2 },
+  { id: "17", name: "Tolga Güneş", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop", bioCoins: 3200, volume: 52000, streak: 12, challengeWins: 5, winStreak: 1 },
+  { id: "18", name: "Merve Aslan", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop", bioCoins: 2900, volume: 48000, streak: 10, challengeWins: 4, winStreak: 0 },
+  { id: "19", name: "Enes Korkmaz", avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop", bioCoins: 2600, volume: 45000, streak: 8, challengeWins: 3, winStreak: 1 },
+  { id: "20", name: "İrem Bakır", avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&h=100&fit=crop", bioCoins: 2300, volume: 42000, streak: 6, challengeWins: 2, winStreak: 0 },
 ];
 
-type MetricType = "bioCoins" | "volume" | "streak";
+type MetricType = "bioCoins" | "volume" | "streak" | "challenges";
+
+// Calculate challenge score: wins + (winStreak * 2 bonus multiplier)
+const getChallengeScore = (athlete: typeof mockAthletes[0]) => 
+  athlete.challengeWins + (athlete.winStreak * 2);
 
 const getMetricValue = (athlete: typeof mockAthletes[0], metric: MetricType) => {
   switch (metric) {
     case "bioCoins": return athlete.bioCoins;
     case "volume": return athlete.volume;
     case "streak": return athlete.streak;
+    case "challenges": return getChallengeScore(athlete);
   }
 };
 
-const formatMetricValue = (value: number, metric: MetricType) => {
+const formatMetricValue = (value: number, metric: MetricType, athlete?: typeof mockAthletes[0]) => {
   switch (metric) {
     case "bioCoins": return value.toLocaleString("tr-TR");
     case "volume": return `${(value / 1000).toFixed(0)}k kg`;
     case "streak": return `${value} gün`;
+    case "challenges": return athlete ? `${athlete.challengeWins}W` : `${value} puan`;
   }
 };
 
@@ -54,6 +60,7 @@ const getMetricIcon = (metric: MetricType) => {
     case "bioCoins": return Coins;
     case "volume": return Dumbbell;
     case "streak": return Flame;
+    case "challenges": return Swords;
   }
 };
 
@@ -157,27 +164,34 @@ const Leaderboard = () => {
           <>
             {/* Metric Tabs */}
             <Tabs value={metric} onValueChange={(v) => { hapticLight(); setMetric(v as MetricType); }}>
-              <TabsList className="w-full grid grid-cols-3 bg-secondary/50 border border-white/5">
+              <TabsList className="w-full grid grid-cols-4 bg-secondary/50 border border-white/5">
                 <TabsTrigger 
                   value="bioCoins" 
-                  className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+                  className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1 px-1"
                 >
                   <Coins className="w-3 h-3" />
-                  BİO-COİN
+                  COİN
                 </TabsTrigger>
                 <TabsTrigger 
                   value="volume"
-                  className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+                  className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1 px-1"
                 >
                   <Dumbbell className="w-3 h-3" />
                   TONAJ
                 </TabsTrigger>
                 <TabsTrigger 
                   value="streak"
-                  className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1"
+                  className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1 px-1"
                 >
                   <Flame className="w-3 h-3" />
                   SERİ
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="challenges"
+                  className="font-display text-[10px] data-[state=active]:bg-primary data-[state=active]:text-primary-foreground gap-1 px-1"
+                >
+                  <Swords className="w-3 h-3" />
+                  DÜELLO
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -230,8 +244,13 @@ const Leaderboard = () => {
                   <div className="flex items-center gap-1 mt-1">
                     <MetricIcon className="w-3 h-3 text-primary" />
                     <span className="font-display text-primary text-sm tabular-nums">
-                      {formatMetricValue(getMetricValue(athlete, metric), metric)}
+                      {formatMetricValue(getMetricValue(athlete, metric), metric, athlete)}
                     </span>
+                    {metric === "challenges" && athlete.winStreak > 0 && (
+                      <span className="text-[10px] text-amber-400 flex items-center gap-0.5">
+                        🔥{athlete.winStreak}
+                      </span>
+                    )}
                   </div>
 
                   {/* Podium Base */}
@@ -296,14 +315,30 @@ const Leaderboard = () => {
                     {isCurrentUser && <span className="text-primary ml-1">(Sen)</span>}
                   </p>
                   <div className="flex items-center gap-3 text-muted-foreground text-[10px]">
-                    <span className="flex items-center gap-1">
-                      <Coins className="w-3 h-3" />
-                      {athlete.bioCoins.toLocaleString("tr-TR")}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Flame className="w-3 h-3" />
-                      {athlete.streak} gün
-                    </span>
+                    {metric === "challenges" ? (
+                      <>
+                        <span className="flex items-center gap-1">
+                          <Swords className="w-3 h-3" />
+                          {athlete.challengeWins} galibiyet
+                        </span>
+                        {athlete.winStreak > 0 && (
+                          <span className="flex items-center gap-1 text-amber-400">
+                            🔥 {athlete.winStreak} seri
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span className="flex items-center gap-1">
+                          <Coins className="w-3 h-3" />
+                          {athlete.bioCoins.toLocaleString("tr-TR")}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Flame className="w-3 h-3" />
+                          {athlete.streak} gün
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -312,7 +347,7 @@ const Leaderboard = () => {
                   <div className="flex items-center gap-1 justify-end">
                     <MetricIcon className="w-3 h-3 text-primary" />
                     <span className="font-display text-sm text-primary tabular-nums">
-                      {formatMetricValue(getMetricValue(athlete, metric), metric)}
+                      {formatMetricValue(getMetricValue(athlete, metric), metric, athlete)}
                     </span>
                   </div>
                 </div>
@@ -347,6 +382,7 @@ const Leaderboard = () => {
             <div className="flex-1">
               <p className="text-foreground font-display text-sm">SENİN SIRAN</p>
               <p className="text-muted-foreground text-xs">
+                {metric === "challenges" && `${getMetricValue(sortedAthletes[currentUserRank - 2], metric) - getMetricValue(currentUser!, metric)} puan ile #${currentUserRank - 1}'e yüksel`}
                 {metric === "bioCoins" && `${(getMetricValue(sortedAthletes[currentUserRank - 2], metric) - getMetricValue(currentUser!, metric)).toLocaleString("tr-TR")} coin ile #${currentUserRank - 1}'e yüksel`}
                 {metric === "volume" && `${((getMetricValue(sortedAthletes[currentUserRank - 2], metric) - getMetricValue(currentUser!, metric)) / 1000).toFixed(0)}k kg ile #${currentUserRank - 1}'e yüksel`}
                 {metric === "streak" && `${getMetricValue(sortedAthletes[currentUserRank - 2], metric) - getMetricValue(currentUser!, metric)} gün ile #${currentUserRank - 1}'e yüksel`}
@@ -358,7 +394,7 @@ const Leaderboard = () => {
               <div className="flex items-center gap-1 justify-end">
                 <MetricIcon className="w-4 h-4 text-primary" />
                 <span className="font-display text-lg text-primary tabular-nums">
-                  {formatMetricValue(getMetricValue(currentUser!, metric), metric)}
+                  {formatMetricValue(getMetricValue(currentUser!, metric), metric, currentUser!)}
                 </span>
               </div>
             </div>
