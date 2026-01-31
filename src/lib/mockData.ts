@@ -1323,3 +1323,119 @@ export const assignedSupplements: SupplementData[] = [
     icon: "💊",
   },
 ];
+
+// ============================================
+// SHOP SUPPLEMENTS (for Mağaza > Supplementler tab)
+// ============================================
+
+export interface ShopSupplement {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  image: string;
+  flavors: string[];
+  servings: number;
+  rating: number;
+  reviews: number;
+  category: "protein" | "amino" | "preworkout" | "creatine" | "vitamin" | "omega";
+}
+
+export const shopSupplements: ShopSupplement[] = [
+  {
+    id: "shop-sup-1",
+    name: "Gold Standard Whey",
+    brand: "Optimum Nutrition",
+    price: 899,
+    image: "https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=400&h=400&fit=crop",
+    flavors: ["Çikolata", "Vanilya", "Çilek"],
+    servings: 30,
+    rating: 4.8,
+    reviews: 1247,
+    category: "protein",
+  },
+  {
+    id: "shop-sup-2",
+    name: "BCAA Energy",
+    brand: "EVL",
+    price: 449,
+    image: "https://images.unsplash.com/photo-1579722821273-0f6c7d44362f?w=400&h=400&fit=crop",
+    flavors: ["Karpuz", "Mango", "Limonata"],
+    servings: 30,
+    rating: 4.6,
+    reviews: 892,
+    category: "amino",
+  },
+  {
+    id: "shop-sup-3",
+    name: "C4 Original",
+    brand: "Cellucor",
+    price: 549,
+    image: "https://images.unsplash.com/photo-1594381898411-846e7d193883?w=400&h=400&fit=crop",
+    flavors: ["Nar", "Limon", "Mavi Ahududu"],
+    servings: 60,
+    rating: 4.7,
+    reviews: 2156,
+    category: "preworkout",
+  },
+  {
+    id: "shop-sup-4",
+    name: "Kreatin Monohidrat",
+    brand: "MyProtein",
+    price: 299,
+    image: "https://images.unsplash.com/photo-1616671276441-2f2c277b8bf6?w=400&h=400&fit=crop",
+    flavors: ["Aromasız"],
+    servings: 100,
+    rating: 4.9,
+    reviews: 3421,
+    category: "creatine",
+  },
+  {
+    id: "shop-sup-5",
+    name: "Omega-3 Fish Oil",
+    brand: "NOW Foods",
+    price: 279,
+    image: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=400&fit=crop",
+    flavors: [],
+    servings: 180,
+    rating: 4.5,
+    reviews: 756,
+    category: "omega",
+  },
+  {
+    id: "shop-sup-6",
+    name: "Vitamin D3 5000IU",
+    brand: "Nature Made",
+    price: 189,
+    image: "https://images.unsplash.com/photo-1550572017-edd951b55104?w=400&h=400&fit=crop",
+    flavors: [],
+    servings: 90,
+    rating: 4.7,
+    reviews: 1089,
+    category: "vitamin",
+  },
+  {
+    id: "shop-sup-7",
+    name: "ISO100 Hydrolyzed",
+    brand: "Dymatize",
+    price: 1099,
+    image: "https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?w=400&h=400&fit=crop",
+    flavors: ["Fudge Brownie", "Vanilya", "Cookies"],
+    servings: 25,
+    rating: 4.8,
+    reviews: 2341,
+    category: "protein",
+  },
+  {
+    id: "shop-sup-8",
+    name: "L-Glutamin",
+    brand: "BioTechUSA",
+    price: 349,
+    image: "https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=400&h=400&fit=crop",
+    flavors: ["Aromasız"],
+    servings: 60,
+    rating: 4.4,
+    reviews: 567,
+    category: "amino",
+  },
+];

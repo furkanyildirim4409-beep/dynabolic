@@ -54,7 +54,12 @@ const UniversalCartDrawer = () => {
   };
 
   const handleCheckout = () => {
-    setShowPaymentModal(true);
+    // Close cart first, then open payment modal to avoid z-index conflict
+    closeCart();
+    // Small delay to ensure cart is closed before modal opens
+    setTimeout(() => {
+      setShowPaymentModal(true);
+    }, 100);
   };
 
   const handlePaymentSuccess = () => {

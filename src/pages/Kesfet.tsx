@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/hooks/use-toast";
 import { coaches, getLeaderboardCoaches, Coach } from "@/lib/mockData";
-import CartView, { CartItem } from "@/components/CartView";
 import ProductDetail from "@/components/ProductDetail";
 import { useStory, type Story } from "@/context/StoryContext";
+import { useCart } from "@/context/CartContext";
+import SupplementShop from "@/components/SupplementShop";
 
 // Bio-Coin Discount Calculator
 const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL, so 1 Bio-Coin = 0.1 TL
@@ -72,11 +73,10 @@ const getAllPosts = () => {
 const Kesfet = () => {
   const navigate = useNavigate();
   const { openStories } = useStory();
+  const { addToCart, cartCount, openCart } = useCart();
   const [bioCoins, setBioCoins] = useState(USER_BIO_COINS);
   const [coinDiscounts, setCoinDiscounts] = useState<Record<string, boolean>>({});
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [showCart, setShowCart] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showProductDetail, setShowProductDetail] = useState(false);
 
@@ -117,7 +117,7 @@ const Kesfet = () => {
     const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
     const coinsNeeded = calculateCoinsNeeded(maxDiscount);
 
-    const cartItem: CartItem = {
+    addToCart({
       id: `${product.id}-${product.coachId}-${Date.now()}`,
       title: product.title,
       price: product.price,
@@ -125,39 +125,13 @@ const Kesfet = () => {
       coinsUsed: isDiscountActive ? coinsNeeded : undefined,
       image: product.image,
       coachName: product.coachName,
-    };
-
-    setCart(prev => [...prev, cartItem]);
+      type: "product",
+    });
     
     if (isDiscountActive) {
       setBioCoins(prev => prev - coinsNeeded);
+      setCoinDiscounts(prev => ({ ...prev, [product.id + product.coachId]: false }));
     }
-
-    // Auto-open cart immediately
-    setShowCart(true);
-
-    toast({
-      title: "Sepete Eklendi ✓",
-      description: `"${product.title}" sepetinize eklendi.`,
-    });
-  };
-
-  const handleRemoveFromCart = (itemId: string) => {
-    const item = cart.find(i => i.id === itemId);
-    if (item?.coinsUsed) {
-      setBioCoins(prev => prev + item.coinsUsed!);
-    }
-    setCart(prev => prev.filter(i => i.id !== itemId));
-  };
-
-  const handleClearCart = () => {
-    const totalCoinsToReturn = cart.reduce((acc, item) => acc + (item.coinsUsed || 0), 0);
-    setBioCoins(prev => prev + totalCoinsToReturn);
-    setCart([]);
-    toast({
-      title: "Sepet Temizlendi",
-      description: "Tüm ürünler sepetten kaldırıldı.",
-    });
   };
 
   return (
@@ -174,13 +148,13 @@ const Kesfet = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => setShowCart(true)}
+              onClick={() => openCart()}
               className="relative p-2"
             >
               <ShoppingBag className="w-5 h-5 text-muted-foreground" />
-              {cart.length > 0 && (
+              {cartCount > 0 && (
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                  <span className="text-primary-foreground text-[10px] font-bold">{cart.length}</span>
+                  <span className="text-primary-foreground text-[10px] font-bold">{cartCount}</span>
                 </div>
               )}
             </motion.button>
@@ -449,146 +423,159 @@ const Kesfet = () => {
 
           {/* MAĞAZA (Shop) Tab */}
           <TabsContent value="magaza" className="mt-4">
-            {/* Balance Display */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="glass-card p-3 mb-4 flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <Coins className="w-5 h-5 text-primary" />
-                <span className="text-foreground text-sm">Bakiyen:</span>
-              </div>
-              <span className="font-display text-lg text-primary">{bioCoins.toLocaleString()} BIO</span>
-            </motion.div>
+            {/* Sub-tabs for Ürünler and Supplementler */}
+            <Tabs defaultValue="urunler" className="w-full">
+              <TabsList className="w-full grid grid-cols-2 bg-secondary/50 border border-white/5 mb-4">
+                <TabsTrigger value="urunler" className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  ÜRÜNLER
+                </TabsTrigger>
+                <TabsTrigger value="supplementler" className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  SUPPLEMENTLER
+                </TabsTrigger>
+              </TabsList>
 
-            <div className="grid grid-cols-2 gap-3">
-              {allProducts.map((product, index) => {
-                const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
-                const isDiscountActive = coinDiscounts[product.id + product.coachId] || false;
-                const coinsNeeded = calculateCoinsNeeded(maxDiscount);
-                const discountedPrice = product.price - maxDiscount;
-                const remainingCoins = bioCoins - coinsNeeded;
+              {/* ÜRÜNLER (Products) Sub-Tab */}
+              <TabsContent value="urunler" className="mt-0">
+                {/* Balance Display */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="glass-card p-3 mb-4 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <Coins className="w-5 h-5 text-primary" />
+                    <span className="text-foreground text-sm">Bakiyen:</span>
+                  </div>
+                  <span className="font-display text-lg text-primary">{bioCoins.toLocaleString()} BIO</span>
+                </motion.div>
 
-                return (
-                  <motion.div
-                    key={`${product.id}-${product.coachId}`}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: index * 0.05 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="glass-card overflow-hidden"
-                  >
-                    <button
-                      onClick={() => handleProductClick(product)}
-                      className="w-full text-left"
-                    >
-                      <div className="aspect-square bg-muted relative">
-                        <img 
-                          src={product.image} 
-                          alt={product.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute top-2 right-2">
-                          <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                            {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
-                          </span>
-                        </div>
-                        {isDiscountActive && (
-                          <div className="absolute top-2 left-2">
-                            <span className="bg-stat-hrv text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
-                              -{Math.round(maxDiscount)}₺
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                    <div className="p-3">
-                      <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
-                        {product.title}
-                      </p>
-                      <p className="text-muted-foreground text-[10px] mt-1">{product.coachName}</p>
-                      
-                      {/* Price Display */}
-                      <div className="flex items-center justify-between mt-2">
-                        {isDiscountActive ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-muted-foreground text-xs line-through">{product.price}₺</span>
-                            <span className="text-primary font-display text-sm">{Math.round(discountedPrice)}₺</span>
-                          </div>
-                        ) : (
-                          <span className="text-primary font-display text-sm">{product.price}₺</span>
-                        )}
-                      </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {allProducts.map((product, index) => {
+                    const maxDiscount = calculateMaxDiscount(product.price, bioCoins);
+                    const isDiscountActive = coinDiscounts[product.id + product.coachId] || false;
+                    const coinsNeeded = calculateCoinsNeeded(maxDiscount);
+                    const discountedPrice = product.price - maxDiscount;
+                    const remainingCoins = bioCoins - coinsNeeded;
 
-                      {/* Bio-Coin Toggle */}
-                      {maxDiscount > 0 && product.bioCoins && (
-                        <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                              <Coins className="w-3 h-3 text-primary flex-shrink-0" />
-                              <span className="text-[10px] text-muted-foreground truncate">
-                                Bio-Coin Kullan
+                    return (
+                      <motion.div
+                        key={`${product.id}-${product.coachId}`}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        whileHover={{ scale: 1.02 }}
+                        className="glass-card overflow-hidden"
+                      >
+                        <button
+                          onClick={() => handleProductClick(product)}
+                          className="w-full text-left"
+                        >
+                          <div className="aspect-square bg-muted relative">
+                            <img 
+                              src={product.image} 
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute top-2 right-2">
+                              <span className="bg-primary/90 text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                                {product.type === "ebook" ? "E-KİTAP" : product.type === "pdf" ? "PDF" : product.type === "apparel" ? "GİYİM" : "EKİPMAN"}
                               </span>
                             </div>
-                            <Switch
-                              checked={isDiscountActive}
-                              onCheckedChange={(checked) => {
-                                setCoinDiscounts(prev => ({ ...prev, [product.id + product.coachId]: checked }));
-                              }}
-                              className="scale-75"
-                            />
+                            {isDiscountActive && (
+                              <div className="absolute top-2 left-2">
+                                <span className="bg-stat-hrv text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium">
+                                  -{Math.round(maxDiscount)}₺
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          {isDiscountActive && (
-                            <motion.div
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: "auto" }}
-                              className="mt-1.5 pt-1.5 border-t border-white/10"
-                            >
-                              <div className="flex justify-between text-[9px]">
-                                <span className="text-muted-foreground">Kullanılacak:</span>
-                                <span className="text-primary font-medium">{coinsNeeded.toLocaleString()} BIO</span>
+                        </button>
+                        <div className="p-3">
+                          <p className="text-foreground text-xs font-medium line-clamp-2 h-8">
+                            {product.title}
+                          </p>
+                          <p className="text-muted-foreground text-[10px] mt-1">{product.coachName}</p>
+                          
+                          {/* Price Display */}
+                          <div className="flex items-center justify-between mt-2">
+                            {isDiscountActive ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground text-xs line-through">{product.price}₺</span>
+                                <span className="text-primary font-display text-sm">{Math.round(discountedPrice)}₺</span>
                               </div>
-                              <div className="flex justify-between text-[9px]">
-                                <span className="text-muted-foreground">Kalan Bakiye:</span>
-                                <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
-                              </div>
-                            </motion.div>
-                          )}
-                        </div>
-                      )}
+                            ) : (
+                              <span className="text-primary font-display text-sm">{product.price}₺</span>
+                            )}
+                          </div>
 
-                      <motion.button
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => handleAddToCart(product)}
-                        className={`w-full mt-3 text-xs py-2 rounded-lg font-medium border transition-colors ${
-                          isDiscountActive 
-                            ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" 
-                            : "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30"
-                        }`}
-                      >
-                        SEPETE EKLE
-                      </motion.button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                          {/* Bio-Coin Toggle */}
+                          {maxDiscount > 0 && product.bioCoins && (
+                            <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                  <Coins className="w-3 h-3 text-primary flex-shrink-0" />
+                                  <span className="text-[10px] text-muted-foreground truncate">
+                                    Bio-Coin Kullan
+                                  </span>
+                                </div>
+                                <Switch
+                                  checked={isDiscountActive}
+                                  onCheckedChange={(checked) => {
+                                    setCoinDiscounts(prev => ({ ...prev, [product.id + product.coachId]: checked }));
+                                  }}
+                                  className="scale-75"
+                                />
+                              </div>
+                              {isDiscountActive && (
+                                <motion.div
+                                  initial={{ opacity: 0, height: 0 }}
+                                  animate={{ opacity: 1, height: "auto" }}
+                                  className="mt-1.5 pt-1.5 border-t border-white/10"
+                                >
+                                  <div className="flex justify-between text-[9px]">
+                                    <span className="text-muted-foreground">Kullanılacak:</span>
+                                    <span className="text-primary font-medium">{coinsNeeded.toLocaleString()} BIO</span>
+                                  </div>
+                                  <div className="flex justify-between text-[9px]">
+                                    <span className="text-muted-foreground">Kalan Bakiye:</span>
+                                    <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
+                                  </div>
+                                </motion.div>
+                              )}
+                            </div>
+                          )}
+
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleAddToCart(product)}
+                            className={`w-full mt-3 text-xs py-2 rounded-lg font-medium border transition-colors ${
+                              isDiscountActive 
+                                ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" 
+                                : "bg-primary/20 text-primary border-primary/30 hover:bg-primary/30"
+                            }`}
+                          >
+                            SEPETE EKLE
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </TabsContent>
+
+              {/* SUPPLEMENTLER Sub-Tab */}
+              <TabsContent value="supplementler" className="mt-0">
+                <SupplementShop />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
         </Tabs>
       </div>
 
       {/* Story Viewer is now global - handled by StoryContext */}
 
-      {/* Cart View */}
-      <CartView
-        isOpen={showCart}
-        onClose={() => setShowCart(false)}
-        items={cart}
-        onRemoveItem={handleRemoveFromCart}
-        onClearCart={handleClearCart}
-      />
+      {/* Cart is now global - handled by UniversalCartDrawer in App.tsx */}
 
       {/* Product Detail */}
       <ProductDetail

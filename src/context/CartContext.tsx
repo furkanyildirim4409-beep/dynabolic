@@ -56,8 +56,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       description: `"${item.title}" sepetinize eklendi.`,
     });
 
-    // Auto-open cart
-    setIsCartOpen(true);
+    // Auto-open cart with RAF to prevent UI blocking
+    requestAnimationFrame(() => {
+      setIsCartOpen(true);
+    });
   }, []);
 
   const removeFromCart = useCallback((itemId: string) => {

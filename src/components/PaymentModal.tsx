@@ -144,7 +144,7 @@ const PaymentModal = ({ isOpen, onClose, payment, onPaymentSuccess }: PaymentMod
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-w-md p-0 overflow-hidden">
+      <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-w-md p-0 overflow-hidden z-[9999]">
         {/* Header with security badge */}
         <DialogHeader className="p-5 pb-4 border-b border-white/5">
           <div className="flex items-center gap-2 mb-1">
