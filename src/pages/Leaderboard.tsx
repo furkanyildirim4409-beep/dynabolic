@@ -174,7 +174,7 @@ const Leaderboard = () => {
   const MetricIcon = getMetricIcon(metric);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center justify-between p-4 relative z-50">
@@ -212,7 +212,7 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      <div className="p-4 pb-32 space-y-6">
+      <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-6">
         {/* Challenges Tab */}
         {activeTab === "challenges" && (
           <ChallengesSection athletes={mockAthletes} />
