@@ -1,9 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
-import { Focus, Maximize2 } from "lucide-react";
+import { Focus, Maximize2, Hand, ZoomIn } from "lucide-react";
 
 interface BodyPartProps {
   position: [number, number, number];
@@ -135,13 +135,36 @@ interface DigitalTwinAvatarProps {
 
 const DigitalTwinAvatar = ({ waistScale = 1 }: DigitalTwinAvatarProps) => {
   const [zoomedToHead, setZoomedToHead] = useState(false);
+  const [showGestureHint, setShowGestureHint] = useState(true);
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // Hide gesture hint after first interaction or 5 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => setShowGestureHint(false), 5000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleInteractionStart = () => {
+    setIsInteracting(true);
+    setShowGestureHint(false);
+  };
+
+  const handleInteractionEnd = () => {
+    setIsInteracting(false);
+  };
 
   const toggleZoom = () => {
     setZoomedToHead((prev) => !prev);
   };
 
   return (
-    <div className="w-full h-[450px] relative">
+    <div 
+      className="w-full h-[450px] relative touch-none"
+      onTouchStart={handleInteractionStart}
+      onTouchEnd={handleInteractionEnd}
+      onMouseDown={handleInteractionStart}
+      onMouseUp={handleInteractionEnd}
+    >
       <Canvas camera={{ position: [0, 1, 9], fov: 40 }}>
         <ambientLight intensity={0.5} />
         <CameraController zoomedToHead={zoomedToHead} />
@@ -149,16 +172,71 @@ const DigitalTwinAvatar = ({ waistScale = 1 }: DigitalTwinAvatarProps) => {
           <HumanAvatar waistScale={waistScale} />
         </group>
         <OrbitControls
-          enableZoom={false}
+          enableZoom={true}
           enablePan={false}
-          minPolarAngle={Math.PI / 3}
-          maxPolarAngle={Math.PI / 1.5}
+          enableDamping={true}
+          dampingFactor={0.05}
+          rotateSpeed={0.8}
+          zoomSpeed={0.6}
+          minDistance={4}
+          maxDistance={12}
+          minPolarAngle={Math.PI / 4}
+          maxPolarAngle={Math.PI / 1.4}
           target={zoomedToHead ? [0, 0.3, 0] : [0, 0, 0]}
+          touches={{
+            ONE: THREE.TOUCH.ROTATE,
+            TWO: THREE.TOUCH.DOLLY_PAN,
+          }}
         />
       </Canvas>
 
       {/* Grid overlay effect */}
       <div className="absolute inset-0 pointer-events-none grid-pattern opacity-10" />
+
+      {/* Gesture Hint Overlay */}
+      <AnimatePresence>
+        {showGestureHint && !isInteracting && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-5 pointer-events-none flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="flex flex-col items-center gap-3 px-4 py-3 rounded-xl bg-background/80 backdrop-blur-sm border border-white/10"
+            >
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col items-center gap-1">
+                  <Hand className="w-5 h-5 text-primary" />
+                  <span className="text-[10px] text-muted-foreground">Döndür</span>
+                </div>
+                <div className="w-px h-8 bg-white/10" />
+                <div className="flex flex-col items-center gap-1">
+                  <ZoomIn className="w-5 h-5 text-primary" />
+                  <span className="text-[10px] text-muted-foreground">Yakınlaştır</span>
+                </div>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                Modeli döndürmek için kaydırın, yakınlaştırmak için iki parmakla sıkıştırın
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Interaction Indicator */}
+      <AnimatePresence>
+        {isInteracting && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="absolute top-4 right-4 z-10 w-3 h-3 rounded-full bg-primary animate-pulse"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Zoom Toggle Button */}
       <motion.button
