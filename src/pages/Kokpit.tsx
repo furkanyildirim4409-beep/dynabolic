@@ -12,6 +12,7 @@ import StoriesRing from "@/components/StoriesRing";
 import BentoStats from "@/components/BentoStats";
 import DailyCheckIn from "@/components/DailyCheckIn";
 import CoachAdjustmentBanner from "@/components/dashboard/CoachAdjustmentBanner";
+import StreakTierWidget from "@/components/StreakTierWidget";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
 import { usePaymentReminders } from "@/hooks/usePaymentReminders";
@@ -187,6 +188,15 @@ const Kokpit = () => {
           label="HAZIRSIN"
           sublabel="Yüksek yoğunluklu antrenman için uygun"
         />
+      </motion.div>
+
+      {/* Streak & Tier Widget */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.25 }}
+      >
+        <StreakTierWidget />
       </motion.div>
 
       {/* Next Mission Card */}
