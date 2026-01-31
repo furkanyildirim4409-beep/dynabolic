@@ -6,6 +6,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 import ChallengesSection from "@/components/ChallengesSection";
+import ChallengeHistoryModal from "@/components/ChallengeHistoryModal";
 
 // Mock Turkish athlete data with challenge stats and last week rankings
 const mockAthletes = [
@@ -148,6 +149,12 @@ const Leaderboard = () => {
   const navigate = useNavigate();
   const [metric, setMetric] = useState<MetricType>("bioCoins");
   const [activeTab, setActiveTab] = useState<"leaderboard" | "challenges">("leaderboard");
+  const [selectedAthlete, setSelectedAthlete] = useState<typeof mockAthletes[0] | null>(null);
+
+  const handleAthleteClick = (athlete: typeof mockAthletes[0]) => {
+    hapticLight();
+    setSelectedAthlete(athlete);
+  };
 
   // Sort athletes by current metric
   const sortedAthletes = [...mockAthletes].sort((a, b) => 
@@ -266,7 +273,8 @@ const Leaderboard = () => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: position * 0.1 }}
-                  className="flex flex-col items-center"
+                  onClick={() => handleAthleteClick(athlete)}
+                  className="flex flex-col items-center cursor-pointer"
                   style={{ order: style.order }}
                 >
                   {/* Avatar */}
@@ -342,7 +350,8 @@ const Leaderboard = () => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.03 }}
-                className={`glass-card p-3 flex items-center gap-3 ${
+                onClick={() => handleAthleteClick(athlete)}
+                className={`glass-card p-3 flex items-center gap-3 cursor-pointer hover:bg-white/5 active:scale-[0.98] transition-all ${
                   isCurrentUser ? "ring-2 ring-primary/50 bg-primary/5" : ""
                 }`}
               >
@@ -468,6 +477,13 @@ const Leaderboard = () => {
           </div>
         </div>
       </motion.div>
+
+      {/* Challenge History Modal */}
+      <ChallengeHistoryModal
+        isOpen={!!selectedAthlete}
+        onClose={() => setSelectedAthlete(null)}
+        athlete={selectedAthlete}
+      />
     </div>
   );
 };
