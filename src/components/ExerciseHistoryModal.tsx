@@ -142,11 +142,24 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 500) {
+                  onClose();
+                }
+              }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[90vh] flex flex-col"
+              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[90vh] flex flex-col touch-none"
             >
+              {/* Drag Handle */}
+              <div className="flex-shrink-0 pt-3 pb-1 flex justify-center">
+                <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+              </div>
+
               {/* FIXED HEADER */}
-              <div className="flex-shrink-0 p-4 border-b border-white/10 flex items-center justify-between">
+              <div className="flex-shrink-0 px-4 pb-3 border-b border-white/10 flex items-center justify-between">
                 <div>
                   <h2 className="font-display text-lg text-foreground tracking-wider">
                     {exerciseName.toUpperCase()}
