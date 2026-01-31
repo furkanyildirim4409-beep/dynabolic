@@ -236,7 +236,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-background flex flex-col"
+        className="fixed inset-0 z-50 bg-background flex flex-col overflow-hidden touch-none"
       >
         {/* Complete Flash Effect - Enhanced for exercise complete */}
         <AnimatePresence>
@@ -549,10 +549,10 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
           </div>
         </motion.div>
 
-        {/* Info Panel - 45% height, scrollable */}
+        {/* Info Panel - 45% height, no scroll */}
         <div className="h-[45%] bg-card border-t border-white/10 flex flex-col overflow-hidden">
-          {/* Scrollable Info Section */}
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+          {/* Info Section - Fixed, no scroll */}
+          <div className="flex-1 p-3 space-y-2 overflow-hidden">
             {/* Exercise Name + History */}
             <div className="flex items-center justify-between">
               <div>
@@ -599,16 +599,11 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
               </div>
             </div>
 
-            {/* Coach Notes (No Scroll - Full Display) */}
+            {/* Coach Notes - Compact Display */}
             {exercise.notes && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <Info className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-[10px] text-amber-400 font-medium tracking-wider">
-                    KOÇ NOTU
-                  </span>
-                </div>
-                <p className="text-amber-100 text-xs leading-relaxed">
+              <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-2.5 py-2 flex items-start gap-2">
+                <Info className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                <p className="text-amber-100 text-[11px] leading-snug line-clamp-2">
                   {exercise.notes}
                 </p>
               </div>
