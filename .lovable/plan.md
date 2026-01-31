@@ -1,233 +1,305 @@
 
-# Bug Fix & Mağaza Restructure Implementation Plan
+# Workout Calendar & Exercise History Implementation Plan
 
 ## Overview
 
-This plan addresses two critical bugs and implements a major UI enhancement to the Keşfet > Mağaza section.
+This plan implements two major training tracking features:
+1. **Workout Calendar View** - A monthly calendar displaying workout status with interactive day details
+2. **Exercise History Modal** - Progressive overload tracking with trend graphs and personal bests
 
 ---
 
-## Critical Bug Fixes
+## Architecture Summary
 
-### Bug 1: Checkout Payment Modal Freeze
-
-**Root Cause Analysis:**
-- The `UniversalCartDrawer` renders at `z-index: 110` with a fixed backdrop
-- The `PaymentModal` uses Radix Dialog which creates its own portal with default `z-index: 50`
-- When the payment modal opens, it renders BEHIND the cart drawer's backdrop
-- The user cannot interact with the payment modal because the cart backdrop intercepts clicks
-
-**Solution:**
-1. Close the cart drawer BEFORE opening the payment modal (cleaner flow)
-2. Add explicit `z-index: 9999` to the `PaymentModal`'s `DialogContent` wrapper
-3. Modify `handleCheckout` in `UniversalCartDrawer.tsx` to close cart first, then open modal with a small delay
-
-**File Changes:**
-- `src/components/UniversalCartDrawer.tsx` - Update checkout flow
-- `src/components/PaymentModal.tsx` - Add higher z-index to dialog content
-
-### Bug 2: Supplement "Sipariş Ver" UI Freeze
-
-**Root Cause Analysis:**
-- The `addToCart` function in `CartContext` triggers `setIsCartOpen(true)` immediately
-- This causes the `UniversalCartDrawer` to open, which renders over the current view
-- Multiple rapid state updates may cause React to batch updates awkwardly
-
-**Solution:**
-1. Add `requestAnimationFrame` wrapper around cart open to prevent blocking
-2. Ensure `addToCart` completes before opening cart UI
-3. The flow should be: Add item -> Show toast -> Open cart (in sequence)
-
-**File Changes:**
-- `src/context/CartContext.tsx` - Defer cart open with RAF
+```text
+┌─────────────────────────────────────────────────────────┐
+│                    Antrenman Page                        │
+├─────────────────────────────────────────────────────────┤
+│  [📋 LIST]  [📅 CALENDAR]  ← View Toggle                │
+├─────────────────────────────────────────────────────────┤
+│                                                         │
+│  LIST VIEW (existing)     │  CALENDAR VIEW (new)        │
+│  ┌─────────────────────┐  │  ┌─────────────────────┐   │
+│  │ WorkoutCard         │  │  │ WorkoutCalendar     │   │
+│  │ WorkoutCard         │  │  │ ● ○ ● ○ ● ○ ●      │   │
+│  │ WorkoutCard         │  │  │ ● ● ○ ● ○ ○ ●      │   │
+│  └─────────────────────┘  │  └─────────────────────┘   │
+│                                                         │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+         ┌──────────────────────────────────────┐
+         │     VisionAIExecution Screen         │
+         ├──────────────────────────────────────┤
+         │  Exercise: BENCH PRESS               │
+         │  [🕐 HISTORY BUTTON] ← NEW           │
+         │                                       │
+         │  Opens ExerciseHistoryModal          │
+         └──────────────────────────────────────┘
+```
 
 ---
 
-## Feature: Mağaza Tab Restructure
+## Component 1: WorkoutCalendar.tsx
 
-### Current State Issues
+### Purpose
+Display a monthly calendar grid showing workout completion status with visual indicators and interactive day popovers.
 
-1. **Duplicate Cart Systems:** Keşfet.tsx uses a LOCAL cart state (`useState<CartItem[]>`) instead of the global `CartContext`
-2. **Legacy CartView:** There's an old `CartView.tsx` component that duplicates `UniversalCartDrawer.tsx` functionality
-3. **No Supplement Shop:** The Mağaza section only shows coach products, not standalone supplements
-
-### New Architecture
-
-**Mağaza Tab Layout:**
+### Visual Design
 ```text
-┌─────────────────────────────────────────┐
-│ 💳 Bakiye: 2,450 BIO                    │
-├─────────────────────────────────────────┤
-│  ┌──────────────┐ ┌──────────────┐     │
-│  │   ÜRÜNLER    │ │ SUPPLEMENTLER │     │
-│  └──────────────┘ └──────────────┘     │
-├─────────────────────────────────────────┤
-│                                         │
-│     [Products Grid / Supplements Grid]  │
-│                                         │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│     ◀  OCAK 2026  ▶                         │
+├─────────────────────────────────────────────┤
+│  Pzt   Sal   Çar   Per   Cum   Cmt   Paz   │
+├─────────────────────────────────────────────┤
+│        1     2     3     4     5     6      │
+│       [○]   [●]   [◐]   [●]   [○]   [●]    │
+│   7     8     9    10    11    12    13     │
+│  [●]   [◐]   [○]   [●]   [○]   [●]   [◐]   │
+│  ...                                        │
+└─────────────────────────────────────────────┘
+
+Legend:
+● Green filled = Completed workout
+◐ Gray filled = Rest day (scheduled)
+○ Hollow outline = Scheduled/Future workout
+  (no indicator) = No activity planned
 ```
 
-### Implementation Steps
+### Technical Implementation
 
-#### Step 1: Add Supplement Shop Mock Data
+**State Management:**
+- `currentMonth: Date` - Controls displayed month
+- `selectedDay: CalendarDayData | null` - Day details popover
 
-**File:** `src/lib/mockData.ts`
-
-Add new data structure for purchasable supplements:
-
-```text
-shopSupplements = [
-  {
-    id: "shop-sup-1",
-    name: "Gold Standard Whey",
-    brand: "Optimum Nutrition",
-    price: 899,
-    image: "...",
-    flavors: ["Çikolata", "Vanilya", "Çilek"],
-    servings: 30,
-    rating: 4.8,
-    reviews: 1247,
-    category: "protein"
-  },
-  {
-    id: "shop-sup-2",
-    name: "BCAA Energy",
-    brand: "EVL",
-    price: 449,
-    image: "...",
-    flavors: ["Karpuz", "Mango"],
-    servings: 30,
-    category: "amino"
-  },
-  // ... more items
-]
+**Data Structure:**
+```typescript
+interface CalendarDayData {
+  date: Date;
+  status: 'completed' | 'rest' | 'scheduled' | 'missed' | 'none';
+  workout?: {
+    name: string;
+    duration: string;
+    focus: string;
+    exercises: number;
+  };
+}
 ```
 
-#### Step 2: Refactor Keşfet.tsx to Use Global Cart
+**Integration:**
+- Uses `workoutHistory` from mockData for past workout data
+- Uses `assignedWorkouts` for scheduled future workouts
+- Custom calendar grid (not react-day-picker) for full styling control
 
-**File:** `src/pages/Kesfet.tsx`
+### Animations
+- Smooth month transitions using Framer Motion `AnimatePresence`
+- Day indicators with subtle pulse animation for today
+- Popover slides up from bottom on mobile
 
-Changes:
-- Remove local `cart` state and related handlers (`handleAddToCart`, `handleRemoveFromCart`, etc.)
-- Import and use `useCart` from `CartContext`
-- Remove the legacy `<CartView />` component usage
-- The global `UniversalCartDrawer` in App.tsx handles cart display
+---
 
-#### Step 3: Create Supplement Shop Grid Component
+## Component 2: ExerciseHistoryModal.tsx
 
-**New File:** `src/components/SupplementShop.tsx`
+### Purpose
+Show historical performance data for a specific exercise, enabling users to track progressive overload.
 
-A dedicated component for browsing purchasable supplements with:
-- Product cards with image, name, brand, price
-- Flavor selector (dropdown or chips)
-- "Sepete Ekle" button that uses global `addToCart`
-- Bio-Coin discount toggle (reuse existing logic)
+### Visual Design
+```text
+┌─────────────────────────────────────────────┐
+│  [X]     BENCH PRESS - GEÇMİŞ              │
+├─────────────────────────────────────────────┤
+│  ┌─────────────────────────────────────┐   │
+│  │         🏆 KİŞİSEL REKOR            │   │
+│  │         100kg x 8 tekrar            │   │
+│  │         27 Ocak 2026                │   │
+│  └─────────────────────────────────────┘   │
+├─────────────────────────────────────────────┤
+│  📈 12 HAFTALIK TREND                       │
+│  ┌─────────────────────────────────────┐   │
+│  │     ╱─╲    ╱─╲                     │   │
+│  │    ╱   ╲  ╱   ╲    ╱              │   │
+│  │   ╱     ╲╱     ╲  ╱               │   │
+│  │  ╱              ╲╱                │   │
+│  │ ────────────────────────────────  │   │
+│  │ W1  W2  W3  W4  W5  W6  W7  W8   │   │
+│  └─────────────────────────────────────┘   │
+├─────────────────────────────────────────────┤
+│  📋 SON KAYITLAR                            │
+│  ┌─────────────────────────────────────┐   │
+│  │ 27 Oca │ 4 set │ 100kg x 8,8,8,10  │   │
+│  │ 20 Oca │ 4 set │ 95kg x 10,10,8,8  │   │
+│  │ 13 Oca │ 3 set │ 90kg x 10,10,10   │   │
+│  └─────────────────────────────────────┘   │
+└─────────────────────────────────────────────┘
+```
 
-#### Step 4: Update Mağaza Tab with Sub-Tabs
+### Technical Implementation
 
-**File:** `src/pages/Kesfet.tsx`
+**Props:**
+```typescript
+interface ExerciseHistoryModalProps {
+  exerciseName: string;
+  isOpen: boolean;
+  onClose: () => void;
+}
+```
 
-Restructure the Mağaza `TabsContent`:
-- Add nested `Tabs` component with "ÜRÜNLER" and "SUPPLEMENTLER" options
-- "ÜRÜNLER" shows existing coach products grid
-- "SUPPLEMENTLER" shows the new `SupplementShop` component
+**Data Processing:**
+- Extract all sets for the given exercise from `workoutHistory`
+- Calculate estimated 1RM using Epley formula: `weight × (1 + reps/30)`
+- Find personal best (highest 1RM or highest weight)
+- Group by week for trend chart
+
+**Chart Configuration:**
+- Uses Recharts `LineChart` component (already installed)
+- Neon lime line color (`hsl(var(--primary))`) on dark background
+- Gradient fill under the line for depth
+
+---
+
+## Mock Data Additions
+
+### Exercise History Extended Data
+New data structure in `mockData.ts`:
+
+```typescript
+export const exerciseHistory: ExerciseHistoryRecord[] = [
+  {
+    exerciseName: "Bench Press",
+    date: "2026-01-27",
+    sets: [
+      { weight: 100, reps: 12 },
+      { weight: 100, reps: 10 },
+      { weight: 100, reps: 8 },
+      { weight: 90, reps: 10 }
+    ]
+  },
+  // ... 12 weeks of data for each major exercise
+];
+```
+
+### Calendar Mock Data
+Extends existing `workoutHistory` with additional date parsing.
+
+---
+
+## Integration Points
+
+### Antrenman.tsx Modifications
+
+1. **Add View Toggle State:**
+   ```typescript
+   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+   ```
+
+2. **Add Toggle Button Group** in the header section
+
+3. **Conditional Rendering:**
+   - Show existing workout cards when `viewMode === 'list'`
+   - Show `WorkoutCalendar` when `viewMode === 'calendar'`
+
+### VisionAIExecution.tsx Modifications
+
+1. **Add History Button** next to exercise name (Clock icon)
+
+2. **Add Modal State:**
+   ```typescript
+   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
+   ```
+
+3. **Render ExerciseHistoryModal** with current exercise name
+
+---
+
+## File Changes Summary
+
+| File | Action | Description |
+|------|--------|-------------|
+| `src/components/WorkoutCalendar.tsx` | CREATE | Monthly calendar with workout indicators |
+| `src/components/ExerciseHistoryModal.tsx` | CREATE | Exercise trend graph and history list |
+| `src/pages/Antrenman.tsx` | UPDATE | Add view toggle (List/Calendar) |
+| `src/components/VisionAIExecution.tsx` | UPDATE | Add History button per exercise |
+| `src/lib/mockData.ts` | UPDATE | Add extended exercise history data |
 
 ---
 
 ## Technical Details
 
-### Z-Index Hierarchy (Fixed)
+### Calendar Day Rendering Logic
 
-```text
-Level 0:   Main App Content
-Level 50:  Splash Screen (temporary)
-Level 100: Floating Cart Button
-Level 110: Cart Drawer (backdrop + panel)
-Level 200: Payment Modal (NEW - elevated)
-Level 9999: Story Viewer
+```typescript
+const getDayStatus = (date: Date): CalendarDayData['status'] => {
+  const today = new Date();
+  const dateStr = format(date, 'yyyy-MM-dd');
+  
+  // Check workout history for completed
+  const completed = workoutHistory.find(w => 
+    w.date === dateStr && w.completed
+  );
+  if (completed) return 'completed';
+  
+  // Check if scheduled rest day
+  if (isRestDay(date)) return 'rest';
+  
+  // Check assigned workouts for future
+  if (date > today && isScheduled(date)) return 'scheduled';
+  
+  return 'none';
+};
 ```
 
-### Updated Component Flow
+### 1RM Calculation (Epley Formula)
 
-```text
-User Flow: Supplement Order
-
-1. User in Beslenme > Supplementler tab
-2. Sees low-stock alert on Vitamin D3
-3. Clicks "SİPARİŞ VER"
-4. addToCart() called with supplement data
-5. Toast shows "Sepete Eklendi"
-6. After RAF delay, cart drawer opens
-7. User clicks "ÖDEMEYE GEÇ"
-8. Cart closes first (immediate)
-9. Payment Modal opens (z-200, no obstruction)
-10. User completes payment
-11. Success callback fires confetti
+```typescript
+const calculate1RM = (weight: number, reps: number): number => {
+  if (reps === 1) return weight;
+  return Math.round(weight * (1 + reps / 30));
+};
 ```
 
-### File Change Summary
+### Chart Data Transformation
 
-| File | Action | Purpose |
-|------|--------|---------|
-| `src/components/PaymentModal.tsx` | UPDATE | Add z-index 200 to DialogContent |
-| `src/components/UniversalCartDrawer.tsx` | UPDATE | Close cart before opening modal |
-| `src/context/CartContext.tsx` | UPDATE | Defer cart open with RAF |
-| `src/lib/mockData.ts` | UPDATE | Add shopSupplements data array |
-| `src/components/SupplementShop.tsx` | CREATE | New supplement marketplace grid |
-| `src/pages/Kesfet.tsx` | UPDATE | Use global cart, add sub-tabs to Mağaza |
-| `src/components/CartView.tsx` | DEPRECATE | No longer needed (replaced by UniversalCartDrawer) |
+```typescript
+const getWeeklyTrendData = (exerciseName: string) => {
+  const records = exerciseHistory
+    .filter(r => r.exerciseName === exerciseName)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  
+  // Group by week, calculate max 1RM per week
+  return records.map(r => ({
+    week: format(new Date(r.date), 'dd MMM'),
+    estimated1RM: Math.max(...r.sets.map(s => calculate1RM(s.weight, s.reps))),
+    maxWeight: Math.max(...r.sets.map(s => s.weight))
+  }));
+};
+```
 
 ---
 
-## Mock Data: Shop Supplements
+## Design Specifications
 
-New supplement products for the Mağaza > Supplementler tab:
+### Color Palette
+- **Completed (Green):** `hsl(var(--primary))` - Neon lime
+- **Rest Day (Gray):** `text-muted-foreground` with low opacity
+- **Scheduled (Outline):** `border-primary/50` hollow circle
+- **Personal Best Badge:** Gold gradient `from-yellow-400 to-amber-500`
 
-1. **Gold Standard Whey** - Optimum Nutrition - 899 TL
-   - Flavors: Cikolata, Vanilya, Cilek
-   - 30 servings, 4.8 rating
+### Typography
+- Calendar month header: `font-display text-lg tracking-wider`
+- Day numbers: `text-sm text-foreground`
+- Modal headers: `font-display text-xl`
 
-2. **BCAA Energy** - EVL - 449 TL
-   - Flavors: Karpuz, Mango
-   - 30 servings
-
-3. **Pre-Workout X** - Cellucor C4 - 549 TL
-   - Flavors: Nar, Limon
-   - 60 servings
-
-4. **Kreatin Monohidrat** - MyProtein - 299 TL
-   - Unflavored, 100 servings
-
-5. **Omega-3 Fish Oil** - NOW Foods - 279 TL
-   - 180 softgels
-
-6. **Vitamin D3 5000IU** - Nature Made - 189 TL
-   - 90 tablets
+### Animations
+- Calendar month slide: `x: direction * 100%` with spring physics
+- Day popover: `y: "100%"` to `y: 0` slide-up
+- Chart line: SVG path draw animation
+- PR badge: Scale pulse `[1, 1.05, 1]`
 
 ---
 
-## Design Notes
+## Accessibility Considerations
 
-### Supplement Shop Card Layout
-
-```text
-┌─────────────────────────┐
-│    [Product Image]      │
-│    ★★★★☆ (4.8) 1.2K     │
-├─────────────────────────┤
-│  Gold Standard Whey     │
-│  Optimum Nutrition      │
-├─────────────────────────┤
-│  ○ Çikolata ○ Vanilya   │
-├─────────────────────────┤
-│  ₺899         [+SEPET]  │
-└─────────────────────────┘
-```
-
-### Bio-Coin Integration
-
-Same logic as existing products:
-- Toggle to apply Bio-Coin discount
-- Show coins needed and remaining balance
-- Max discount cannot exceed (price - 10 TL)
+- Calendar days are focusable buttons with aria-labels
+- Modal uses proper focus trap
+- Chart has tooltip for data accessibility
+- All interactive elements have sufficient contrast
