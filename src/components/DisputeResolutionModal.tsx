@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   X, Scale, AlertTriangle, CheckCircle, Clock, Send,
   MessageCircle, Shield, FileText, ChevronRight, User,
-  Gavel, ThumbsUp, ThumbsDown, Loader2, Upload
+  Gavel, ThumbsUp, ThumbsDown, Loader2, Upload, ZoomIn
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { hapticLight, hapticMedium, hapticSuccess, hapticError } from "@/lib/haptics";
 import { toast } from "@/hooks/use-toast";
 
@@ -117,6 +118,7 @@ const DisputeResolutionModal = ({
   const [newMessage, setNewMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [additionalEvidence, setAdditionalEvidence] = useState<string | null>(null);
+  const [showFullscreenImage, setShowFullscreenImage] = useState(false);
 
   if (!isOpen) return null;
 
@@ -215,28 +217,45 @@ const DisputeResolutionModal = ({
 
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-4">
-            {/* Proof Preview */}
+            {/* Proof Preview - Thumbnail Mode */}
             <div className="glass-card p-3 space-y-3">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <FileText className="w-3 h-3" />
-                Reddedilen Kanıt
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <FileText className="w-3 h-3" />
+                  Reddedilen Kanıt
+                </div>
+                <span className="text-[10px] text-muted-foreground">Büyütmek için dokun</span>
               </div>
               
-              <div className="relative rounded-xl overflow-hidden aspect-video bg-secondary">
+              {/* Thumbnail with tap-to-expand */}
+              <button
+                onClick={() => {
+                  hapticLight();
+                  setShowFullscreenImage(true);
+                }}
+                className="relative w-full h-32 rounded-xl overflow-hidden bg-secondary group cursor-pointer"
+              >
                 {(dispute?.proofType || proofType) === "photo" ? (
                   <img
                     src={dispute?.proofUrl || proofUrl}
                     alt="Proof"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
                 ) : (
                   <video
                     src={dispute?.proofUrl || proofUrl}
-                    controls
                     className="w-full h-full object-cover"
                   />
                 )}
                 
+                {/* Zoom indicator overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <ZoomIn className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+                
+                {/* Weight Badge */}
                 {(dispute?.weight || weight) && (
                   <div className="absolute bottom-2 left-2 px-2 py-1 rounded-lg bg-primary/80 backdrop-blur-sm">
                     <span className="text-primary-foreground text-xs font-display">
@@ -244,7 +263,12 @@ const DisputeResolutionModal = ({
                     </span>
                   </div>
                 )}
-              </div>
+                
+                {/* Zoom hint icon */}
+                <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center">
+                  <ZoomIn className="w-3 h-3 text-white" />
+                </div>
+              </button>
 
               {/* Original Rejection Reason */}
               <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
@@ -459,6 +483,44 @@ const DisputeResolutionModal = ({
           </div>
         </ScrollArea>
       </motion.div>
+
+      {/* Fullscreen Image Viewer Dialog */}
+      <Dialog open={showFullscreenImage} onOpenChange={setShowFullscreenImage}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-white/10">
+          <div className="relative w-full h-full flex items-center justify-center p-4">
+            <button
+              onClick={() => setShowFullscreenImage(false)}
+              className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+            
+            {(dispute?.proofType || proofType) === "photo" ? (
+              <img
+                src={dispute?.proofUrl || proofUrl}
+                alt="Proof - Full Size"
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              />
+            ) : (
+              <video
+                src={dispute?.proofUrl || proofUrl}
+                controls
+                autoPlay
+                className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              />
+            )}
+            
+            {/* Weight Badge in fullscreen */}
+            {(dispute?.weight || weight) && (
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-primary/80 backdrop-blur-sm">
+                <span className="text-primary-foreground text-lg font-display">
+                  {dispute?.weight || weight}kg
+                </span>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </AnimatePresence>
   );
 };
