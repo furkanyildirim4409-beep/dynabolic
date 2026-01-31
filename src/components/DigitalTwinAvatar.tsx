@@ -1,7 +1,9 @@
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
+import { motion, AnimatePresence } from "framer-motion";
+import { Focus, Maximize2 } from "lucide-react";
 
 interface BodyPartProps {
   position: [number, number, number];
@@ -99,15 +101,50 @@ const HumanAvatar = ({ waistScale = 1 }: HumanAvatarProps) => {
   );
 };
 
+// Camera positions for different views
+const CAMERA_VIEWS = {
+  fullBody: { position: new THREE.Vector3(0, 1, 9), target: new THREE.Vector3(0, 0, 0) },
+  head: { position: new THREE.Vector3(0, 0.8, 4), target: new THREE.Vector3(0, 0.3, 0) },
+};
+
+interface CameraControllerProps {
+  zoomedToHead: boolean;
+}
+
+const CameraController = ({ zoomedToHead }: CameraControllerProps) => {
+  const { camera } = useThree();
+  const targetPosition = useRef(CAMERA_VIEWS.fullBody.position.clone());
+  const currentPosition = useRef(camera.position.clone());
+
+  useFrame(() => {
+    const view = zoomedToHead ? CAMERA_VIEWS.head : CAMERA_VIEWS.fullBody;
+    targetPosition.current.copy(view.position);
+
+    // Smooth lerp animation
+    currentPosition.current.lerp(targetPosition.current, 0.05);
+    camera.position.copy(currentPosition.current);
+    camera.lookAt(view.target);
+  });
+
+  return null;
+};
+
 interface DigitalTwinAvatarProps {
   waistScale?: number;
 }
 
 const DigitalTwinAvatar = ({ waistScale = 1 }: DigitalTwinAvatarProps) => {
+  const [zoomedToHead, setZoomedToHead] = useState(false);
+
+  const toggleZoom = () => {
+    setZoomedToHead((prev) => !prev);
+  };
+
   return (
     <div className="w-full h-[450px] relative">
-      <Canvas camera={{ position: [0, 1, 9], fov: 40 }} >
+      <Canvas camera={{ position: [0, 1, 9], fov: 40 }}>
         <ambientLight intensity={0.5} />
+        <CameraController zoomedToHead={zoomedToHead} />
         <group scale={[0.75, 0.75, 0.75]} position={[0, -1.8, 0]}>
           <HumanAvatar waistScale={waistScale} />
         </group>
@@ -116,12 +153,60 @@ const DigitalTwinAvatar = ({ waistScale = 1 }: DigitalTwinAvatarProps) => {
           enablePan={false}
           minPolarAngle={Math.PI / 3}
           maxPolarAngle={Math.PI / 1.5}
-          target={[0, 0, 0]}
+          target={zoomedToHead ? [0, 0.3, 0] : [0, 0, 0]}
         />
       </Canvas>
-      
+
       {/* Grid overlay effect */}
       <div className="absolute inset-0 pointer-events-none grid-pattern opacity-10" />
+
+      {/* Zoom Toggle Button */}
+      <motion.button
+        onClick={toggleZoom}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="absolute bottom-4 right-4 z-10 flex items-center gap-2 px-3 py-2 rounded-lg bg-secondary/80 backdrop-blur-sm border border-white/10 text-foreground text-xs font-medium transition-colors hover:bg-secondary"
+      >
+        <AnimatePresence mode="wait">
+          {zoomedToHead ? (
+            <motion.div
+              key="fullbody"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="flex items-center gap-2"
+            >
+              <Maximize2 className="w-4 h-4 text-primary" />
+              <span>Tam Vücut</span>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="head"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="flex items-center gap-2"
+            >
+              <Focus className="w-4 h-4 text-primary" />
+              <span>Üst Vücut</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.button>
+
+      {/* View Indicator */}
+      <AnimatePresence>
+        {zoomedToHead && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-[10px] font-display tracking-wider"
+          >
+            ÜST VÜCUT GÖRÜNÜMÜ
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
