@@ -31,7 +31,7 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
   const [challenges, setChallenges] = useState(mockChallenges);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   
-  const { recordWin, recordLoss, calculateBonus, currentMilestone } = useChallengeStreaks();
+  const { recordWin, calculateBonus, currentMilestone } = useChallengeStreaks();
 
   // Filter challenges
   const filteredChallenges = challenges.filter(ch => {
@@ -69,27 +69,6 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
     });
   };
 
-  // Simulate winning a challenge (for demo purposes)
-  const handleSimulateWin = (challenge: Challenge) => {
-    const bonus = calculateBonus(challenge.bioCoinsReward, 1);
-    
-    setChallenges(prev => prev.map(ch => 
-      ch.id === challenge.id 
-        ? { ...ch, status: "completed" as const, winnerId: "current", completedAt: new Date().toISOString() } 
-        : ch
-    ));
-    
-    recordWin(challenge.bioCoinsReward);
-    hapticSuccess();
-    
-    toast({
-      title: "Meydan Okuma Kazanıldı! 🏆",
-      description: currentMilestone 
-        ? `+${bonus.total} coin (${bonus.bonus} bonus dahil!)`
-        : `+${challenge.bioCoinsReward} coin kazandın!`,
-    });
-  };
-
   const handleViewDetails = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
   };
@@ -99,10 +78,10 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col space-y-3"
+        className="space-y-4"
       >
-        {/* Compact Header */}
-        <div className="flex items-center justify-between shrink-0">
+        {/* Compact Header & Actions */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Swords className="w-4 h-4 text-primary" />
             <h2 className="font-display text-base text-foreground tracking-wide">
@@ -121,20 +100,20 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
           <Button
             size="sm"
             onClick={() => { hapticMedium(); setShowCreateModal(true); }}
-            className="h-8 px-3 bg-primary hover:bg-primary/90 text-xs"
+            className="h-9 px-4 bg-primary hover:bg-primary/90 font-display text-xs tracking-wider rounded-lg"
           >
             <Plus className="w-3 h-3 mr-1" />
-            Meydan Oku
+            MEYDAN OKU
           </Button>
         </div>
 
-        {/* Challenge Streak Banner - Compact */}
-        <div className="shrink-0">
+        {/* Challenge Streak Banner */}
+        <div>
           <ChallengeStreakBanner showDevTools={true} />
         </div>
 
-        {/* Filters - Compact */}
-        <div className="shrink-0">
+        {/* Filters - Sticky within parent scroll */}
+        <div className="sticky top-0 z-10 py-2 -mx-4 px-4 bg-background/95 backdrop-blur-sm">
           <Tabs value={filter} onValueChange={(v) => { hapticLight(); setFilter(v as FilterType); }}>
             <TabsList className="w-full grid grid-cols-4 bg-secondary/50 border border-white/5">
               <TabsTrigger 
@@ -173,7 +152,7 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
           </Tabs>
         </div>
 
-        {/* Challenge List - Scrollable */}
+        {/* Challenge List - Flows naturally in parent scroll */}
         <div className="space-y-2">
           <AnimatePresence mode="popLayout">
             {filteredChallenges.length > 0 ? (
@@ -200,21 +179,24 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
                 animate={{ opacity: 1 }}
                 className="text-center py-12"
               >
-                <Swords className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-                <p className="text-muted-foreground text-sm">
+                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Swords className="w-8 h-8 text-primary/50" />
+                </div>
+                <p className="text-foreground font-display text-sm mb-1">Hareket Yok</p>
+                <p className="text-muted-foreground text-xs mb-4">
                   {filter === "pending" && "Bekleyen meydan okuman yok"}
                   {filter === "active" && "Aktif meydan okuman yok"}
                   {filter === "completed" && "Tamamlanan meydan okuman yok"}
-                  {filter === "all" && "Henüz meydan okuman yok"}
+                  {filter === "all" && "Henüz hiç meydan okuma yapılmamış."}
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCreateModal(true)}
-                  className="mt-4"
+                  className="border-primary/50 text-primary hover:bg-primary/10 hover:text-primary"
                 >
                   <Plus className="w-4 h-4 mr-1" />
-                  İlk meydan okumayı başlat
+                  Meydan Oku
                 </Button>
               </motion.div>
             )}
@@ -242,7 +224,7 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
                   c.status === "completed" && c.winnerId === "current" ? sum + c.bioCoinsReward : sum
                 , 0)}
               </p>
-              <p className="text-muted-foreground text-[10px]">KAZANILAN COİN</p>
+              <p className="text-muted-foreground text-[10px]">COİN</p>
             </div>
           </div>
         )}
