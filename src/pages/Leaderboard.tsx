@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Trophy, Flame, Dumbbell, Coins, ChevronLeft, Crown, Medal, Award, TrendingUp, TrendingDown, Minus, Swords } from "lucide-react";
@@ -150,11 +150,14 @@ const Leaderboard = () => {
   const [metric, setMetric] = useState<MetricType>("bioCoins");
   const [activeTab, setActiveTab] = useState<"leaderboard" | "challenges">("leaderboard");
   const [selectedAthlete, setSelectedAthlete] = useState<typeof mockAthletes[0] | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Force scroll to top on mount
+  // Force scroll to top on mount and tab change
   useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+  }, [activeTab]);
 
   const handleAthleteClick = (athlete: typeof mockAthletes[0]) => {
     hapticLight();
@@ -212,7 +215,7 @@ const Leaderboard = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 pb-32 space-y-6">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 pb-32 space-y-6">
         {/* Challenges Tab */}
         {activeTab === "challenges" && (
           <ChallengesSection athletes={mockAthletes} />
