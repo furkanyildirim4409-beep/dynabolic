@@ -17,8 +17,6 @@ interface StoryContextValue {
   categoryLabel?: string;
   categoryIcon?: ReactNode;
   categoryGradient?: string;
-  // Yeni özellik: Story seti bittiğinde çalışacak fonksiyon
-  onComplete?: () => void;
   openStories: (
     stories: Story[],
     initialIndex?: number,
@@ -26,8 +24,7 @@ interface StoryContextValue {
       categoryLabel?: string;
       categoryIcon?: ReactNode;
       categoryGradient?: string;
-      onComplete?: () => void;
-    },
+    }
   ) => void;
   closeStories: () => void;
 }
@@ -45,7 +42,6 @@ export const StoryProvider = ({ children }: StoryProviderProps) => {
   const [categoryLabel, setCategoryLabel] = useState<string>();
   const [categoryIcon, setCategoryIcon] = useState<ReactNode>();
   const [categoryGradient, setCategoryGradient] = useState<string>();
-  const [onComplete, setOnComplete] = useState<(() => void) | undefined>();
 
   const openStories = useCallback(
     (
@@ -55,31 +51,29 @@ export const StoryProvider = ({ children }: StoryProviderProps) => {
         categoryLabel?: string;
         categoryIcon?: ReactNode;
         categoryGradient?: string;
-        onComplete?: () => void;
-      },
+      }
     ) => {
       if (newStories.length === 0) return;
-
+      
       setStories(newStories);
       setInitialIndex(newInitialIndex);
       setCategoryLabel(options?.categoryLabel);
       setCategoryIcon(options?.categoryIcon);
       setCategoryGradient(options?.categoryGradient);
-      setOnComplete(() => options?.onComplete); // Callback'i kaydet
       setIsOpen(true);
     },
-    [],
+    []
   );
 
   const closeStories = useCallback(() => {
     setIsOpen(false);
+    // Reset state after animation
     setTimeout(() => {
       setStories([]);
       setInitialIndex(0);
       setCategoryLabel(undefined);
       setCategoryIcon(undefined);
       setCategoryGradient(undefined);
-      setOnComplete(undefined);
     }, 300);
   }, []);
 
@@ -92,7 +86,6 @@ export const StoryProvider = ({ children }: StoryProviderProps) => {
         categoryLabel,
         categoryIcon,
         categoryGradient,
-        onComplete,
         openStories,
         closeStories,
       }}
