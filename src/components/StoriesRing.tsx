@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { RefreshCw, HelpCircle, Trophy, Dumbbell, Zap } from "lucide-react";
 import { coachStories } from "@/lib/mockData";
@@ -32,7 +32,7 @@ const categoryConfig: Record<StoryCategory, { icon: React.ReactNode; gradient: s
   },
 };
 
-// Group stories by category
+// 1. Hikayeleri kategorilerine göre grupla
 const groupedStories = coachStories.reduce(
   (acc, story) => {
     if (!acc[story.category]) {
@@ -46,48 +46,49 @@ const groupedStories = coachStories.reduce(
 
 const categories = Object.keys(groupedStories) as StoryCategory[];
 
-const convertToStories = (coachStories: CoachStory[]): Story[] => {
-  return coachStories.map((story) => ({
-    id: story.id,
-    title: story.title,
-    thumbnail: story.thumbnail,
-    content: story.content,
-  }));
-};
-
 const StoriesRing = ({ className = "" }: StoriesRingProps) => {
   const [viewedCategories, setViewedCategories] = useState<Set<StoryCategory>>(new Set());
   const { openStories } = useStory();
 
+  // 2. Tüm hikayeleri tek bir düz liste (Flat List) haline getir
+  // Bu sayede bir kategori bitince otomatik diğerine geçer.
+  const allStoriesFlat = useMemo(() => {
+    return categories.flatMap((cat) =>
+      groupedStories[cat].map((story) => ({
+        id: story.id,
+        title: story.title,
+        thumbnail: story.thumbnail,
+        content: story.content,
+        // Story içine kategori bilgisini de gömelim (Header'ın değişmesi gerekirse Viewer buradan okuyabilir)
+        category: cat,
+        categoryConfig: categoryConfig[cat],
+      })),
+    );
+  }, []);
+
   const handleCategoryClick = (category: StoryCategory) => {
+    // 3. Tıklanan kategorinin "Büyük Liste" içindeki başlangıç indeksini bul
+    let startIndex = 0;
+    for (const cat of categories) {
+      if (cat === category) break;
+      startIndex += groupedStories[cat].length;
+    }
+
     const config = categoryConfig[category];
-    const stories = convertToStories(groupedStories[category]);
 
-    // ZİNCİRLEME MANTIĞI BURADA
-    // 1. Şu anki kategorinin sırasını bul
-    const currentIndex = categories.indexOf(category);
-    // 2. Bir sonraki kategoriyi belirle
-    const nextCategory = categories[currentIndex + 1];
-
-    // 3. Eğer sonraki kategori varsa, bu kategori bittiğinde çalışacak fonksiyonu hazırla
-    const onComplete = nextCategory
-      ? () => handleCategoryClick(nextCategory) // Kendini tekrar çağır (Recursive)
-      : undefined;
-
-    // 4. Hikayeyi aç ve "bitince onComplete'i çalıştır" de
-    openStories(stories, 0, {
+    // 4. Tüm listeyi gönder ama 'startIndex' ile doğru yerden başlat
+    openStories(allStoriesFlat, startIndex, {
       categoryLabel: category,
       categoryIcon: config.icon,
       categoryGradient: config.gradient,
-      onComplete: onComplete,
     });
 
     setViewedCategories((prev) => new Set([...prev, category]));
   };
 
   return (
-    <div className={`w-full overflow-x-auto scrollbar-hide ${className}`}>
-      <div className="flex gap-4 px-4 py-2 w-full justify-center min-w-max md:min-w-full">
+    <div className={`${className}`}>
+      <div className="flex justify-center gap-4 py-2">
         {categories.map((category, index) => {
           const config = categoryConfig[category];
           const isViewed = viewedCategories.has(category);
@@ -99,22 +100,22 @@ const StoriesRing = ({ className = "" }: StoriesRingProps) => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => handleCategoryClick(category)}
-              className="flex flex-col items-center gap-1.5 shrink-0"
+              className="flex flex-col items-center gap-1.5"
             >
               {/* Ring */}
               <div
-                className={`p-0.5 rounded-full ${
+                className={`p-[3px] rounded-full ${
                   isViewed ? "bg-muted/50" : "bg-gradient-to-tr from-primary via-primary/80 to-primary neon-glow-sm"
                 }`}
               >
                 <div
-                  className={`w-12 h-12 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
+                  className={`w-14 h-14 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center text-white`}
                 >
-                  {config.icon}
+                  <span className="[&>svg]:w-5 [&>svg]:h-5">{config.icon}</span>
                 </div>
               </div>
               {/* Label */}
-              <span className="text-[10px] text-muted-foreground font-medium whitespace-nowrap">{category}</span>
+              <span className="text-[10px] text-muted-foreground font-medium truncate max-w-[60px]">{category}</span>
             </motion.button>
           );
         })}
