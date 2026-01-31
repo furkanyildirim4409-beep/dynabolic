@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import ChallengeCard from "./ChallengeCard";
 import CreateChallengeModal from "./CreateChallengeModal";
+import ChallengeDetailModal from "./ChallengeDetailModal";
 import { mockChallenges, Challenge } from "@/lib/challengeData";
 import { hapticLight, hapticMedium, hapticSuccess } from "@/lib/haptics";
 import { toast } from "@/hooks/use-toast";
@@ -26,6 +27,7 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
   const [filter, setFilter] = useState<FilterType>("all");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [challenges, setChallenges] = useState(mockChallenges);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
 
   // Filter challenges
   const filteredChallenges = challenges.filter(ch => {
@@ -64,8 +66,7 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
   };
 
   const handleViewDetails = (challenge: Challenge) => {
-    // Could open a detailed modal here
-    console.log("View challenge details:", challenge);
+    setSelectedChallenge(challenge);
   };
 
   return (
@@ -220,6 +221,15 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         athletes={athletes}
+      />
+
+      {/* Challenge Detail Modal */}
+      <ChallengeDetailModal
+        isOpen={!!selectedChallenge}
+        onClose={() => setSelectedChallenge(null)}
+        challenge={selectedChallenge}
+        onAccept={handleAcceptChallenge}
+        onDecline={handleDeclineChallenge}
       />
     </>
   );
