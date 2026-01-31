@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  X, Trophy, Swords, Flame, Target, Calendar, 
-  TrendingUp, ChevronRight, Award, Dumbbell
+  Trophy, Swords, Flame, Target, Calendar, 
+  TrendingUp, Award, Dumbbell, X
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hapticLight } from "@/lib/haptics";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ChallengeResult {
   id: string;
@@ -84,7 +89,7 @@ const generateChallengeHistory = (athlete: Athlete): ChallengeResult[] => {
 const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryModalProps) => {
   const [activeTab, setActiveTab] = useState<"all" | "wins" | "losses">("all");
   
-  if (!isOpen || !athlete) return null;
+  if (!athlete) return null;
   
   const history = generateChallengeHistory(athlete);
   const wins = history.filter(h => h.result === "won");
@@ -103,42 +108,31 @@ const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryMod
   };
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 100 }}
-        className="fixed bottom-0 left-0 right-0 z-[9999] bg-background rounded-t-3xl border-t border-white/10 max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-[95vw] max-w-md max-h-[85vh] p-0 gap-0 bg-[#0a0a0a] border-white/10 overflow-hidden flex flex-col [&>button]:hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-12 h-12 ring-2 ring-primary">
-              <AvatarImage src={athlete.avatar} alt={athlete.name} className="object-cover" />
-              <AvatarFallback className="bg-primary/20 text-primary">
-                {athlete.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="font-display text-base text-foreground">{athlete.name}</h2>
-              <p className="text-muted-foreground text-xs">Düello Geçmişi</p>
+        <DialogHeader className="shrink-0 p-4 border-b border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-12 h-12 ring-2 ring-primary">
+                <AvatarImage src={athlete.avatar} alt={athlete.name} className="object-cover" />
+                <AvatarFallback className="bg-primary/20 text-primary">
+                  {athlete.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <DialogTitle className="font-display text-base text-foreground">{athlete.name}</DialogTitle>
+                <p className="text-muted-foreground text-xs">Düello Geçmişi</p>
+              </div>
             </div>
+            <button onClick={onClose} className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors">
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full bg-white/5">
-            <X className="w-5 h-5 text-muted-foreground" />
-          </button>
-        </div>
+        </DialogHeader>
 
         {/* Stats Summary */}
-        <div className="p-4 border-b border-white/10 shrink-0">
+        <div className="shrink-0 p-4 border-b border-white/10">
           <div className="grid grid-cols-4 gap-2">
             <div className="glass-card p-3 text-center">
               <div className="flex items-center justify-center gap-1 mb-1">
@@ -192,7 +186,7 @@ const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryMod
         </div>
 
         {/* Filter Tabs */}
-        <div className="px-4 pt-3 shrink-0">
+        <div className="shrink-0 px-4 pt-3">
           <Tabs value={activeTab} onValueChange={(v) => { hapticLight(); setActiveTab(v as typeof activeTab); }}>
             <TabsList className="w-full grid grid-cols-3 bg-secondary/50 border border-white/5">
               <TabsTrigger 
@@ -218,96 +212,99 @@ const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryMod
         </div>
 
         {/* Challenge History List - Scrollable */}
-        <ScrollArea className="flex-1 min-h-0 px-4 py-3">
-          <div className="space-y-2 pb-8">
-            {filteredHistory.map((challenge, index) => (
-              <motion.div
-                key={challenge.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className={`glass-card p-3 ${
-                  challenge.result === "won" 
-                    ? "border-l-2 border-l-emerald-500" 
-                    : "border-l-2 border-l-red-500"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  {/* Result Icon */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+        <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-4 py-3">
+          <div className="space-y-2 pb-4">
+            <AnimatePresence mode="popLayout">
+              {filteredHistory.map((challenge, index) => (
+                <motion.div
+                  key={challenge.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ delay: index * 0.03 }}
+                  className={`glass-card p-3 ${
                     challenge.result === "won" 
-                      ? "bg-emerald-500/20" 
-                      : "bg-red-500/20"
-                  }`}>
-                    {challenge.result === "won" 
-                      ? <Trophy className="w-5 h-5 text-emerald-400" />
-                      : <X className="w-5 h-5 text-red-400" />
-                    }
-                  </div>
-
-                  {/* Challenge Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${
-                        challenge.result === "won" ? "text-emerald-400" : "text-red-400"
-                      }`}>
-                        {challenge.result === "won" ? "Kazandı" : "Kaybetti"}
-                      </span>
-                      <span className="text-muted-foreground text-xs">vs</span>
-                      <span className="text-foreground text-sm truncate">
-                        {challenge.opponentName.split(" ")[0]}
-                      </span>
+                      ? "border-l-2 border-l-emerald-500" 
+                      : "border-l-2 border-l-red-500"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {/* Result Icon */}
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      challenge.result === "won" 
+                        ? "bg-emerald-500/20" 
+                        : "bg-red-500/20"
+                    }`}>
+                      {challenge.result === "won" 
+                        ? <Trophy className="w-5 h-5 text-emerald-400" />
+                        : <X className="w-5 h-5 text-red-400" />
+                      }
                     </div>
-                    <div className="flex items-center gap-2 text-muted-foreground text-[10px]">
-                      {challenge.type === "pr" ? (
-                        <span className="flex items-center gap-1">
-                          <Dumbbell className="w-3 h-3" />
-                          {challenge.exercise}
+
+                    {/* Challenge Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className={`text-sm font-medium ${
+                          challenge.result === "won" ? "text-emerald-400" : "text-red-400"
+                        }`}>
+                          {challenge.result === "won" ? "Kazandı" : "Kaybetti"}
                         </span>
-                      ) : (
+                        <span className="text-muted-foreground text-xs">vs</span>
+                        <span className="text-foreground text-sm truncate">
+                          {challenge.opponentName.split(" ")[0]}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-muted-foreground text-[10px]">
+                        {challenge.type === "pr" ? (
+                          <span className="flex items-center gap-1">
+                            <Dumbbell className="w-3 h-3" />
+                            {challenge.exercise}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <Flame className="w-3 h-3" />
+                            Antrenman Serisi
+                          </span>
+                        )}
+                        <span>•</span>
                         <span className="flex items-center gap-1">
-                          <Flame className="w-3 h-3" />
-                          Antrenman Serisi
+                          <Calendar className="w-3 h-3" />
+                          {formatDate(challenge.date)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Score */}
+                    <div className="text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        <span className={`font-display text-sm ${
+                          challenge.result === "won" ? "text-emerald-400" : "text-red-400"
+                        }`}>
+                          {challenge.yourValue}
+                        </span>
+                        <span className="text-muted-foreground text-xs">-</span>
+                        <span className="text-muted-foreground text-sm">
+                          {challenge.opponentValue}
+                        </span>
+                      </div>
+                      {challenge.result === "won" && challenge.bioCoinsWon && (
+                        <span className="text-yellow-400 text-[10px]">
+                          +{challenge.bioCoinsWon} coin
                         </span>
                       )}
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(challenge.date)}
-                      </span>
                     </div>
-                  </div>
 
-                  {/* Score */}
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 justify-end">
-                      <span className={`font-display text-sm ${
-                        challenge.result === "won" ? "text-emerald-400" : "text-red-400"
-                      }`}>
-                        {challenge.yourValue}
-                      </span>
-                      <span className="text-muted-foreground text-xs">-</span>
-                      <span className="text-muted-foreground text-sm">
-                        {challenge.opponentValue}
-                      </span>
-                    </div>
-                    {challenge.result === "won" && challenge.bioCoinsWon && (
-                      <span className="text-yellow-400 text-[10px]">
-                        +{challenge.bioCoinsWon} coin
-                      </span>
-                    )}
+                    {/* Opponent Avatar */}
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={challenge.opponentAvatar} className="object-cover" />
+                      <AvatarFallback className="bg-secondary text-xs">
+                        {challenge.opponentName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
-
-                  {/* Opponent Avatar */}
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={challenge.opponentAvatar} className="object-cover" />
-                    <AvatarFallback className="bg-secondary text-xs">
-                      {challenge.opponentName.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
 
             {filteredHistory.length === 0 && (
               <div className="text-center py-8">
@@ -316,9 +313,9 @@ const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryMod
               </div>
             )}
           </div>
-        </ScrollArea>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

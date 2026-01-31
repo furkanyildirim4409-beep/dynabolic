@@ -154,9 +154,7 @@ const Leaderboard = () => {
 
   // Force scroll to top on mount and tab change
   useEffect(() => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTop = 0;
-    }
+    scrollContainerRef.current?.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
   const handleAthleteClick = (athlete: typeof mockAthletes[0]) => {
@@ -177,9 +175,9 @@ const Leaderboard = () => {
   const MetricIcon = getMetricIcon(metric);
 
   return (
-    <div className="h-screen flex flex-col bg-background overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-background overflow-hidden">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5">
+      <div className="shrink-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center justify-between p-4 relative z-50">
           <button 
             onClick={() => { hapticLight(); navigate(-1); }}
