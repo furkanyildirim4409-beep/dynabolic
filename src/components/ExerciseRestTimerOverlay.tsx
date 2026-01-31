@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Timer, SkipForward, Volume2, Dumbbell, ArrowRight, Plus } from "lucide-react";
 import { hapticLight } from "@/lib/haptics";
+import { toast } from "sonner";
 
 interface ExerciseRestTimerOverlayProps {
   duration: number; // in seconds
@@ -82,6 +83,7 @@ const ExerciseRestTimerOverlay = ({
     hapticLight();
     setTimeLeft((prev) => prev + 30);
     setTotalDuration((prev) => prev + 30);
+    toast.success("+30 saniye eklendi", { duration: 1500 });
   };
 
   const circumference = 2 * Math.PI * 100;
