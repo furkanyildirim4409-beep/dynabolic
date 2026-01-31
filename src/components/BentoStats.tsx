@@ -1,16 +1,19 @@
 import { motion } from "framer-motion";
-import { wearableMetrics, rhrTrend, hrvTrend } from "@/lib/mockData";
+import { wearableMetrics } from "@/lib/mockData";
+
+export type BentoStatType = "strain" | "recovery" | "sleep" | "hrv";
 
 interface StatCardProps {
   title: string;
   value: string;
   subtitle?: string;
   badge?: string;
-  type: "strain" | "recovery" | "sleep" | "hrv";
+  type: BentoStatType;
   progress?: number;
+  onClick?: () => void;
 }
 
-const StatCard = ({ title, value, subtitle, badge, type, progress }: StatCardProps) => {
+const StatCard = ({ title, value, subtitle, badge, type, progress, onClick }: StatCardProps) => {
   const typeConfig = {
     strain: { 
       bgColor: "bg-stat-strain",
@@ -37,11 +40,13 @@ const StatCard = ({ title, value, subtitle, badge, type, progress }: StatCardPro
   const config = typeConfig[type];
 
   return (
-    <motion.div
+    <motion.button
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.01 }}
-      className="glass-card-premium p-4 relative overflow-hidden group transition-all duration-300 hover:border-primary/20"
+      whileTap={{ scale: 0.98 }}
+      onClick={onClick}
+      className="glass-card-premium p-4 relative overflow-hidden group transition-all duration-300 hover:border-primary/20 text-left w-full"
     >
       {/* Background Glow */}
       <div className={`absolute -bottom-8 -right-8 w-24 h-24 ${config.bgColor} opacity-10 blur-2xl rounded-full`} />
@@ -133,11 +138,15 @@ const StatCard = ({ title, value, subtitle, badge, type, progress }: StatCardPro
       {subtitle && (
         <p className="text-muted-foreground text-xs mt-1">{subtitle}</p>
       )}
-    </motion.div>
+    </motion.button>
   );
 };
 
-const BentoStats = () => {
+interface BentoStatsProps {
+  onStatClick?: (statType: BentoStatType) => void;
+}
+
+const BentoStats = ({ onStatClick }: BentoStatsProps) => {
   // Calculate sleep in hours and minutes from wearableMetrics
   const totalSleepHours = wearableMetrics.sleep.total;
   const sleepHours = Math.floor(totalSleepHours);
@@ -160,24 +169,28 @@ const BentoStats = () => {
         type="strain"
         progress={parseFloat(strainScore)}
         subtitle={`Hedef: ${wearableMetrics.steps.goal.toLocaleString()} adım`}
+        onClick={() => onStatClick?.("strain")}
       />
       <StatCard
         title="TOPARLANMA"
         value={`${recoveryPercent}%`}
         type="recovery"
         subtitle={recoveryPercent >= 80 ? "Çok İyi" : recoveryPercent >= 60 ? "İyi" : "Düşük"}
+        onClick={() => onStatClick?.("recovery")}
       />
       <StatCard
         title="UYKU PUANI"
         value={sleepDisplay}
         type="sleep"
         badge={`Derin Uyku: %${wearableMetrics.sleep.deep}`}
+        onClick={() => onStatClick?.("sleep")}
       />
       <StatCard
         title="HRV (STRES)"
         value={`${wearableMetrics.hrv.value}ms`}
         type="hrv"
         subtitle={wearableMetrics.hrv.value >= 40 ? "Sinir Sistemi Dengede" : "Stres Yüksek"}
+        onClick={() => onStatClick?.("hrv")}
       />
     </div>
   );

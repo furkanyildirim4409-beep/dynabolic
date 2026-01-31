@@ -21,7 +21,8 @@ import WeeklyActivityChart from "@/components/WeeklyActivityChart";
 import StatDetailModal from "@/components/StatDetailModal";
 import CoachChat from "@/components/CoachChat";
 import StoriesRing from "@/components/StoriesRing";
-import BentoStats from "@/components/BentoStats";
+import BentoStats, { BentoStatType } from "@/components/BentoStats";
+import BentoStatDetailModal from "@/components/BentoStatDetailModal";
 import DailyCheckIn from "@/components/DailyCheckIn";
 import CoachAdjustmentBanner from "@/components/dashboard/CoachAdjustmentBanner";
 import StreakTierWidget from "@/components/StreakTierWidget";
@@ -39,6 +40,7 @@ const Kokpit = () => {
   const [showChat, setShowChat] = useState(false);
   const [readNotifications, setReadNotifications] = useState<Record<string, boolean>>({});
   const [selectedStat, setSelectedStat] = useState<StatType | null>(null);
+  const [selectedBentoStat, setSelectedBentoStat] = useState<BentoStatType | null>(null);
   const [showDailyCheckIn, setShowDailyCheckIn] = useState(false);
   const [acknowledgedAdjustments, setAcknowledgedAdjustments] = useState<string[]>(() => {
     const stored = localStorage.getItem("acknowledgedAdjustments");
@@ -259,7 +261,7 @@ const Kokpit = () => {
           <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
           <h2 className="text-muted-foreground text-xs uppercase tracking-widest font-medium">Sağlık Verileri</h2>
         </div>
-        <BentoStats />
+        <BentoStats onStatClick={(stat) => setSelectedBentoStat(stat)} />
 
         {/* Additional Biometric Stats - RHR & Steps */}
         <div className="grid grid-cols-2 gap-3 mt-3">
@@ -317,6 +319,9 @@ const Kokpit = () => {
 
       {/* Stat Detail Modal */}
       <StatDetailModal isOpen={!!selectedStat} onClose={() => setSelectedStat(null)} statType={selectedStat} />
+
+      {/* Bento Stat Detail Modal */}
+      <BentoStatDetailModal isOpen={!!selectedBentoStat} onClose={() => setSelectedBentoStat(null)} statType={selectedBentoStat} />
 
       {/* Weekly Recap Modal */}
       <WeeklyRecapModal isOpen={showRecap} onClose={dismissRecap} data={recapData} />
