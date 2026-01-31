@@ -105,10 +105,12 @@ interface DigitalTwinAvatarProps {
 
 const DigitalTwinAvatar = ({ waistScale = 1 }: DigitalTwinAvatarProps) => {
   return (
-    <div className="w-full h-64 relative">
-      <Canvas camera={{ position: [0, 0.5, 4], fov: 50 }}>
+    <div className="w-full h-80 relative">
+      <Canvas camera={{ position: [0, 0.3, 6], fov: 45 }}>
         <ambientLight intensity={0.5} />
-        <HumanAvatar waistScale={waistScale} />
+        <group scale={[0.85, 0.85, 0.85]} position={[0, -0.2, 0]}>
+          <HumanAvatar waistScale={waistScale} />
+        </group>
         <OrbitControls
           enableZoom={false}
           enablePan={false}
