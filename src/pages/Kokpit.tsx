@@ -11,6 +11,8 @@ import {
   ClipboardCheck,
   AlertCircle,
   Calendar,
+  Heart,
+  Footprints,
 } from "lucide-react";
 import PerformanceRing from "@/components/PerformanceRing";
 import NextMissionCard from "@/components/NextMissionCard";
@@ -26,7 +28,7 @@ import StreakTierWidget from "@/components/StreakTierWidget";
 import WeeklyRecapModal from "@/components/WeeklyRecapModal";
 import DisputeNotificationBell from "@/components/DisputeNotificationBell";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
+import { assignedCoach, notifications, currentUser, getLatestAdjustment, wearableMetrics } from "@/lib/mockData";
 import { usePaymentReminders } from "@/hooks/usePaymentReminders";
 import { useWeeklyRecap } from "@/hooks/useWeeklyRecap";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
@@ -258,6 +260,53 @@ const Kokpit = () => {
           <h2 className="text-muted-foreground text-xs uppercase tracking-widest font-medium">Sağlık Verileri</h2>
         </div>
         <BentoStats />
+
+        {/* Additional Biometric Stats - RHR & Steps */}
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          {/* RHR Card */}
+          <div className="glass-card-premium p-4 relative overflow-hidden">
+            <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-red-500 opacity-10 blur-2xl rounded-full" />
+            <div className="flex items-center gap-2 mb-2">
+              <Heart className="w-4 h-4 text-red-400" />
+              <span className="text-xs text-muted-foreground">Dinlenme Nabzı</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="font-display text-2xl text-red-400">{wearableMetrics.rhr.value}</span>
+              <span className="text-xs text-muted-foreground">bpm</span>
+            </div>
+            <div className={`flex items-center gap-1 mt-1 text-xs ${
+              wearableMetrics.rhr.change < 0 ? "text-green-400" : "text-red-400"
+            }`}>
+              <span>{wearableMetrics.rhr.change < 0 ? "↓" : "↑"}{Math.abs(wearableMetrics.rhr.change)}</span>
+              <span className="text-muted-foreground">dün</span>
+            </div>
+          </div>
+
+          {/* Steps Card */}
+          <div className="glass-card-premium p-4 relative overflow-hidden">
+            <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-green-500 opacity-10 blur-2xl rounded-full" />
+            <div className="flex items-center gap-2 mb-2">
+              <Footprints className="w-4 h-4 text-green-400" />
+              <span className="text-xs text-muted-foreground">Günlük Adım</span>
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="font-display text-2xl text-green-400">{wearableMetrics.steps.value.toLocaleString()}</span>
+            </div>
+            <div className="mt-2">
+              <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min((wearableMetrics.steps.value / wearableMetrics.steps.goal) * 100, 100)}%` }}
+                  transition={{ duration: 1, delay: 0.5 }}
+                  className="h-full bg-green-400 rounded-full"
+                />
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1 text-right">
+                {Math.round((wearableMetrics.steps.value / wearableMetrics.steps.goal) * 100)}% hedef
+              </p>
+            </div>
+          </div>
+        </div>
       </motion.div>
 
       {/* Coach Chat */}

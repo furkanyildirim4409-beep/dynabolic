@@ -6,7 +6,6 @@ import BioCoinWallet from "@/components/BioCoinWallet";
 import BodyScanUpload from "@/components/BodyScanUpload";
 import BloodworkUpload from "@/components/BloodworkUpload";
 import WearableDeviceSync from "@/components/WearableDeviceSync";
-import BioMetricsDashboard from "@/components/BioMetricsDashboard";
 import TransformationTimeline from "@/components/profile/TransformationTimeline";
 import SettingsPanel from "@/components/SettingsPanel";
 import { Slider } from "@/components/ui/slider";
@@ -20,7 +19,6 @@ const Profil = () => {
   const [bioCoins] = useState(2450);
   const [showSettings, setShowSettings] = useState(false);
   const [showBodyScan, setShowBodyScan] = useState(false);
-  const [wearableSimulation, setWearableSimulation] = useState(false);
   const { isOffline } = useOfflineMode();
   
   // Calculate waist scale based on timeline (1.2 at start, 0.85 at goal)
@@ -242,19 +240,7 @@ const Profil = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.19 }}
       >
-        <WearableDeviceSync
-          simulationEnabled={wearableSimulation}
-          onSimulationToggle={setWearableSimulation}
-        />
-      </motion.div>
-
-      {/* Bio-Metrics Dashboard */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.195 }}
-      >
-        <BioMetricsDashboard isActive={wearableSimulation} />
+        <WearableDeviceSync />
       </motion.div>
 
       {/* Recovery Zones */}
