@@ -1,389 +1,233 @@
 
-
-# Financials & Nutrition Extension Implementation Plan
+# Bug Fix & Mağaza Restructure Implementation Plan
 
 ## Overview
 
-This plan addresses two key features to close the loop on the MVP:
-
-1. **Payment Execution Flow** - Add "PAY NOW" functionality to pending/overdue invoices with a secure-looking payment modal offering Credit Card and Bank Transfer options, complete with confetti celebration on success.
-
-2. **Supplement Tracking Module** - Create a new "Supplementler" tab in Beslenme.tsx with daily checklist, stock tracking, low-stock alerts, and quick refill functionality.
+This plan addresses two critical bugs and implements a major UI enhancement to the Keşfet > Mağaza section.
 
 ---
 
-## Task 1: Payment Execution Flow
+## Critical Bug Fixes
 
-### 1.1 Update Payments Page with Pay Now Button
+### Bug 1: Checkout Payment Modal Freeze
 
-**File:** `src/pages/Payments.tsx`
+**Root Cause Analysis:**
+- The `UniversalCartDrawer` renders at `z-index: 110` with a fixed backdrop
+- The `PaymentModal` uses Radix Dialog which creates its own portal with default `z-index: 50`
+- When the payment modal opens, it renders BEHIND the cart drawer's backdrop
+- The user cannot interact with the payment modal because the cart backdrop intercepts clicks
 
-**Changes:**
-- Convert invoice data to local state to allow status updates
-- Add "ODE" (Pay Now) button for pending/overdue invoices
-- Add payment modal trigger state
-- Track selected invoice for payment
+**Solution:**
+1. Close the cart drawer BEFORE opening the payment modal (cleaner flow)
+2. Add explicit `z-index: 9999` to the `PaymentModal`'s `DialogContent` wrapper
+3. Modify `handleCheckout` in `UniversalCartDrawer.tsx` to close cart first, then open modal with a small delay
 
-**UI Enhancement per Invoice:**
-```
-┌─────────────────────────────────────────────┐
-│  Aylık Koçluk           [🟡 Bekliyor]       │
-│  27 Ocak 2026                               │
-│  Son ödeme: 1 Şubat 2026                    │
-│                                             │
-│                          ₺300      [ÖDE]    │
-└─────────────────────────────────────────────┘
-```
+**File Changes:**
+- `src/components/UniversalCartDrawer.tsx` - Update checkout flow
+- `src/components/PaymentModal.tsx` - Add higher z-index to dialog content
 
-### 1.2 Create Payment Modal Component
+### Bug 2: Supplement "Sipariş Ver" UI Freeze
 
-**New File:** `src/components/PaymentModal.tsx`
+**Root Cause Analysis:**
+- The `addToCart` function in `CartContext` triggers `setIsCartOpen(true)` immediately
+- This causes the `UniversalCartDrawer` to open, which renders over the current view
+- Multiple rapid state updates may cause React to batch updates awkwardly
 
-A trust-inspiring payment dialog with two tabs:
+**Solution:**
+1. Add `requestAnimationFrame` wrapper around cart open to prevent blocking
+2. Ensure `addToCart` completes before opening cart UI
+3. The flow should be: Add item -> Show toast -> Open cart (in sequence)
 
-**Visual Design:**
-```
-┌─────────────────────────────────────────────┐
-│  🔒 GÜVENLİ ÖDEME                     [X]   │
-├─────────────────────────────────────────────┤
-│  Aylık Koçluk                    ₺1,500     │
-├─────────────────────────────────────────────┤
-│  ┌─────────────┐ ┌─────────────┐           │
-│  │ 💳 KART    │ │ 🏦 HAVALE   │           │
-│  └─────────────┘ └─────────────┘           │
-├─────────────────────────────────────────────┤
-│                                             │
-│  CREDIT CARD TAB:                           │
-│  ┌─────────────────────────────────────┐   │
-│  │ Kart Numarası                       │   │
-│  │ [•••• •••• •••• ••••]               │   │
-│  ├──────────────────┬──────────────────┤   │
-│  │ Son Kullanma     │ CVV              │   │
-│  │ [MM/YY]          │ [•••]            │   │
-│  ├──────────────────┴──────────────────┤   │
-│  │ Kart Üzerindeki İsim                │   │
-│  │ [                                ]   │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  ┌─────────────────────────────────────┐   │
-│  │       💳 ₺1,500 ÖDE                │   │
-│  └─────────────────────────────────────┘   │
-│                                             │
-│  🔐 256-bit SSL ile korunmaktadır          │
-└─────────────────────────────────────────────┘
-
-  BANK TRANSFER TAB:
-  ┌─────────────────────────────────────┐
-  │ 🏦 HAVALE BİLGİLERİ                 │
-  ├─────────────────────────────────────┤
-  │ Banka: DYNABOLIC A.Ş.              │
-  │ IBAN: TR12 3456 7890 1234 5678     │
-  │                        [📋 Kopyala] │
-  ├─────────────────────────────────────┤
-  │ Referans Kodu: DYN-2026-001        │
-  │                        [📋 Kopyala] │
-  └─────────────────────────────────────┘
-  
-  ⚠️ Referans kodunu açıklamaya ekleyin
-```
-
-**Component Features:**
-- Tabs component for Credit Card / Bank Transfer toggle
-- Mock credit card form with proper formatting
-- Card number auto-formatting (4-digit groups)
-- Expiry date formatting (MM/YY)
-- Copy-to-clipboard for IBAN and Reference Code
-- Processing state with spinner animation
-- Success callback to parent
-
-### 1.3 Add Confetti Celebration
-
-**In:** `src/pages/Payments.tsx`
-
-- Import `canvas-confetti` (already installed)
-- Trigger confetti burst on successful payment
-- Update invoice status to "paid" locally
-- Show success toast notification
-
-**Success Animation Flow:**
-1. User clicks "ODE" in modal
-2. Show 2-second processing state
-3. Close modal
-4. Fire confetti animation
-5. Update invoice card to green "Ödendi" status
-6. Show toast: "Ödeme başarılı!"
+**File Changes:**
+- `src/context/CartContext.tsx` - Defer cart open with RAF
 
 ---
 
-## Task 2: Supplement Tracking Module
+## Feature: Mağaza Tab Restructure
 
-### 2.1 Add Mock Supplement Data
+### Current State Issues
+
+1. **Duplicate Cart Systems:** Keşfet.tsx uses a LOCAL cart state (`useState<CartItem[]>`) instead of the global `CartContext`
+2. **Legacy CartView:** There's an old `CartView.tsx` component that duplicates `UniversalCartDrawer.tsx` functionality
+3. **No Supplement Shop:** The Mağaza section only shows coach products, not standalone supplements
+
+### New Architecture
+
+**Mağaza Tab Layout:**
+```text
+┌─────────────────────────────────────────┐
+│ 💳 Bakiye: 2,450 BIO                    │
+├─────────────────────────────────────────┤
+│  ┌──────────────┐ ┌──────────────┐     │
+│  │   ÜRÜNLER    │ │ SUPPLEMENTLER │     │
+│  └──────────────┘ └──────────────┘     │
+├─────────────────────────────────────────┤
+│                                         │
+│     [Products Grid / Supplements Grid]  │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### Implementation Steps
+
+#### Step 1: Add Supplement Shop Mock Data
 
 **File:** `src/lib/mockData.ts`
 
-Add new data structure for assigned supplements:
+Add new data structure for purchasable supplements:
 
-```typescript
-export interface Supplement {
-  id: string;
-  name: string;
-  dosage: string;
-  timing: string; // "Sabah" | "Öğle" | "Akşam" | "Antrenman Öncesi" | "Antrenman Sonrası"
-  servingsLeft: number;
-  totalServings: number;
-  takenToday: boolean;
-  icon: string;
-  color: string;
-}
-
-export const assignedSupplements: Supplement[] = [
+```text
+shopSupplements = [
   {
-    id: "sup-1",
-    name: "Kreatin Monohidrat",
-    dosage: "5g",
-    timing: "Antrenman Sonrası",
-    servingsLeft: 12,
-    totalServings: 30,
-    takenToday: true,
-    icon: "💪",
-    color: "text-purple-500"
+    id: "shop-sup-1",
+    name: "Gold Standard Whey",
+    brand: "Optimum Nutrition",
+    price: 899,
+    image: "...",
+    flavors: ["Çikolata", "Vanilya", "Çilek"],
+    servings: 30,
+    rating: 4.8,
+    reviews: 1247,
+    category: "protein"
   },
   {
-    id: "sup-2",
-    name: "Whey Protein",
-    dosage: "30g (1 scoop)",
-    timing: "Antrenman Sonrası",
-    servingsLeft: 4,
-    totalServings: 30,
-    takenToday: false,
-    icon: "🥤",
-    color: "text-amber-500"
+    id: "shop-sup-2",
+    name: "BCAA Energy",
+    brand: "EVL",
+    price: 449,
+    image: "...",
+    flavors: ["Karpuz", "Mango"],
+    servings: 30,
+    category: "amino"
   },
-  {
-    id: "sup-3",
-    name: "Omega-3",
-    dosage: "2 kapsül",
-    timing: "Sabah",
-    servingsLeft: 18,
-    totalServings: 60,
-    takenToday: true,
-    icon: "🐟",
-    color: "text-blue-500"
-  },
-  {
-    id: "sup-4",
-    name: "Vitamin D3",
-    dosage: "2000 IU",
-    timing: "Sabah",
-    servingsLeft: 3,
-    totalServings: 90,
-    takenToday: false,
-    icon: "☀️",
-    color: "text-yellow-500"
-  },
-  {
-    id: "sup-5",
-    name: "Magnezyum",
-    dosage: "400mg",
-    timing: "Akşam",
-    servingsLeft: 25,
-    totalServings: 60,
-    takenToday: false,
-    icon: "💊",
-    color: "text-green-500"
-  }
-];
+  // ... more items
+]
 ```
 
-### 2.2 Create Supplement Tracker Component
+#### Step 2: Refactor Keşfet.tsx to Use Global Cart
 
-**New File:** `src/components/SupplementTracker.tsx`
+**File:** `src/pages/Kesfet.tsx`
 
-**Features:**
-- Daily checklist with satisfying check-off animation
-- Stock progress bar per supplement
-- Low stock visual alert (amber/red when < 5 servings)
-- Quick "Yenile" (Refill) button
-- Timing badges (morning, post-workout, etc.)
+Changes:
+- Remove local `cart` state and related handlers (`handleAddToCart`, `handleRemoveFromCart`, etc.)
+- Import and use `useCart` from `CartContext`
+- Remove the legacy `<CartView />` component usage
+- The global `UniversalCartDrawer` in App.tsx handles cart display
 
-**Visual Design:**
-```
-┌─────────────────────────────────────────────┐
-│ 💊 GÜNLÜK SUPPLEMENT TAKİBİ                │
-│    3/5 alındı                               │
-├─────────────────────────────────────────────┤
-│                                             │
-│ ┌─────────────────────────────────────────┐│
-│ │ [✓] 💪 Kreatin Monohidrat              ││
-│ │     5g • Antrenman Sonrası              ││
-│ │     ▓▓▓▓▓▓▓▓░░░░  12/30 porsiyon       ││
-│ └─────────────────────────────────────────┘│
-│                                             │
-│ ┌─────────────────────────────────────────┐│
-│ │ [○] 🥤 Whey Protein      ⚠️ STOK DÜŞÜK ││
-│ │     30g • Antrenman Sonrası             ││
-│ │     ▓░░░░░░░░░░░  4/30      [YENİLE]   ││
-│ └─────────────────────────────────────────┘│
-│                                             │
-│ ┌─────────────────────────────────────────┐│
-│ │ [○] ☀️ Vitamin D3        🔴 KRİTİK     ││
-│ │     2000 IU • Sabah                     ││
-│ │     ░░░░░░░░░░░░  3/90      [YENİLE]   ││
-│ │     ⚠️ 3 gün kaldı - Yenile!           ││
-│ └─────────────────────────────────────────┘│
-│                                             │
-└─────────────────────────────────────────────┘
-```
+#### Step 3: Create Supplement Shop Grid Component
 
-**Interactions:**
-- Checkbox toggle with scale animation + haptic feedback
-- Progress bar color: Green > 10, Amber 5-10, Red < 5
-- Refill button resets servingsLeft to totalServings
-- Toast notifications for actions
+**New File:** `src/components/SupplementShop.tsx`
 
-### 2.3 Integrate into Beslenme Page
+A dedicated component for browsing purchasable supplements with:
+- Product cards with image, name, brand, price
+- Flavor selector (dropdown or chips)
+- "Sepete Ekle" button that uses global `addToCart`
+- Bio-Coin discount toggle (reuse existing logic)
 
-**File:** `src/pages/Beslenme.tsx`
+#### Step 4: Update Mağaza Tab with Sub-Tabs
 
-**Changes:**
-- Add tab navigation at top: "ÖĞÜNLER" | "SUPPLEMENTLER"
-- Import SupplementTracker component
-- Show component when Supplementler tab is active
-- Maintain existing meal tracking in Öğünler tab
+**File:** `src/pages/Kesfet.tsx`
 
-**New Tab Structure:**
-```
-┌───────────────────────────────────────────┐
-│ BESLENME PLANI                            │
-│ Hedefine 450 kcal kaldı                   │
-├───────────────────────────────────────────┤
-│ ┌──────────────┐ ┌──────────────┐        │
-│ │   ÖĞÜNLER    │ │ SUPPLEMENTLER │        │
-│ └──────────────┘ └──────────────┘        │
-├───────────────────────────────────────────┤
-│                                           │
-│     [Tab Content Here]                    │
-│                                           │
-└───────────────────────────────────────────┘
-```
+Restructure the Mağaza `TabsContent`:
+- Add nested `Tabs` component with "ÜRÜNLER" and "SUPPLEMENTLER" options
+- "ÜRÜNLER" shows existing coach products grid
+- "SUPPLEMENTLER" shows the new `SupplementShop` component
 
 ---
 
-## Technical Implementation Details
+## Technical Details
 
-### File Structure
-```
-src/
-├── components/
-│   ├── PaymentModal.tsx          (NEW)
-│   └── SupplementTracker.tsx     (NEW)
-├── lib/
-│   └── mockData.ts               (UPDATE - add supplements)
-└── pages/
-    ├── Payments.tsx              (UPDATE - add pay flow)
-    └── Beslenme.tsx              (UPDATE - add tabs)
+### Z-Index Hierarchy (Fixed)
+
+```text
+Level 0:   Main App Content
+Level 50:  Splash Screen (temporary)
+Level 100: Floating Cart Button
+Level 110: Cart Drawer (backdrop + panel)
+Level 200: Payment Modal (NEW - elevated)
+Level 9999: Story Viewer
 ```
 
-### Design System Compliance
-- Background: Pure black (#000000)
-- Primary: Neon Lime (hsl 68 100% 50%)
-- Success: Green (#22c55e)
-- Warning: Amber (#f59e0b)
-- Critical: Red (#ef4444)
-- Glass effects: `backdrop-blur-xl bg-white/[0.03]`
-- Borders: `border border-white/[0.08]`
-- Font: Inter (font-display for headers)
+### Updated Component Flow
 
-### Component Dependencies
-- `canvas-confetti` - Already installed for success animation
-- `framer-motion` - Animations and transitions
-- `lucide-react` - Icons (CreditCard, Building2, Copy, Check, RefreshCw, AlertTriangle)
-- Existing UI: Dialog, Tabs, Button, Input, Progress, Checkbox
+```text
+User Flow: Supplement Order
 
-### Security UX Elements for Payment Modal
-- Lock icon in header (Shield icon)
-- "256-bit SSL" security badge
-- Card brand logos (visual only)
-- Secure input field styling (darker bg, no autocomplete)
+1. User in Beslenme > Supplementler tab
+2. Sees low-stock alert on Vitamin D3
+3. Clicks "SİPARİŞ VER"
+4. addToCart() called with supplement data
+5. Toast shows "Sepete Eklendi"
+6. After RAF delay, cart drawer opens
+7. User clicks "ÖDEMEYE GEÇ"
+8. Cart closes first (immediate)
+9. Payment Modal opens (z-200, no obstruction)
+10. User completes payment
+11. Success callback fires confetti
+```
+
+### File Change Summary
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `src/components/PaymentModal.tsx` | UPDATE | Add z-index 200 to DialogContent |
+| `src/components/UniversalCartDrawer.tsx` | UPDATE | Close cart before opening modal |
+| `src/context/CartContext.tsx` | UPDATE | Defer cart open with RAF |
+| `src/lib/mockData.ts` | UPDATE | Add shopSupplements data array |
+| `src/components/SupplementShop.tsx` | CREATE | New supplement marketplace grid |
+| `src/pages/Kesfet.tsx` | UPDATE | Use global cart, add sub-tabs to Mağaza |
+| `src/components/CartView.tsx` | DEPRECATE | No longer needed (replaced by UniversalCartDrawer) |
 
 ---
 
-## Summary of Changes
+## Mock Data: Shop Supplements
 
-| File | Action | Description |
-|------|--------|-------------|
-| `src/components/PaymentModal.tsx` | CREATE | Credit card form + bank transfer modal |
-| `src/components/SupplementTracker.tsx` | CREATE | Daily checklist with stock tracking |
-| `src/lib/mockData.ts` | UPDATE | Add assignedSupplements array |
-| `src/pages/Payments.tsx` | UPDATE | Add PAY NOW button + modal integration |
-| `src/pages/Beslenme.tsx` | UPDATE | Add tabs for meals/supplements |
+New supplement products for the Mağaza > Supplementler tab:
+
+1. **Gold Standard Whey** - Optimum Nutrition - 899 TL
+   - Flavors: Cikolata, Vanilya, Cilek
+   - 30 servings, 4.8 rating
+
+2. **BCAA Energy** - EVL - 449 TL
+   - Flavors: Karpuz, Mango
+   - 30 servings
+
+3. **Pre-Workout X** - Cellucor C4 - 549 TL
+   - Flavors: Nar, Limon
+   - 60 servings
+
+4. **Kreatin Monohidrat** - MyProtein - 299 TL
+   - Unflavored, 100 servings
+
+5. **Omega-3 Fish Oil** - NOW Foods - 279 TL
+   - 180 softgels
+
+6. **Vitamin D3 5000IU** - Nature Made - 189 TL
+   - 90 tablets
 
 ---
 
-## Visual Previews
+## Design Notes
 
-### Payment Modal - Credit Card Tab
-```
-╔═════════════════════════════════════════════╗
-║  🔒 GÜVENLİ ÖDEME                     ✕    ║
-╠═════════════════════════════════════════════╣
-║                                             ║
-║  📄 Aylık Koçluk                   ₺1,500  ║
-║                                             ║
-╠═════════════════════════════════════════════╣
-║  ┌─────────────┬─────────────┐             ║
-║  │  💳 KART   │  🏦 HAVALE  │             ║
-║  │  ▀▀▀▀▀▀▀▀▀ │             │             ║
-║  └─────────────┴─────────────┘             ║
-║                                             ║
-║  Kart Numarası                              ║
-║  ┌─────────────────────────────────────┐   ║
-║  │ •••• •••• •••• ••••                 │   ║
-║  └─────────────────────────────────────┘   ║
-║                                             ║
-║  ┌────────────────┐ ┌────────────────┐     ║
-║  │ Son Kullanma   │ │ CVV            │     ║
-║  │ MM/YY          │ │ •••            │     ║
-║  └────────────────┘ └────────────────┘     ║
-║                                             ║
-║  Kart Sahibinin Adı                         ║
-║  ┌─────────────────────────────────────┐   ║
-║  │                                     │   ║
-║  └─────────────────────────────────────┘   ║
-║                                             ║
-║  ┌─────────────────────────────────────┐   ║
-║  │        💳  ₺1,500 ÖDE              │   ║
-║  └─────────────────────────────────────┘   ║
-║                                             ║
-║  🔐 256-bit SSL şifreleme ile korunur      ║
-╚═════════════════════════════════════════════╝
+### Supplement Shop Card Layout
+
+```text
+┌─────────────────────────┐
+│    [Product Image]      │
+│    ★★★★☆ (4.8) 1.2K     │
+├─────────────────────────┤
+│  Gold Standard Whey     │
+│  Optimum Nutrition      │
+├─────────────────────────┤
+│  ○ Çikolata ○ Vanilya   │
+├─────────────────────────┤
+│  ₺899         [+SEPET]  │
+└─────────────────────────┘
 ```
 
-### Supplement Tracker
-```
-╔═════════════════════════════════════════════╗
-║  💊 SUPPLEMENT TAKİBİ          3/5 alındı  ║
-╠═════════════════════════════════════════════╣
-║                                             ║
-║  ┌─────────────────────────────────────┐   ║
-║  │ ☑️  💪 Kreatin Monohidrat           │   ║
-║  │     5g • Antrenman Sonrası          │   ║
-║  │     ████████░░░░  12/30             │   ║
-║  └─────────────────────────────────────┘   ║
-║                                             ║
-║  ┌─────────────────────────────────────┐   ║
-║  │ ☐  🥤 Whey Protein    ⚠️ STOK DÜŞÜK │   ║
-║  │     30g • Antrenman Sonrası         │   ║
-║  │     █░░░░░░░░░░░  4/30    [YENİLE]  │   ║
-║  └─────────────────────────────────────┘   ║
-║                                             ║
-║  ┌─────────────────────────────────────┐   ║
-║  │ ☐  ☀️ Vitamin D3       🔴 KRİTİK   │   ║
-║  │     2000 IU • Sabah                 │   ║
-║  │     ░░░░░░░░░░░░  3/90    [YENİLE]  │   ║
-║  │     ⚡ 3 gün kaldı - Hemen sipariş!  │   ║
-║  └─────────────────────────────────────┘   ║
-║                                             ║
-╚═════════════════════════════════════════════╝
-```
+### Bio-Coin Integration
 
+Same logic as existing products:
+- Toggle to apply Bio-Coin discount
+- Show coins needed and remaining balance
+- Max discount cannot exceed (price - 10 TL)
