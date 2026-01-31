@@ -16,7 +16,7 @@ const FloatingCartButton = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={openCart}
-        className="fixed bottom-24 right-4 z-[100] bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/30 flex items-center gap-2 px-4 py-3"
+        className="fixed bottom-32 right-4 z-[100] bg-primary text-primary-foreground rounded-full shadow-lg shadow-primary/30 flex items-center gap-2 px-4 py-3"
       >
         <div className="relative">
           <ShoppingBag className="w-5 h-5" />

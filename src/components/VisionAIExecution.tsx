@@ -648,66 +648,72 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
 
           {/* Fixed Controls Section */}
           <div className="flex-shrink-0 p-3 pt-2 border-t border-white/5 space-y-3">
-            {/* Inputs Row */}
-            <div className="flex items-center justify-center gap-4">
+            {/* Mobile-Responsive Inputs - Grid Layout */}
+            <div className="grid grid-cols-3 gap-2">
               {/* Weight Input */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setWeight((w) => Math.max(0, w - 2.5))}
-                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
-                >
-                  -
-                </button>
-                <div className="w-16 text-center">
-                  <p className="font-display text-2xl text-foreground leading-none">{weight}</p>
-                  <p className="text-muted-foreground text-[9px]">KG</p>
+              <div className="flex flex-col items-center">
+                <p className="text-muted-foreground text-[9px] mb-1">KG</p>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setWeight((w) => Math.max(0, w - 2.5))}
+                    className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-base"
+                  >
+                    -
+                  </button>
+                  <div className="w-12 text-center">
+                    <p className="font-display text-xl text-foreground leading-none">{weight}</p>
+                  </div>
+                  <button
+                    onClick={() => setWeight((w) => w + 2.5)}
+                    className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-base"
+                  >
+                    +
+                  </button>
                 </div>
-                <button
-                  onClick={() => setWeight((w) => w + 2.5)}
-                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
-                >
-                  +
-                </button>
               </div>
 
-              {/* Timer */}
-              <div className="flex items-center gap-1.5 px-2">
-                <button
-                  onClick={() => setIsRunning(!isRunning)}
-                  className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
-                >
-                  {isRunning ? <Pause className="w-3.5 h-3.5 text-foreground" /> : <Play className="w-3.5 h-3.5 text-foreground" />}
-                </button>
+              {/* Timer - Center Column */}
+              <div className="flex flex-col items-center">
+                <p className="text-muted-foreground text-[9px] mb-1">SÜRE</p>
                 <div className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                  <p className="font-display text-lg text-foreground tracking-wider">{formatTime(timer)}</p>
+                  <button
+                    onClick={() => setIsRunning(!isRunning)}
+                    className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center"
+                  >
+                    {isRunning ? <Pause className="w-3 h-3 text-foreground" /> : <Play className="w-3 h-3 text-foreground" />}
+                  </button>
+                  <div className="flex items-center">
+                    <p className="font-display text-base text-foreground tracking-wider">{formatTime(timer)}</p>
+                  </div>
+                  <button
+                    onClick={() => setTimer(0)}
+                    className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center"
+                  >
+                    <RotateCcw className="w-3 h-3 text-muted-foreground" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setTimer(0)}
-                  className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
-                >
-                  <RotateCcw className="w-3.5 h-3.5 text-muted-foreground" />
-                </button>
               </div>
 
               {/* Reps Input */}
-              <div className="flex items-center gap-1.5">
-                <button
-                  onClick={() => setReps((r) => Math.max(0, r - 1))}
-                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
-                >
-                  -
-                </button>
-                <div className="w-16 text-center">
-                  <p className="font-display text-2xl text-foreground leading-none">{reps}</p>
-                  <p className="text-muted-foreground text-[9px]">TEKRAR</p>
+              <div className="flex flex-col items-center">
+                <p className="text-muted-foreground text-[9px] mb-1">TEKRAR</p>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setReps((r) => Math.max(0, r - 1))}
+                    className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-base"
+                  >
+                    -
+                  </button>
+                  <div className="w-12 text-center">
+                    <p className="font-display text-xl text-foreground leading-none">{reps}</p>
+                  </div>
+                  <button
+                    onClick={() => setReps((r) => r + 1)}
+                    className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-base"
+                  >
+                    +
+                  </button>
                 </div>
-                <button
-                  onClick={() => setReps((r) => r + 1)}
-                  className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center text-foreground font-display text-lg"
-                >
-                  +
-                </button>
               </div>
             </div>
 

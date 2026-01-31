@@ -59,7 +59,7 @@ const BloodworkDetailModal = ({ report, isOpen, onClose }: BloodworkDetailModalP
                 onClose();
               }
             }}
-            className="absolute inset-0 bg-background overflow-y-auto touch-pan-y"
+            className="absolute inset-0 h-full bg-background overflow-y-auto touch-pan-y overscroll-contain"
           >
             {/* Drag Handle */}
             <div className="flex justify-center pt-3 pb-1">

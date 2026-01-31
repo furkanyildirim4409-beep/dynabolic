@@ -518,7 +518,7 @@ const Kesfet = () => {
                           </div>
 
                           {/* Bio-Coin Toggle */}
-                          {maxDiscount > 0 && product.bioCoins && (
+                          {maxDiscount > 0 && (
                             <div className="mt-2 p-2 bg-secondary/50 rounded-lg">
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-1.5 flex-1 min-w-0">
