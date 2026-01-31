@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CreditCard, Calendar, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { CreditCard, Calendar, AlertCircle, CheckCircle2, Clock, Receipt, Download, History } from "lucide-react";
 import confetti from "canvas-confetti";
 import { invoices as initialInvoices } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import PaymentModal, { PaymentDetails } from "@/components/PaymentModal";
+import PaymentReceiptModal from "@/components/PaymentReceiptModal";
 import type { Invoice } from "@/types/shared-models";
 
 const statusConfig = {
@@ -91,14 +92,24 @@ const Payments = () => {
   const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [showReceiptModal, setShowReceiptModal] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<Invoice | null>(null);
 
-  const totalPending = invoices
-    .filter((inv) => inv.status === "pending" || inv.status === "overdue")
-    .reduce((sum, inv) => sum + inv.amount, 0);
+  // Separate paid and pending invoices
+  const paidInvoices = invoices.filter((inv) => inv.status === "paid");
+  const pendingInvoices = invoices.filter((inv) => inv.status === "pending" || inv.status === "overdue");
 
-  const nextDueInvoice = invoices
-    .filter((inv) => inv.status === "pending" && inv.dueDate)
+  const totalPending = pendingInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+  const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+
+  const nextDueInvoice = pendingInvoices
+    .filter((inv) => inv.dueDate)
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())[0];
+
+  const handleViewReceipt = (invoice: Invoice) => {
+    setSelectedReceipt(invoice);
+    setShowReceiptModal(true);
+  };
 
   const handlePayClick = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
@@ -178,47 +189,46 @@ const Payments = () => {
         )}
       </motion.div>
 
-      {/* Invoice List */}
-      <div className="space-y-3">
-        <h2 className="font-display text-lg text-foreground flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-primary" />
-          FATURALAR
-        </h2>
+      {/* Pending Invoices */}
+      {pendingInvoices.length > 0 && (
+        <div className="space-y-3">
+          <h2 className="font-display text-lg text-foreground flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            BEKLEYEN FATURALAR
+          </h2>
 
-        {invoices.map((invoice, index) => {
-          const status = statusConfig[invoice.status];
-          const StatusIcon = status.icon;
-          const canPay = invoice.status === "pending" || invoice.status === "overdue";
+          {pendingInvoices.map((invoice, index) => {
+            const status = statusConfig[invoice.status];
+            const StatusIcon = status.icon;
 
-          return (
-            <motion.div
-              key={invoice.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 + index * 0.05 }}
-              className="glass-card p-4"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-foreground">{invoice.serviceType || "Hizmet"}</p>
-                    <span className={`px-2 py-0.5 rounded-full text-xs border ${status.className} flex items-center gap-1`}>
-                      <StatusIcon className="w-3 h-3" />
-                      {status.label}
-                    </span>
+            return (
+              <motion.div
+                key={invoice.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15 + index * 0.05 }}
+                className="glass-card p-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">{invoice.serviceType || "Hizmet"}</p>
+                      <span className={`px-2 py-0.5 rounded-full text-xs border ${status.className} flex items-center gap-1`}>
+                        <StatusIcon className="w-3 h-3" />
+                        {status.label}
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-1">{formatDate(invoice.date)}</p>
+                    {invoice.dueDate && (
+                      <p className="text-muted-foreground text-xs mt-1">
+                        Son ödeme: {formatDate(invoice.dueDate)}
+                      </p>
+                    )}
                   </div>
-                  <p className="text-muted-foreground text-sm mt-1">{formatDate(invoice.date)}</p>
-                  {invoice.dueDate && invoice.status !== "paid" && (
-                    <p className="text-muted-foreground text-xs mt-1">
-                      Son ödeme: {formatDate(invoice.dueDate)}
+                  <div className="flex items-center gap-3">
+                    <p className={`font-display text-lg ${invoice.status === "overdue" ? "text-red-400" : "text-foreground"}`}>
+                      {formatCurrency(invoice.amount)}
                     </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-3">
-                  <p className={`font-display text-lg ${invoice.status === "overdue" ? "text-red-400" : "text-foreground"}`}>
-                    {formatCurrency(invoice.amount)}
-                  </p>
-                  {canPay && (
                     <Button
                       size="sm"
                       onClick={() => handlePayClick(invoice)}
@@ -226,12 +236,87 @@ const Payments = () => {
                     >
                       ÖDE
                     </Button>
-                  )}
+                  </div>
                 </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Payment History */}
+      <div className="space-y-3">
+        <h2 className="font-display text-lg text-foreground flex items-center gap-2">
+          <History className="w-4 h-4 text-green-400" />
+          ÖDEME GEÇMİŞİ
+        </h2>
+
+        {paidInvoices.length === 0 ? (
+          <div className="glass-card p-6 text-center">
+            <Receipt className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm">Henüz tamamlanmış ödeme yok</p>
+          </div>
+        ) : (
+          <>
+            {/* Total Paid Summary */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="glass-card p-4 border-l-4 border-l-green-500"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground text-xs">Toplam Ödenen</p>
+                    <p className="font-display text-xl text-foreground">{formatCurrency(totalPaid)}</p>
+                  </div>
+                </div>
+                <p className="text-muted-foreground text-sm">{paidInvoices.length} işlem</p>
               </div>
             </motion.div>
-          );
-        })}
+
+            {/* Paid Invoice List */}
+            {paidInvoices.map((invoice, index) => (
+              <motion.div
+                key={invoice.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 + index * 0.05 }}
+                className="glass-card p-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-foreground">{invoice.serviceType || "Hizmet"}</p>
+                      <span className="px-2 py-0.5 rounded-full text-xs border bg-green-500/20 text-green-400 border-green-500/30 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Ödendi
+                      </span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-1">{formatDate(invoice.date)}</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <p className="font-display text-lg text-foreground">
+                      {formatCurrency(invoice.amount)}
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleViewReceipt(invoice)}
+                      className="text-muted-foreground hover:text-foreground h-8 px-3"
+                    >
+                      <Receipt className="w-4 h-4 mr-1" />
+                      Makbuz
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </>
+        )}
       </div>
 
       {/* Payment Modal */}
@@ -240,6 +325,13 @@ const Payments = () => {
         onClose={() => setShowPaymentModal(false)}
         payment={getPaymentDetails()}
         onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      {/* Receipt Modal */}
+      <PaymentReceiptModal
+        isOpen={showReceiptModal}
+        onClose={() => setShowReceiptModal(false)}
+        invoice={selectedReceipt}
       />
     </div>
   );
