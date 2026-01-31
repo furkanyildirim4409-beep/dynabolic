@@ -51,8 +51,21 @@ const BloodworkDetailModal = ({ report, isOpen, onClose }: BloodworkDetailModalP
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="absolute inset-0 bg-background overflow-y-auto"
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.3 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 150 || info.velocity.y > 500) {
+                onClose();
+              }
+            }}
+            className="absolute inset-0 bg-background overflow-y-auto touch-pan-y"
           >
+            {/* Drag Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+            </div>
+
             {/* Header */}
             <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-white/10 p-4 flex items-center justify-between">
               <div className="flex items-center gap-2">

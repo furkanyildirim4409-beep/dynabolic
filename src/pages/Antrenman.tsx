@@ -327,9 +327,22 @@ const Antrenman = () => {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 100 || info.velocity.y > 500) {
+                  setSelectedWorkout(null);
+                }
+              }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[85vh] overflow-hidden"
+              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[85vh] overflow-hidden touch-none"
             >
+              {/* Drag Handle */}
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+              </div>
+
               {/* Modal Header */}
               <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <div>
