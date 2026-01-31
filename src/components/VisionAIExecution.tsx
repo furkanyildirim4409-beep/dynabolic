@@ -52,6 +52,8 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [exerciseComplete, setExerciseComplete] = useState(false);
   const [showExerciseHistory, setShowExerciseHistory] = useState(false);
   const [simulatedHeartRate, setSimulatedHeartRate] = useState(72);
+  const [showVisionInfo, setShowVisionInfo] = useState(false);
+  const [showRpeInfo, setShowRpeInfo] = useState(false);
   
   const exercise = exercises[currentExerciseIndex];
   const rpeColors = getRPEColor(exercise.rpe);
@@ -555,6 +557,78 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                   </div>
                   <p className="font-display text-base text-stat-strain leading-none">0.45</p>
                 </div>
+
+                {/* Info Button for Vision AI Stats */}
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowVisionInfo(true)}
+                  className="w-7 h-7 rounded-lg bg-black/70 backdrop-blur-sm border border-white/10 flex items-center justify-center"
+                >
+                  <Info className="w-3.5 h-3.5 text-muted-foreground" />
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Vision AI Info Modal */}
+          <AnimatePresence>
+            {showVisionInfo && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-30 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                onClick={() => setShowVisionInfo(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-card border border-white/10 rounded-2xl p-4 max-w-xs w-full"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-display text-lg text-foreground">VİZYON AI METRİKLERİ</h3>
+                    <button
+                      onClick={() => setShowVisionInfo(false)}
+                      className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
+                    >
+                      <X className="w-4 h-4 text-muted-foreground" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* ROM Info */}
+                    <div className="bg-primary/10 border border-primary/30 rounded-xl p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Activity className="w-4 h-4 text-primary" />
+                        <span className="font-display text-sm text-primary">ROM (Hareket Açısı)</span>
+                      </div>
+                      <p className="text-muted-foreground text-xs leading-relaxed mb-2">
+                        Eklem hareket açınızın yüzdelik ölçümü. Tam hareket açısı kas gelişimi için kritiktir.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">İdeal:</span>
+                        <span className="font-display text-primary">%95-100</span>
+                      </div>
+                    </div>
+
+                    {/* Speed Info */}
+                    <div className="bg-stat-strain/10 border border-stat-strain/30 rounded-xl p-3">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-4 h-4 text-stat-strain" />
+                        <span className="font-display text-sm text-stat-strain">Hız (m/s)</span>
+                      </div>
+                      <p className="text-muted-foreground text-xs leading-relaxed mb-2">
+                        Konsantrik faz hızı. Kontrollü ve sabit hız kas gerilimini maksimize eder.
+                      </p>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-muted-foreground">İdeal:</span>
+                        <span className="font-display text-stat-strain">0.5-0.65 m/s</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -614,16 +688,23 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
 
             {/* RPE + Coach Target Row */}
             <div className="flex gap-2">
-              {/* RPE Badge */}
-              <div className={`flex-1 ${rpeColors.bg} ${rpeColors.border} border rounded-xl px-3 py-2`}>
+              {/* RPE Badge with Info Button */}
+              <div className={`flex-1 ${rpeColors.bg} ${rpeColors.border} border rounded-xl px-3 py-2 relative`}>
                 <div className="flex items-center gap-2">
                   <Target className={`w-4 h-4 ${rpeColors.text}`} />
-                  <div>
+                  <div className="flex-1">
                     <span className="text-[9px] text-muted-foreground block">HEDEF RPE</span>
                     <span className={`font-display text-lg ${rpeColors.text} leading-none`}>
                       {exercise.rpe}
                     </span>
                   </div>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowRpeInfo(true)}
+                    className="w-6 h-6 rounded-md bg-black/30 flex items-center justify-center"
+                  >
+                    <Info className="w-3 h-3 text-muted-foreground" />
+                  </motion.button>
                 </div>
               </div>
 
@@ -638,6 +719,72 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                 </p>
               </div>
             </div>
+
+            {/* RPE Info Modal */}
+            <AnimatePresence>
+              {showRpeInfo && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                  onClick={() => setShowRpeInfo(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-card border border-white/10 rounded-2xl p-4 max-w-xs w-full"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-display text-lg text-foreground">RPE NEDİR?</h3>
+                      <button
+                        onClick={() => setShowRpeInfo(false)}
+                        className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
+                      >
+                        <X className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                      RPE (Rate of Perceived Exertion), algılanan efor seviyesidir. 1-10 skalasında ölçülür.
+                    </p>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
+                        <span className="font-display text-lg text-green-400 w-8">1-5</span>
+                        <div>
+                          <p className="text-green-400 text-xs font-medium">Kolay - Orta</p>
+                          <p className="text-muted-foreground text-[10px]">Isınma ve düşük yoğunluk</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                        <span className="font-display text-lg text-yellow-400 w-8">6-7</span>
+                        <div>
+                          <p className="text-yellow-400 text-xs font-medium">Zorlu</p>
+                          <p className="text-muted-foreground text-[10px]">2-3 tekrar daha yapabilirsin</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                        <span className="font-display text-lg text-orange-400 w-8">8-9</span>
+                        <div>
+                          <p className="text-orange-400 text-xs font-medium">Çok Zorlu</p>
+                          <p className="text-muted-foreground text-[10px]">1 tekrar daha yapabilirsin</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30">
+                        <span className="font-display text-lg text-red-400 w-8">10</span>
+                        <div>
+                          <p className="text-red-400 text-xs font-medium">Maksimum</p>
+                          <p className="text-muted-foreground text-[10px]">Başarısızlığa kadar</p>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Coach Notes - Compact Display */}
             {exercise.notes && (
