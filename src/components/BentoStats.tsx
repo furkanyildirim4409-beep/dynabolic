@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { wearableMetrics, rhrTrend, hrvTrend } from "@/lib/mockData";
 
 interface StatCardProps {
   title: string;
@@ -137,32 +138,46 @@ const StatCard = ({ title, value, subtitle, badge, type, progress }: StatCardPro
 };
 
 const BentoStats = () => {
+  // Calculate sleep in hours and minutes from wearableMetrics
+  const totalSleepHours = wearableMetrics.sleep.total;
+  const sleepHours = Math.floor(totalSleepHours);
+  const sleepMinutes = Math.round((totalSleepHours - sleepHours) * 60);
+  const sleepDisplay = `${sleepHours}sa ${sleepMinutes}dk`;
+
+  // Calculate recovery based on HRV (higher HRV = better recovery)
+  const hrvValue = wearableMetrics.hrv.value;
+  const recoveryPercent = Math.min(Math.round((hrvValue / 50) * 100), 100);
+
+  // Calculate daily strain based on steps (simplified calculation)
+  const stepsPercent = (wearableMetrics.steps.value / wearableMetrics.steps.goal) * 100;
+  const strainScore = Math.min((stepsPercent / 100) * 21, 21).toFixed(1);
+
   return (
     <div className="grid grid-cols-2 gap-3">
       <StatCard
         title="GÜNLÜK YÜK"
-        value="14.2"
+        value={strainScore}
         type="strain"
-        progress={14.2}
-        subtitle="Hedef: 16.0"
+        progress={parseFloat(strainScore)}
+        subtitle={`Hedef: ${wearableMetrics.steps.goal.toLocaleString()} adım`}
       />
       <StatCard
         title="TOPARLANMA"
-        value="92%"
+        value={`${recoveryPercent}%`}
         type="recovery"
-        subtitle="Çok İyi"
+        subtitle={recoveryPercent >= 80 ? "Çok İyi" : recoveryPercent >= 60 ? "İyi" : "Düşük"}
       />
       <StatCard
         title="UYKU PUANI"
-        value="7sa 42dk"
+        value={sleepDisplay}
         type="sleep"
-        badge="Derin Uyku: 2sa"
+        badge={`Derin Uyku: %${wearableMetrics.sleep.deep}`}
       />
       <StatCard
         title="HRV (STRES)"
-        value="112ms"
+        value={`${wearableMetrics.hrv.value}ms`}
         type="hrv"
-        subtitle="Sinir Sistemi Dengede"
+        subtitle={wearableMetrics.hrv.value >= 40 ? "Sinir Sistemi Dengede" : "Stres Yüksek"}
       />
     </div>
   );

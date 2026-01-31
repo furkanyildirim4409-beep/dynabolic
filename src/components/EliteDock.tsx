@@ -48,7 +48,11 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
+  const [showWaterModal, setShowWaterModal] = useState(false);
   const [weight, setWeight] = useState("78.5");
+  const [selectedWaterAmount, setSelectedWaterAmount] = useState<number | null>(null);
+
+  const waterOptions = [150, 200, 250, 300, 500];
 
   const handleNavClick = (path: string) => {
     navigate(path);
@@ -56,8 +60,16 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
 
   // FAB Actions
   const handleAddWater = () => {
-    toast({ title: "250ml Su Eklendi 💧", description: "Günlük hedefe yaklaşıyorsun!" });
+    setShowWaterModal(true);
     setIsFabOpen(false);
+  };
+
+  const handleSaveWater = () => {
+    if (selectedWaterAmount) {
+      toast({ title: `${selectedWaterAmount}ml Su Eklendi 💧`, description: "Günlük hedefe yaklaşıyorsun!" });
+      setShowWaterModal(false);
+      setSelectedWaterAmount(null);
+    }
   };
 
   const handleLogWeight = () => {
@@ -71,9 +83,15 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
   };
 
   const handleReportToCoach = () => {
-    if (onOpenChat) onOpenChat();
-    else toast({ title: "Koç Bağlantısı", description: "Koç sohbetine yönlendiriliyorsunuz..." });
     setIsFabOpen(false);
+    // Navigate to kokpit first if not already there
+    if (location.pathname !== "/kokpit") {
+      navigate("/kokpit");
+    }
+    // Dispatch a custom event to open the coach chat
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('openCoachChat'));
+    }, 150);
   };
 
   const handleOpenAcademy = () => {
@@ -238,6 +256,42 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
             </div>
             <Button onClick={handleSaveWeight} className="w-full bg-[#ccff00] text-black hover:bg-[#b3e600] font-bold">
               KAYDET
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Water Modal */}
+      <Dialog open={showWaterModal} onOpenChange={setShowWaterModal}>
+        <DialogContent className="bg-zinc-900 border-white/10 max-w-sm z-[100]">
+          <DialogHeader>
+            <DialogTitle className="text-white">SU EKLE 💧</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-zinc-400 text-sm text-center">Kaç ml su içtin?</p>
+            <div className="grid grid-cols-3 gap-2">
+              {waterOptions.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => setSelectedWaterAmount(amount)}
+                  className={cn(
+                    "p-3 rounded-xl border text-center transition-all",
+                    selectedWaterAmount === amount
+                      ? "bg-[#ccff00]/20 border-[#ccff00] text-[#ccff00]"
+                      : "bg-zinc-800 border-white/10 text-white hover:border-white/30"
+                  )}
+                >
+                  <span className="font-display text-lg">{amount}</span>
+                  <span className="text-xs text-zinc-400 ml-0.5">ml</span>
+                </button>
+              ))}
+            </div>
+            <Button 
+              onClick={handleSaveWater} 
+              disabled={!selectedWaterAmount}
+              className="w-full bg-[#ccff00] text-black hover:bg-[#b3e600] font-bold disabled:opacity-50"
+            >
+              EKLE
             </Button>
           </div>
         </DialogContent>
