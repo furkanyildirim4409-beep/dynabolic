@@ -174,7 +174,7 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
         </div>
 
         {/* Challenge List - Scrollable */}
-        <div className="flex-1 overflow-y-auto space-y-2 min-h-0">
+        <div className="space-y-2">
           <AnimatePresence mode="popLayout">
             {filteredChallenges.length > 0 ? (
               filteredChallenges.map((challenge, index) => (
