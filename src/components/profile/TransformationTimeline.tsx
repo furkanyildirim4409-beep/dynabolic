@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, TrendingDown, ArrowLeftRight, ChevronLeft, ChevronRight, X, Check, ZoomIn } from "lucide-react";
+import { Calendar, TrendingDown, ArrowLeftRight, ChevronLeft, ChevronRight, X, Check, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 
 interface TransformationPhoto {
@@ -35,6 +35,15 @@ const TransformationTimeline = ({ compact = false }: TransformationTimelineProps
   const [isDragging, setIsDragging] = useState(false);
   const sliderContainerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
+  
+  // Zoom and pan state
+  const [scale, setScale] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastPanPosition, setLastPanPosition] = useState({ x: 0, y: 0 });
+  const [initialPinchDistance, setInitialPinchDistance] = useState<number | null>(null);
+  const [initialScale, setInitialScale] = useState(1);
+  const zoomContainerRef = useRef<HTMLDivElement>(null);
 
   const photos = mockTransformationPhotos;
 
@@ -93,7 +102,10 @@ const TransformationTimeline = ({ compact = false }: TransformationTimelineProps
   };
 
   useEffect(() => {
-    const handleMouseUp = () => setIsDragging(false);
+    const handleMouseUp = () => {
+      setIsDragging(false);
+      setIsPanning(false);
+    };
     window.addEventListener("mouseup", handleMouseUp);
     window.addEventListener("touchend", handleMouseUp);
     return () => {
@@ -101,6 +113,121 @@ const TransformationTimeline = ({ compact = false }: TransformationTimelineProps
       window.removeEventListener("touchend", handleMouseUp);
     };
   }, []);
+
+  // Reset zoom when closing modal
+  useEffect(() => {
+    if (!showCompare) {
+      setScale(1);
+      setPosition({ x: 0, y: 0 });
+    }
+  }, [showCompare]);
+
+  // Calculate distance between two touch points
+  const getTouchDistance = (touches: React.TouchList) => {
+    if (touches.length < 2) return 0;
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  // Handle pinch zoom start
+  const handlePinchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const distance = getTouchDistance(e.touches);
+      setInitialPinchDistance(distance);
+      setInitialScale(scale);
+    }
+  };
+
+  // Handle pinch zoom move
+  const handlePinchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && initialPinchDistance) {
+      e.preventDefault();
+      const distance = getTouchDistance(e.touches);
+      const newScale = Math.min(Math.max(initialScale * (distance / initialPinchDistance), 1), 4);
+      setScale(newScale);
+      
+      // If zooming out to 1x, reset position
+      if (newScale === 1) {
+        setPosition({ x: 0, y: 0 });
+      }
+    }
+  };
+
+  // Handle pinch zoom end
+  const handlePinchEnd = () => {
+    setInitialPinchDistance(null);
+  };
+
+  // Handle pan start (single finger when zoomed)
+  const handlePanStart = (e: React.TouchEvent | React.MouseEvent) => {
+    if (scale <= 1) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    setIsPanning(true);
+    setLastPanPosition({ x: clientX, y: clientY });
+  };
+
+  // Handle pan move
+  const handlePanMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isPanning || scale <= 1) return;
+    
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    
+    const deltaX = clientX - lastPanPosition.x;
+    const deltaY = clientY - lastPanPosition.y;
+    
+    // Calculate bounds based on zoom level
+    const maxOffset = (scale - 1) * 100;
+    
+    setPosition(prev => ({
+      x: Math.min(Math.max(prev.x + deltaX, -maxOffset), maxOffset),
+      y: Math.min(Math.max(prev.y + deltaY, -maxOffset), maxOffset),
+    }));
+    
+    setLastPanPosition({ x: clientX, y: clientY });
+  };
+
+  // Handle zoom buttons
+  const handleZoomIn = () => {
+    hapticLight();
+    setScale(prev => Math.min(prev + 0.5, 4));
+  };
+
+  const handleZoomOut = () => {
+    hapticLight();
+    const newScale = Math.max(scale - 0.5, 1);
+    setScale(newScale);
+    if (newScale === 1) {
+      setPosition({ x: 0, y: 0 });
+    }
+  };
+
+  const handleResetZoom = () => {
+    hapticMedium();
+    setScale(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  // Handle double-tap to zoom
+  const lastTapRef = useRef<number>(0);
+  const handleDoubleTap = (e: React.TouchEvent) => {
+    const now = Date.now();
+    if (now - lastTapRef.current < 300 && e.touches.length === 1) {
+      e.preventDefault();
+      if (scale > 1) {
+        handleResetZoom();
+      } else {
+        hapticMedium();
+        setScale(2.5);
+      }
+    }
+    lastTapRef.current = now;
+  };
 
   const scrollTimeline = (direction: "left" | "right") => {
     if (!timelineRef.current) return;
@@ -350,58 +477,115 @@ const TransformationTimeline = ({ compact = false }: TransformationTimelineProps
               </button>
             </div>
 
-            {/* Comparison View */}
-            <div className="flex-1 flex items-center justify-center p-4">
+            {/* Comparison View with Pinch-to-Zoom */}
+            <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
               <div
-                ref={sliderContainerRef}
-                className="relative w-full max-w-sm aspect-[3/4] rounded-2xl overflow-hidden touch-none select-none"
-                onMouseMove={handleMouseMove}
-                onTouchMove={handleTouchMove}
+                ref={zoomContainerRef}
+                className="relative w-full max-w-sm aspect-[3/4] rounded-2xl overflow-hidden"
+                onTouchStart={(e) => {
+                  if (e.touches.length === 2) {
+                    handlePinchStart(e);
+                  } else if (e.touches.length === 1 && scale > 1) {
+                    handlePanStart(e);
+                  }
+                  handleDoubleTap(e);
+                }}
+                onTouchMove={(e) => {
+                  if (e.touches.length === 2) {
+                    handlePinchMove(e);
+                  } else if (e.touches.length === 1 && isPanning) {
+                    handlePanMove(e);
+                  } else if (isDragging && scale === 1) {
+                    handleTouchMove(e);
+                  }
+                }}
+                onTouchEnd={handlePinchEnd}
+                onMouseDown={(e) => {
+                  if (scale > 1) {
+                    handlePanStart(e);
+                  }
+                }}
+                onMouseMove={(e) => {
+                  if (isPanning) {
+                    handlePanMove(e);
+                  } else if (isDragging && scale === 1) {
+                    handleMouseMove(e);
+                  }
+                }}
               >
-                {/* After Image (Bottom Layer) */}
-                <img
-                  src={afterPhoto.imageUrl}
-                  alt="Sonra"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  draggable={false}
-                />
-
-                {/* Before Image (Top Layer with Clip) */}
-                <div
-                  className="absolute inset-0 overflow-hidden"
-                  style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                {/* Zoomable Content Container */}
+                <motion.div
+                  className="absolute inset-0 touch-none select-none"
+                  animate={{
+                    scale: scale,
+                    x: position.x,
+                    y: position.y,
+                  }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  style={{ transformOrigin: "center center" }}
                 >
+                  {/* After Image (Bottom Layer) */}
                   <img
-                    src={beforePhoto.imageUrl}
-                    alt="Önce"
+                    src={afterPhoto.imageUrl}
+                    alt="Sonra"
                     className="absolute inset-0 w-full h-full object-cover"
                     draggable={false}
                   />
-                </div>
 
-                {/* Slider Handle */}
-                <div
-                  className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize z-10"
-                  style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
-                  onMouseDown={handleDragStart}
-                  onTouchStart={handleDragStart}
-                >
-                  {/* Handle Circle */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
-                    <ArrowLeftRight className="w-5 h-5 text-background" />
+                  {/* Before Image (Top Layer with Clip) */}
+                  <div
+                    className="absolute inset-0 overflow-hidden"
+                    style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
+                  >
+                    <img
+                      src={beforePhoto.imageUrl}
+                      alt="Önce"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      draggable={false}
+                    />
                   </div>
-                </div>
+                </motion.div>
 
-                {/* Labels */}
-                <div className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                {/* Slider Handle - Only visible when not zoomed */}
+                {scale === 1 && (
+                  <div
+                    ref={sliderContainerRef}
+                    className="absolute inset-0"
+                    onMouseMove={handleMouseMove}
+                  >
+                    <div
+                      className="absolute top-0 bottom-0 w-1 bg-white cursor-ew-resize z-10"
+                      style={{ left: `${sliderPosition}%`, transform: "translateX(-50%)" }}
+                      onMouseDown={handleDragStart}
+                      onTouchStart={handleDragStart}
+                    >
+                      {/* Handle Circle */}
+                      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center">
+                        <ArrowLeftRight className="w-5 h-5 text-background" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Labels - Fade when zoomed */}
+                <motion.div 
+                  className="absolute top-4 left-4 bg-black/70 backdrop-blur-sm px-3 py-1.5 rounded-full z-20"
+                  animate={{ opacity: scale > 1.5 ? 0 : 1 }}
+                >
                   <p className="text-white text-xs font-bold">ÖNCE</p>
-                </div>
-                <div className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full">
+                </motion.div>
+                <motion.div 
+                  className="absolute top-4 right-4 bg-primary/90 backdrop-blur-sm px-3 py-1.5 rounded-full z-20"
+                  animate={{ opacity: scale > 1.5 ? 0 : 1 }}
+                >
                   <p className="text-primary-foreground text-xs font-bold">SONRA</p>
-                </div>
+                </motion.div>
 
-                {/* Stats Overlay */}
-                <div className="absolute bottom-4 left-4 right-4 flex justify-between">
+                {/* Stats Overlay - Fade when zoomed */}
+                <motion.div 
+                  className="absolute bottom-4 left-4 right-4 flex justify-between z-20"
+                  animate={{ opacity: scale > 1.5 ? 0 : 1 }}
+                >
                   <div className="bg-black/70 backdrop-blur-sm px-3 py-2 rounded-xl">
                     <p className="text-white font-display text-lg">{beforePhoto.weight}kg</p>
                     <p className="text-white/70 text-xs">{beforePhoto.bodyFat}% yağ</p>
@@ -410,9 +594,74 @@ const TransformationTimeline = ({ compact = false }: TransformationTimelineProps
                     <p className="text-primary-foreground font-display text-lg">{afterPhoto.weight}kg</p>
                     <p className="text-primary-foreground/80 text-xs">{afterPhoto.bodyFat}% yağ</p>
                   </div>
-                </div>
+                </motion.div>
+
+                {/* Zoom Level Indicator */}
+                <AnimatePresence>
+                  {scale > 1 && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm px-3 py-1.5 rounded-full z-30"
+                    >
+                      <p className="text-white text-xs font-medium">{scale.toFixed(1)}x</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </div>
+
+            {/* Zoom Controls */}
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-30">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleZoomIn}
+                disabled={scale >= 4}
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center disabled:opacity-30"
+              >
+                <ZoomIn className="w-5 h-5 text-white" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={handleZoomOut}
+                disabled={scale <= 1}
+                className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center disabled:opacity-30"
+              >
+                <ZoomOut className="w-5 h-5 text-white" />
+              </motion.button>
+              {scale > 1 && (
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleResetZoom}
+                  className="w-10 h-10 rounded-full bg-primary/80 backdrop-blur-sm border border-primary/50 flex items-center justify-center"
+                >
+                  <RotateCcw className="w-5 h-5 text-white" />
+                </motion.button>
+              )}
+            </div>
+
+            {/* Zoom Hint */}
+            <AnimatePresence>
+              {scale === 1 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute bottom-24 left-1/2 -translate-x-1/2 bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full z-20"
+                >
+                  <p className="text-white/80 text-xs flex items-center gap-2">
+                    <ZoomIn className="w-3 h-3" />
+                    Yakınlaştırmak için çift dokun veya kıstır
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Footer Stats */}
             <div className="p-4 border-t border-white/10">
