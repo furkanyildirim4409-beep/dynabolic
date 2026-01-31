@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Moon, Smartphone, Lock, HelpCircle, X, Camera, Droplet } from "lucide-react";
+import { User, Settings, Bell, Shield, LogOut, AlertTriangle, TrendingUp, Target, Coins, ChevronRight, Camera, Droplet, WifiOff } from "lucide-react";
 import RealisticBodyAvatar from "@/components/RealisticBodyAvatar";
 import BioCoinWallet from "@/components/BioCoinWallet";
 import BodyScanUpload from "@/components/BodyScanUpload";
@@ -8,19 +8,20 @@ import BloodworkUpload from "@/components/BloodworkUpload";
 import WearableDeviceSync from "@/components/WearableDeviceSync";
 import BioMetricsDashboard from "@/components/BioMetricsDashboard";
 import TransformationTimeline from "@/components/profile/TransformationTimeline";
+import SettingsPanel from "@/components/SettingsPanel";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+import { useOfflineMode } from "@/context/OfflineContext";
 
 const Profil = () => {
   const [timelineValue, setTimelineValue] = useState([50]);
   const [bioCoins] = useState(2450);
   const [showSettings, setShowSettings] = useState(false);
   const [showBodyScan, setShowBodyScan] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
-  const [notifications, setNotifications] = useState(true);
   const [wearableSimulation, setWearableSimulation] = useState(false);
+  const { isOffline } = useOfflineMode();
   
   // Calculate waist scale based on timeline (1.2 at start, 0.85 at goal)
   const waistScale = 1.2 - (timelineValue[0] / 100) * 0.35;
@@ -350,13 +351,30 @@ const Profil = () => {
           İlerlemenizi takip etmek için güncel vücut fotoğraflarınızı ekleyin.
         </p>
         
-        <Button 
-          onClick={() => setShowBodyScan(true)}
-          className="w-full h-12 font-display neon-glow-sm"
-        >
-          <Camera className="w-5 h-5 mr-2" />
-          FOTOĞRAF YÜKLE
-        </Button>
+        {isOffline ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                disabled
+                className="w-full h-12 font-display opacity-50 cursor-not-allowed"
+              >
+                <WifiOff className="w-5 h-5 mr-2" />
+                FOTOĞRAF YÜKLE
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>İnternet bağlantısı gerekli</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button 
+            onClick={() => setShowBodyScan(true)}
+            className="w-full h-12 font-display neon-glow-sm"
+          >
+            <Camera className="w-5 h-5 mr-2" />
+            FOTOĞRAF YÜKLE
+          </Button>
+        )}
       </motion.div>
 
       {/* Bloodwork Upload Section */}
@@ -364,9 +382,8 @@ const Profil = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.35 }}
-        className="glass-card p-4"
       >
-        <BloodworkUpload />
+        <BloodworkUpload disabled={isOffline} />
       </motion.div>
 
       {/* Settings Menu */}
@@ -399,92 +416,7 @@ const Profil = () => {
       </motion.div>
 
       {/* Settings Panel */}
-      <AnimatePresence>
-        {showSettings && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
-            onClick={() => setShowSettings(false)}
-          >
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-              className="absolute right-0 top-0 bottom-0 w-full max-w-sm bg-background border-l border-white/10"
-            >
-              {/* Header */}
-              <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                <h2 className="font-display text-lg text-foreground">AYARLAR</h2>
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="p-2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Settings Options */}
-              <div className="p-4 space-y-4">
-                {/* Dark Mode */}
-                <div className="flex items-center justify-between p-4 glass-card">
-                  <div className="flex items-center gap-3">
-                    <Moon className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="text-foreground text-sm font-medium">Karanlık Mod</p>
-                      <p className="text-muted-foreground text-xs">Koyu tema kullan</p>
-                    </div>
-                  </div>
-                  <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-                </div>
-
-                {/* Notifications */}
-                <div className="flex items-center justify-between p-4 glass-card">
-                  <div className="flex items-center gap-3">
-                    <Bell className="w-5 h-5 text-primary" />
-                    <div>
-                      <p className="text-foreground text-sm font-medium">Bildirimler</p>
-                      <p className="text-muted-foreground text-xs">Push bildirimleri al</p>
-                    </div>
-                  </div>
-                  <Switch checked={notifications} onCheckedChange={setNotifications} />
-                </div>
-
-                {/* Other Options */}
-                {[
-                  { icon: Smartphone, label: "Cihaz Bağlantısı", desc: "Akıllı saat ve bantlar" },
-                  { icon: Lock, label: "Gizlilik", desc: "Veri paylaşım ayarları" },
-                  { icon: HelpCircle, label: "Yardım & Destek", desc: "SSS ve iletişim" },
-                ].map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => toast({ title: `${item.label} (Demo)` })}
-                    className="w-full flex items-center justify-between p-4 glass-card hover:bg-white/5 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <item.icon className="w-5 h-5 text-primary" />
-                      <div className="text-left">
-                        <p className="text-foreground text-sm font-medium">{item.label}</p>
-                        <p className="text-muted-foreground text-xs">{item.desc}</p>
-                      </div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                ))}
-
-                {/* App Version */}
-                <div className="text-center pt-4 border-t border-white/10">
-                  <p className="text-muted-foreground text-xs">DYNABOLIC v1.0.0</p>
-                  <p className="text-muted-foreground/50 text-[10px] mt-1">© 2026 Dynabolic Labs</p>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <SettingsPanel isOpen={showSettings} onClose={() => setShowSettings(false)} />
 
       {/* Body Scan Upload Modal */}
       <BodyScanUpload 
