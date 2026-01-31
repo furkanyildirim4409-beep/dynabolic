@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck, AlertCircle } from "lucide-react";
+import { Bell, X, Trophy, Settings, MessageCircle, ChevronRight, ClipboardCheck, AlertCircle, Calendar } from "lucide-react";
 import PerformanceRing from "@/components/PerformanceRing";
 import NextMissionCard from "@/components/NextMissionCard";
 import QuickStatsRow, { StatType } from "@/components/QuickStatsRow";
@@ -13,9 +13,11 @@ import BentoStats from "@/components/BentoStats";
 import DailyCheckIn from "@/components/DailyCheckIn";
 import CoachAdjustmentBanner from "@/components/dashboard/CoachAdjustmentBanner";
 import StreakTierWidget from "@/components/StreakTierWidget";
+import WeeklyRecapModal from "@/components/WeeklyRecapModal";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
 import { usePaymentReminders } from "@/hooks/usePaymentReminders";
+import { useWeeklyRecap } from "@/hooks/useWeeklyRecap";
 
 const Kokpit = () => {
   const navigate = useNavigate();
@@ -34,6 +36,9 @@ const Kokpit = () => {
 
   // Payment reminders hook - triggers toast notifications on mount
   const { reminders } = usePaymentReminders();
+
+  // Weekly recap hook
+  const { showRecap, recapData, triggerRecap, dismissRecap } = useWeeklyRecap();
 
   const handleDismissAdjustment = (adjustmentId: string) => {
     const updated = [...acknowledgedAdjustments, adjustmentId];
@@ -283,6 +288,25 @@ const Kokpit = () => {
         onClose={() => setSelectedStat(null)} 
         statType={selectedStat} 
       />
+
+      {/* Weekly Recap Modal */}
+      <WeeklyRecapModal
+        isOpen={showRecap}
+        onClose={dismissRecap}
+        data={recapData}
+      />
+
+      {/* Weekly Recap Test Button (Dev Only) */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        onClick={triggerRecap}
+        className="fixed bottom-24 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
+        title="Haftalık Özeti Test Et"
+      >
+        <Calendar className="w-5 h-5" />
+      </motion.button>
 
       {/* Notifications Panel */}
       <AnimatePresence>
