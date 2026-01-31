@@ -143,10 +143,10 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[85vh] overflow-hidden"
+              className="w-full max-w-lg bg-background rounded-t-3xl max-h-[90vh] flex flex-col"
             >
-              {/* Modal Header */}
-              <div className="p-4 border-b border-white/10 flex items-center justify-between">
+              {/* FIXED HEADER */}
+              <div className="flex-shrink-0 p-4 border-b border-white/10 flex items-center justify-between">
                 <div>
                   <h2 className="font-display text-lg text-foreground tracking-wider">
                     {exerciseName.toUpperCase()}
@@ -161,16 +161,16 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                 </button>
               </div>
 
-              <div className="overflow-y-auto max-h-[calc(85vh-80px)]">
-                {/* Goal Progress Card */}
+              {/* SCROLLABLE BODY */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Goal Progress Card - TOP PRIORITY */}
                 {currentGoal && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.05 }}
-                    className="m-4 p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30"
+                    className="p-3 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30"
                   >
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Target className="w-4 h-4 text-primary" />
                         <span className="text-primary text-[10px] font-medium tracking-wider">
@@ -185,111 +185,104 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                       </button>
                     </div>
                     
-                    <div className="flex items-center gap-4 mb-3">
-                      {/* Progress Ring */}
-                      <div className="relative w-16 h-16">
-                        <svg className="w-16 h-16 transform -rotate-90">
+                    <div className="flex items-center gap-3">
+                      {/* Compact Progress Ring */}
+                      <div className="relative w-12 h-12 flex-shrink-0">
+                        <svg className="w-12 h-12 transform -rotate-90">
                           <circle
-                            cx="32"
-                            cy="32"
-                            r="28"
+                            cx="24"
+                            cy="24"
+                            r="20"
                             stroke="hsl(var(--secondary))"
-                            strokeWidth="4"
+                            strokeWidth="3"
                             fill="none"
                           />
                           <motion.circle
-                            cx="32"
-                            cy="32"
-                            r="28"
+                            cx="24"
+                            cy="24"
+                            r="20"
                             stroke="hsl(var(--primary))"
-                            strokeWidth="4"
+                            strokeWidth="3"
                             fill="none"
                             strokeLinecap="round"
-                            initial={{ strokeDasharray: "0 176" }}
+                            initial={{ strokeDasharray: "0 126" }}
                             animate={{ 
-                              strokeDasharray: `${(goalProgress / 100) * 176} 176` 
+                              strokeDasharray: `${(goalProgress / 100) * 126} 126` 
                             }}
                             transition={{ duration: 1, delay: 0.3 }}
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="font-display text-lg text-foreground">
+                          <span className="font-display text-sm text-foreground">
                             {goalProgress}%
                           </span>
                         </div>
                       </div>
 
-                      <div className="flex-1">
-                        <p className="font-display text-xl text-foreground">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-display text-lg text-foreground">
                           {currentGoal.targetWeight}kg x {currentGoal.targetReps}
                         </p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-muted-foreground text-[10px]">
                           {daysRemaining > 0 
                             ? `${daysRemaining} gün kaldı`
                             : daysRemaining === 0 
                               ? "Bugün son gün!"
                               : "Süre doldu"
                           }
+                          {personalBest && currentGoal.targetWeight - personalBest.weight > 0 && (
+                            <span className="text-primary ml-2">
+                              (+{currentGoal.targetWeight - personalBest.weight}kg kaldı)
+                            </span>
+                          )}
                         </p>
-                        {personalBest && (
-                          <p className="text-primary/80 text-xs mt-1">
-                            Şu an: {personalBest.weight}kg ({currentGoal.targetWeight - personalBest.weight > 0 
-                              ? `+${currentGoal.targetWeight - personalBest.weight}kg kaldı` 
-                              : "Hedefe ulaşıldı! 🎉"}
-                          </p>
-                        )}
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Personal Best Card */}
+                {/* Personal Best Card - Compact */}
                 {personalBest && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.1 }}
-                    className="m-4 p-4 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-amber-600/20 border border-yellow-500/30"
+                    className="p-3 rounded-2xl bg-gradient-to-br from-yellow-500/20 to-amber-600/20 border border-yellow-500/30"
                   >
                     <div className="flex items-center gap-3">
-                      <motion.div
-                        animate={{ scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center"
-                      >
-                        <Trophy className="w-6 h-6 text-primary-foreground" />
-                      </motion.div>
-                      <div className="flex-1">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center flex-shrink-0">
+                        <Trophy className="w-5 h-5 text-primary-foreground" />
+                      </div>
+                      <div className="flex-1 min-w-0">
                         <p className="text-yellow-400 text-[10px] font-medium tracking-wider">
                           KİŞİSEL REKOR
                         </p>
-                        <p className="font-display text-xl text-foreground">
-                          {personalBest.weight}kg x {personalBest.reps} tekrar
+                        <p className="font-display text-lg text-foreground">
+                          {personalBest.weight}kg x {personalBest.reps}
                         </p>
-                        <p className="text-muted-foreground text-xs">
-                          Est. 1RM: {personalBest.estimated1RM}kg • {format(new Date(personalBest.date), 'd MMMM yyyy', { locale: tr })}
+                        <p className="text-muted-foreground text-[10px]">
+                          Est. 1RM: {personalBest.estimated1RM}kg • {format(new Date(personalBest.date), 'd MMM yyyy', { locale: tr })}
                         </p>
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {/* Trend Chart */}
+                {/* Trend Chart - Reduced Height */}
                 {trendData.length > 1 && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="mx-4 mb-4"
                   >
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-2 mb-2">
                       <TrendingUp className="w-4 h-4 text-primary" />
-                      <h3 className="font-display text-sm text-foreground tracking-wider">
+                      <h3 className="font-display text-xs text-foreground tracking-wider">
                         12 HAFTALIK TREND
                       </h3>
                     </div>
                     
-                    <div className="glass-card p-4 h-48">
+                    <div className="glass-card p-3 h-[160px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={trendData}>
                           <defs>
@@ -301,17 +294,17 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                           <XAxis 
                             dataKey="date" 
                             stroke="hsl(var(--muted-foreground))"
-                            fontSize={10}
+                            fontSize={9}
                             tickLine={false}
                             axisLine={false}
                           />
                           <YAxis 
                             stroke="hsl(var(--muted-foreground))"
-                            fontSize={10}
+                            fontSize={9}
                             tickLine={false}
                             axisLine={false}
                             tickFormatter={(value) => `${value}kg`}
-                            width={45}
+                            width={40}
                             domain={currentGoal ? ['dataMin - 10', Math.max(currentGoal.targetWeight + 10, Math.max(...trendData.map(d => d.estimated1RM)) + 10)] : ['dataMin - 10', 'dataMax + 10']}
                           />
                           <Tooltip
@@ -319,12 +312,11 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                               backgroundColor: 'hsl(var(--card))',
                               border: '1px solid hsl(var(--border))',
                               borderRadius: '8px',
-                              fontSize: '12px'
+                              fontSize: '11px'
                             }}
                             labelStyle={{ color: 'hsl(var(--foreground))' }}
                             formatter={(value: number) => [`${value}kg`, 'Est. 1RM']}
                           />
-                          {/* Goal Reference Line */}
                           {currentGoal && (
                             <ReferenceLine 
                               y={currentGoal.targetWeight} 
@@ -339,57 +331,56 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                             stroke="hsl(var(--primary))"
                             strokeWidth={2}
                             fill="url(#colorGradient)"
-                            dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 4 }}
-                            activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
+                            dot={{ fill: 'hsl(var(--primary))', strokeWidth: 0, r: 3 }}
+                            activeDot={{ r: 5, fill: 'hsl(var(--primary))' }}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
                     </div>
                     {currentGoal && (
-                      <p className="text-center text-muted-foreground text-[10px] mt-2">
+                      <p className="text-center text-muted-foreground text-[9px] mt-1">
                         Kesikli çizgi: Hedef ({currentGoal.targetWeight}kg)
                       </p>
                     )}
                   </motion.div>
                 )}
 
-                {/* Recent Logs */}
+                {/* Recent Logs - Compact */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mx-4 mb-4"
                 >
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex items-center gap-2 mb-2">
                     <Calendar className="w-4 h-4 text-primary" />
-                    <h3 className="font-display text-sm text-foreground tracking-wider">
+                    <h3 className="font-display text-xs text-foreground tracking-wider">
                       SON KAYITLAR
                     </h3>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     {recentLogs.length > 0 ? (
                       recentLogs.map((log, index) => (
                         <motion.div
                           key={log.date}
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.3 + index * 0.05 }}
-                          className="glass-card p-3"
+                          transition={{ delay: 0.3 + index * 0.03 }}
+                          className="glass-card p-2.5"
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs text-muted-foreground">
+                          <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[10px] text-muted-foreground">
                               {format(new Date(log.date), 'd MMM yyyy', { locale: tr })}
                             </span>
-                            <span className="text-xs text-primary">
+                            <span className="text-[10px] text-primary">
                               {log.sets.length} set
                             </span>
                           </div>
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap gap-1.5">
                             {log.sets.map((set, setIndex) => (
                               <span
                                 key={setIndex}
-                                className={`px-2 py-1 rounded-lg text-xs ${
+                                className={`px-1.5 py-0.5 rounded text-[10px] ${
                                   set.isFailure
                                     ? 'bg-destructive/20 text-destructive'
                                     : 'bg-secondary text-foreground'
@@ -402,8 +393,8 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                         </motion.div>
                       ))
                     ) : (
-                      <div className="glass-card p-6 text-center">
-                        <p className="text-muted-foreground text-sm">
+                      <div className="glass-card p-4 text-center">
+                        <p className="text-muted-foreground text-xs">
                           Bu egzersiz için kayıt bulunamadı.
                         </p>
                       </div>
@@ -411,27 +402,27 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                   </div>
                 </motion.div>
 
-                {/* Stats Summary */}
+                {/* Stats Summary - Compact */}
                 {history.length > 0 && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="mx-4 mb-4 glass-card p-4"
+                    className="glass-card p-3"
                   >
-                    <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="grid grid-cols-3 gap-3 text-center">
                       <div>
-                        <p className="font-display text-lg text-primary">{history.length}</p>
-                        <p className="text-muted-foreground text-[10px]">ANTRENMAN</p>
+                        <p className="font-display text-base text-primary">{history.length}</p>
+                        <p className="text-muted-foreground text-[9px]">ANTRENMAN</p>
                       </div>
                       <div>
-                        <p className="font-display text-lg text-foreground">
+                        <p className="font-display text-base text-foreground">
                           {history.reduce((acc, h) => acc + h.sets.length, 0)}
                         </p>
-                        <p className="text-muted-foreground text-[10px]">TOPLAM SET</p>
+                        <p className="text-muted-foreground text-[9px]">TOPLAM SET</p>
                       </div>
                       <div>
-                        <p className="font-display text-lg text-foreground">
+                        <p className="font-display text-base text-foreground">
                           {Math.round(
                             history.reduce(
                               (acc, h) => acc + h.sets.reduce((a, s) => a + s.weight * s.reps, 0),
@@ -439,15 +430,15 @@ const ExerciseHistoryModal = ({ exerciseName, isOpen, onClose }: ExerciseHistory
                             ) / 1000
                           )}t
                         </p>
-                        <p className="text-muted-foreground text-[10px]">TOPLAM TONAJ</p>
+                        <p className="text-muted-foreground text-[9px]">TOPLAM TONAJ</p>
                       </div>
                     </div>
                   </motion.div>
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="p-4 border-t border-white/10 flex gap-2">
+              {/* FIXED FOOTER */}
+              <div className="flex-shrink-0 p-4 border-t border-white/10 bg-background/95 backdrop-blur flex gap-2">
                 {!currentGoal && (
                   <motion.button
                     whileHover={{ scale: 1.02 }}
