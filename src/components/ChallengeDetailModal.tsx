@@ -125,7 +125,21 @@ const ChallengeDetailModal = ({
   const [activeTab, setActiveTab] = useState<"progress" | "proof" | "messages" | "history">("progress");
   const [newMessage, setNewMessage] = useState("");
   const [messages, setMessages] = useState(mockMessages);
-  const [proofs, setProofs] = useState<ProofSubmission[]>([]);
+  const [proofs, setProofs] = useState<ProofSubmission[]>([
+    // Mock opponent proof for testing verification
+    {
+      id: "mock-opponent-proof-1",
+      type: "photo",
+      url: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop",
+      weight: 135,
+      note: "Bugünkü PR denemem!",
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+      status: "pending",
+      submittedBy: "opponent",
+      submittedByName: "Ahmet Yılmaz",
+      submittedByAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
+    }
+  ]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Simulate live progress updates
@@ -503,6 +517,20 @@ const ChallengeDetailModal = ({
               targetValue={challenge.targetValue}
               existingProofs={proofs}
               onProofSubmitted={(proof) => setProofs(prev => [...prev, proof])}
+              onProofVerified={(proofId, verified, reason) => {
+                setProofs(prev => prev.map(p => 
+                  p.id === proofId 
+                    ? { 
+                        ...p, 
+                        status: verified ? "verified" : "rejected",
+                        verifiedAt: new Date().toISOString(),
+                        rejectionReason: reason
+                      } 
+                    : p
+                ));
+              }}
+              opponentName={opponent.name}
+              opponentAvatar={opponent.avatar}
             />
           </TabsContent>
           <TabsContent value="messages" className="flex-1 flex flex-col overflow-hidden px-4 pb-4 mt-0">
