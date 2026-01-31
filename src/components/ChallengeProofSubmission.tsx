@@ -3,8 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Camera, Video, Upload, X, Check, Play, 
   Image as ImageIcon, Loader2, CheckCircle, Clock,
-  ThumbsUp, ThumbsDown, ShieldCheck, AlertTriangle
+  ThumbsUp, ThumbsDown, ShieldCheck, AlertTriangle, Scale
 } from "lucide-react";
+import DisputeResolutionModal, { Dispute } from "./DisputeResolutionModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -54,6 +55,9 @@ const ChallengeProofSubmission = ({
   opponentAvatar,
 }: ChallengeProofSubmissionProps) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [selectedProofForDispute, setSelectedProofForDispute] = useState<ProofSubmission | null>(null);
+  const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<"photo" | "video" | null>(null);
@@ -400,54 +404,102 @@ const ChallengeProofSubmission = ({
       {myProofs.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-foreground text-sm font-medium">Senin Kanıtların</h4>
-          <div className="grid grid-cols-2 gap-2">
-            {myProofs.map((proof) => (
-              <motion.div
-                key={proof.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="relative rounded-xl overflow-hidden border border-white/10 aspect-video bg-secondary"
-              >
-                {proof.type === "photo" ? (
-                  <img
-                    src={proof.url}
-                    alt="Proof"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="relative w-full h-full">
-                    <video
-                      src={proof.url}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                      <Play className="w-8 h-8 text-white" />
+          <div className="space-y-2">
+            {myProofs.map((proof) => {
+              const hasDispute = disputes.some(d => d.proofId === proof.id);
+              const proofDispute = disputes.find(d => d.proofId === proof.id);
+              
+              return (
+                <motion.div
+                  key={proof.id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="glass-card p-2 space-y-2"
+                >
+                  <div className="relative rounded-xl overflow-hidden aspect-video bg-secondary">
+                    {proof.type === "photo" ? (
+                      <img
+                        src={proof.url}
+                        alt="Proof"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="relative w-full h-full">
+                        <video
+                          src={proof.url}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <Play className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Status Badge */}
+                    <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
+                      {getStatusBadge(proof.status)}
                     </div>
-                  </div>
-                )}
-                
-                {/* Status Badge */}
-                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-sm">
-                  {getStatusBadge(proof.status)}
-                </div>
 
-                {/* Weight Badge for PR */}
-                {proof.weight && (
-                  <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-primary/80 backdrop-blur-sm">
-                    <span className="text-primary-foreground text-xs font-display">
-                      {proof.weight}kg
-                    </span>
+                    {/* Weight Badge for PR */}
+                    {proof.weight && (
+                      <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-full bg-primary/80 backdrop-blur-sm">
+                        <span className="text-primary-foreground text-xs font-display">
+                          {proof.weight}kg
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {/* Rejection reason tooltip */}
-                {proof.status === "rejected" && proof.rejectionReason && (
-                  <div className="absolute bottom-2 right-2 left-2 px-2 py-1 rounded-lg bg-red-500/80 backdrop-blur-sm">
-                    <p className="text-white text-[10px] truncate">{proof.rejectionReason}</p>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                  {/* Rejection reason and appeal button */}
+                  {proof.status === "rejected" && proof.rejectionReason && (
+                    <div className="space-y-2">
+                      <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/20">
+                        <div className="flex items-center gap-1 text-red-400 text-[10px] mb-1">
+                          <AlertTriangle className="w-3 h-3" />
+                          Red Sebebi
+                        </div>
+                        <p className="text-foreground text-xs">{proof.rejectionReason}</p>
+                      </div>
+                      
+                      {/* Appeal Button or Status */}
+                      {hasDispute ? (
+                        <button
+                          onClick={() => {
+                            hapticLight();
+                            setSelectedProofForDispute(proof);
+                            setShowDisputeModal(true);
+                          }}
+                          className="w-full p-2 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-between hover:bg-amber-500/20 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Scale className="w-4 h-4 text-amber-400" />
+                            <span className="text-amber-400 text-xs font-medium">İtiraz Gönderildi</span>
+                          </div>
+                          <span className="text-amber-400/70 text-[10px]">
+                            {proofDispute?.status === "pending" && "Bekliyor"}
+                            {proofDispute?.status === "under_review" && "İnceleniyor"}
+                            {proofDispute?.status === "resolved_approved" && "Onaylandı ✓"}
+                            {proofDispute?.status === "resolved_rejected" && "Reddedildi"}
+                          </span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            hapticLight();
+                            setSelectedProofForDispute(proof);
+                            setShowDisputeModal(true);
+                          }}
+                          className="w-full p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 flex items-center justify-center gap-2 hover:bg-amber-500/30 transition-colors"
+                        >
+                          <Scale className="w-4 h-4 text-amber-400" />
+                          <span className="text-amber-400 text-xs font-medium">İtiraz Et</span>
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -645,6 +697,71 @@ const ChallengeProofSubmission = ({
           </p>
         </div>
       )}
+
+      {/* Dispute Resolution Modal */}
+      <DisputeResolutionModal
+        isOpen={showDisputeModal}
+        onClose={() => {
+          setShowDisputeModal(false);
+          setSelectedProofForDispute(null);
+        }}
+        dispute={selectedProofForDispute ? disputes.find(d => d.proofId === selectedProofForDispute.id) : null}
+        proofId={selectedProofForDispute?.id}
+        proofUrl={selectedProofForDispute?.url}
+        proofType={selectedProofForDispute?.type}
+        weight={selectedProofForDispute?.weight}
+        rejectionReason={selectedProofForDispute?.rejectionReason}
+        challengeId={challengeId}
+        challengeType={challengeType}
+        exercise={exercise}
+        onSubmitAppeal={(appealReason) => {
+          if (!selectedProofForDispute) return;
+          
+          const newDispute: Dispute = {
+            id: `dispute-${Date.now()}`,
+            proofId: selectedProofForDispute.id,
+            challengeId,
+            challengeType,
+            exercise,
+            proofUrl: selectedProofForDispute.url,
+            proofType: selectedProofForDispute.type,
+            weight: selectedProofForDispute.weight,
+            originalRejectionReason: selectedProofForDispute.rejectionReason || "",
+            appealReason,
+            status: "pending",
+            submittedAt: new Date().toISOString(),
+            messages: [],
+          };
+          
+          setDisputes(prev => [...prev, newDispute]);
+          
+          // Simulate coach reviewing after a delay
+          setTimeout(() => {
+            setDisputes(prev => prev.map(d => 
+              d.id === newDispute.id 
+                ? { ...d, status: "under_review" as const, reviewerId: "coach-serdar", reviewerName: "Koç Serdar", reviewerRole: "coach" as const }
+                : d
+            ));
+          }, 3000);
+        }}
+        onSendMessage={(disputeId, message) => {
+          setDisputes(prev => prev.map(d => 
+            d.id === disputeId 
+              ? { 
+                  ...d, 
+                  messages: [...d.messages, {
+                    id: `msg-${Date.now()}`,
+                    senderId: "current",
+                    senderName: "Sen",
+                    senderRole: "athlete" as const,
+                    message,
+                    timestamp: new Date().toISOString(),
+                  }]
+                }
+              : d
+          ));
+        }}
+      />
     </div>
   );
 };
