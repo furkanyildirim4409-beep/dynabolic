@@ -112,7 +112,7 @@ const EliteDock = ({ forceHide = false, onOpenChat }: EliteDockProps) => {
           x: "-50%",
         }}
         transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-        className="fixed bottom-8 left-1/2 z-[40] flex items-center gap-4 w-max pointer-events-none"
+        className="fixed bottom-4 left-1/2 z-[40] flex items-center gap-4 w-max pointer-events-none"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {/* NAVIGATION PILL */}

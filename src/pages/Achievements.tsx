@@ -19,6 +19,15 @@ const Achievements = () => {
   const [selectedBadge, setSelectedBadge] = useState<Achievement | null>(null);
   const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked'>('all');
   const [celebratedBadges, setCelebratedBadges] = useState<Set<string>>(new Set());
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // Delay animations until after scroll
+    const timer = setTimeout(() => setIsLoaded(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Filter achievements
   const filteredAchievements = achievements.filter(a => {
@@ -141,9 +150,9 @@ const Achievements = () => {
           return (
             <motion.button
               key={badge.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.05 }}
+              initial={false}
+              animate={isLoaded ? { opacity: 1, scale: 1 } : { opacity: 1, scale: 1 }}
+              transition={{ delay: isLoaded ? Math.min(index * 0.03, 0.3) : 0, duration: 0.2 }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleBadgeClick(badge)}

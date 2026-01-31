@@ -29,6 +29,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { assignedCoach, notifications, currentUser, getLatestAdjustment } from "@/lib/mockData";
 import { usePaymentReminders } from "@/hooks/usePaymentReminders";
 import { useWeeklyRecap } from "@/hooks/useWeeklyRecap";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 const Kokpit = () => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ const Kokpit = () => {
 
   // Weekly recap hook
   const { showRecap, recapData, triggerRecap, dismissRecap } = useWeeklyRecap();
+
+  // Scroll direction hook for hiding/showing weekly recap button
+  const { scrollDirection, isAtTop } = useScrollDirection({ threshold: 20 });
 
   const handleDismissAdjustment = (adjustmentId: string) => {
     const updated = [...acknowledgedAdjustments, adjustmentId];
@@ -259,17 +263,22 @@ const Kokpit = () => {
       {/* Weekly Recap Modal */}
       <WeeklyRecapModal isOpen={showRecap} onClose={dismissRecap} data={recapData} />
 
-      {/* Weekly Recap Test Button (Dev Only) */}
-      <motion.button
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1 }}
-        onClick={triggerRecap}
-        className="fixed bottom-36 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
-        title="Haftalık Özeti Test Et"
-      >
-        <Calendar className="w-5 h-5" />
-      </motion.button>
+      {/* Weekly Recap Test Button (Dev Only) - Hides on scroll down */}
+      <AnimatePresence>
+        {(isAtTop || scrollDirection === "up") && (
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.2 }}
+            onClick={triggerRecap}
+            className="fixed bottom-44 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
+            title="Haftalık Özeti Test Et"
+          >
+            <Calendar className="w-5 h-5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Notifications Panel */}
       <AnimatePresence>
