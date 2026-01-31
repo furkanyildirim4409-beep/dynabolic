@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Swords, Clock, Trophy, Check, X, ChevronRight, Flame, Dumbbell } from "lucide-react";
+import { Swords, Clock, Trophy, Check, X, ChevronRight, Coins } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,6 +10,7 @@ import {
   getStatusColor 
 } from "@/lib/challengeData";
 import { hapticLight, hapticMedium, hapticSuccess } from "@/lib/haptics";
+import { useChallengeStreaks } from "@/hooks/useChallengeStreaks";
 
 interface ChallengeCardProps {
   challenge: Challenge;
@@ -19,11 +20,17 @@ interface ChallengeCardProps {
 }
 
 const ChallengeCard = ({ challenge, onAccept, onDecline, onViewDetails }: ChallengeCardProps) => {
+  const { calculateBonus, streakData } = useChallengeStreaks();
+  
   const TypeIcon = getChallengeTypeIcon(challenge.type);
   const isIncoming = challenge.challengedId === "current" && challenge.status === "pending";
   const isActive = challenge.status === "active";
   const isCompleted = challenge.status === "completed";
   const isWinner = isCompleted && challenge.winnerId === "current";
+  
+  // Calculate potential bonus
+  const potentialBonus = calculateBonus(challenge.bioCoinsReward, streakData.currentWinStreak + 1);
+  const hasBonus = potentialBonus.multiplier > 1;
   
   // Determine opponent (the other person in the challenge)
   const isChallenger = challenge.challengerId === "current";
@@ -159,8 +166,19 @@ const ChallengeCard = ({ challenge, onAccept, onDecline, onViewDetails }: Challe
           )}
           <span className="flex items-center gap-1 text-yellow-400">
             <Trophy className="w-3 h-3" />
-            {challenge.bioCoinsReward} coin
+            {challenge.bioCoinsReward}
+            {hasBonus && !isCompleted && (
+              <span className="text-emerald-400 text-[10px] ml-0.5">
+                (+{potentialBonus.bonus})
+              </span>
+            )}
           </span>
+          {hasBonus && !isCompleted && (
+            <span className="flex items-center gap-0.5 text-orange-400 text-[10px]">
+              <Coins className="w-2.5 h-2.5" />
+              {potentialBonus.multiplier}x
+            </span>
+          )}
         </div>
 
         {/* Action Buttons */}

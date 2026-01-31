@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Swords, Plus, Filter, Clock, Trophy, CheckCircle } from "lucide-react";
+import { Swords, Plus, Clock, CheckCircle } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import ChallengeCard from "./ChallengeCard";
 import CreateChallengeModal from "./CreateChallengeModal";
 import ChallengeDetailModal from "./ChallengeDetailModal";
+import ChallengeStreakBanner from "./ChallengeStreakBanner";
 import { mockChallenges, Challenge } from "@/lib/challengeData";
 import { hapticLight, hapticMedium, hapticSuccess } from "@/lib/haptics";
 import { toast } from "@/hooks/use-toast";
+import { useChallengeStreaks } from "@/hooks/useChallengeStreaks";
 
 interface ChallengesSectionProps {
   athletes: Array<{
@@ -28,6 +30,8 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [challenges, setChallenges] = useState(mockChallenges);
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  
+  const { recordWin, recordLoss, calculateBonus, currentMilestone } = useChallengeStreaks();
 
   // Filter challenges
   const filteredChallenges = challenges.filter(ch => {
@@ -62,6 +66,27 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
     toast({
       title: "Meydan okuma reddedildi",
       description: "Belki başka zaman...",
+    });
+  };
+
+  // Simulate winning a challenge (for demo purposes)
+  const handleSimulateWin = (challenge: Challenge) => {
+    const bonus = calculateBonus(challenge.bioCoinsReward, 1);
+    
+    setChallenges(prev => prev.map(ch => 
+      ch.id === challenge.id 
+        ? { ...ch, status: "completed" as const, winnerId: "current", completedAt: new Date().toISOString() } 
+        : ch
+    ));
+    
+    recordWin(challenge.bioCoinsReward);
+    hapticSuccess();
+    
+    toast({
+      title: "Meydan Okuma Kazanıldı! 🏆",
+      description: currentMilestone 
+        ? `+${bonus.total} coin (${bonus.bonus} bonus dahil!)`
+        : `+${challenge.bioCoinsReward} coin kazandın!`,
     });
   };
 
@@ -102,6 +127,9 @@ const ChallengesSection = ({ athletes }: ChallengesSectionProps) => {
             Meydan Oku
           </Button>
         </div>
+
+        {/* Challenge Streak Banner */}
+        <ChallengeStreakBanner showDevTools={true} />
 
         {/* Filters */}
         <Tabs value={filter} onValueChange={(v) => { hapticLight(); setFilter(v as FilterType); }}>
