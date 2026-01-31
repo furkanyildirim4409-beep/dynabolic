@@ -176,12 +176,12 @@ const Kokpit = () => {
         </motion.div>
       )}
 
-      {/* Stories Ring - Smaller & Elegant */}
+      {/* Stories Ring - Mobile Optimized */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="transform scale-[0.92] origin-left -mx-1"
+        className="-mx-4 px-4"
       >
         <StoriesRing />
       </motion.div>
@@ -300,13 +300,13 @@ const Kokpit = () => {
         data={recapData}
       />
 
-      {/* Weekly Recap Test Button (Dev Only) */}
+      {/* Weekly Recap Test Button (Dev Only) - Positioned above dock */}
       <motion.button
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1 }}
         onClick={triggerRecap}
-        className="fixed bottom-32 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
+        className="fixed bottom-36 left-4 z-40 p-3 rounded-full bg-purple-500/20 border border-purple-500/30 text-purple-400 hover:bg-purple-500/30 transition-colors"
         title="Haftalık Özeti Test Et"
       >
         <Calendar className="w-5 h-5" />
