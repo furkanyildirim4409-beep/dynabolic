@@ -1,34 +1,34 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Trophy, Flame, Dumbbell, Coins, ChevronLeft, Crown, Medal, Award, TrendingUp, Swords } from "lucide-react";
+import { Trophy, Flame, Dumbbell, Coins, ChevronLeft, Crown, Medal, Award, TrendingUp, TrendingDown, Minus, Swords } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 import ChallengesSection from "@/components/ChallengesSection";
 
-// Mock Turkish athlete data with challenge stats
+// Mock Turkish athlete data with challenge stats and last week rankings
 const mockAthletes = [
-  { id: "1", name: "Ahmet Yılmaz", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", bioCoins: 8450, volume: 125000, streak: 45, challengeWins: 28, winStreak: 7 },
-  { id: "2", name: "Mehmet Demir", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", bioCoins: 7890, volume: 118500, streak: 38, challengeWins: 32, winStreak: 5 },
-  { id: "3", name: "Zeynep Kaya", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", bioCoins: 7200, volume: 95000, streak: 42, challengeWins: 24, winStreak: 9 },
-  { id: "4", name: "Burak Şahin", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", bioCoins: 6950, volume: 112000, streak: 35, challengeWins: 21, winStreak: 4 },
-  { id: "5", name: "Elif Çelik", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", bioCoins: 6700, volume: 88000, streak: 30, challengeWins: 19, winStreak: 6 },
-  { id: "6", name: "Oğuz Acar", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", bioCoins: 6200, volume: 105000, streak: 28, challengeWins: 17, winStreak: 3 },
-  { id: "7", name: "Selin Yıldız", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", bioCoins: 5980, volume: 92000, streak: 33, challengeWins: 22, winStreak: 8 },
-  { id: "8", name: "Emre Koç", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop", bioCoins: 5600, volume: 99000, streak: 25, challengeWins: 15, winStreak: 2 },
-  { id: "9", name: "Deniz Arslan", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop", bioCoins: 5400, volume: 85000, streak: 27, challengeWins: 18, winStreak: 4 },
-  { id: "10", name: "Can Özdemir", avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=100&h=100&fit=crop", bioCoins: 5100, volume: 78000, streak: 22, challengeWins: 14, winStreak: 1 },
-  { id: "11", name: "Ayşe Polat", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", bioCoins: 4800, volume: 72000, streak: 20, challengeWins: 12, winStreak: 3 },
-  { id: "12", name: "Murat Kılıç", avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop", bioCoins: 4500, volume: 68000, streak: 19, challengeWins: 11, winStreak: 2 },
-  { id: "13", name: "Gizem Erdoğan", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", bioCoins: 4200, volume: 65000, streak: 18, challengeWins: 10, winStreak: 1 },
-  { id: "current", name: "Ahmet Kaya", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop", bioCoins: 3950, volume: 62000, streak: 17, challengeWins: 8, winStreak: 3, isCurrentUser: true },
-  { id: "15", name: "Serkan Yalçın", avatar: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=100&h=100&fit=crop", bioCoins: 3700, volume: 58000, streak: 15, challengeWins: 7, winStreak: 0 },
-  { id: "16", name: "Burcu Aksoy", avatar: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop", bioCoins: 3500, volume: 55000, streak: 14, challengeWins: 6, winStreak: 2 },
-  { id: "17", name: "Tolga Güneş", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop", bioCoins: 3200, volume: 52000, streak: 12, challengeWins: 5, winStreak: 1 },
-  { id: "18", name: "Merve Aslan", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop", bioCoins: 2900, volume: 48000, streak: 10, challengeWins: 4, winStreak: 0 },
-  { id: "19", name: "Enes Korkmaz", avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop", bioCoins: 2600, volume: 45000, streak: 8, challengeWins: 3, winStreak: 1 },
-  { id: "20", name: "İrem Bakır", avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&h=100&fit=crop", bioCoins: 2300, volume: 42000, streak: 6, challengeWins: 2, winStreak: 0 },
+  { id: "1", name: "Ahmet Yılmaz", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", bioCoins: 8450, volume: 125000, streak: 45, challengeWins: 28, winStreak: 7, lastWeekRank: { bioCoins: 1, volume: 2, streak: 1, challenges: 2 } },
+  { id: "2", name: "Mehmet Demir", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop", bioCoins: 7890, volume: 118500, streak: 38, challengeWins: 32, winStreak: 5, lastWeekRank: { bioCoins: 3, volume: 1, streak: 3, challenges: 1 } },
+  { id: "3", name: "Zeynep Kaya", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", bioCoins: 7200, volume: 95000, streak: 42, challengeWins: 24, winStreak: 9, lastWeekRank: { bioCoins: 2, volume: 5, streak: 2, challenges: 4 } },
+  { id: "4", name: "Burak Şahin", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop", bioCoins: 6950, volume: 112000, streak: 35, challengeWins: 21, winStreak: 4, lastWeekRank: { bioCoins: 5, volume: 3, streak: 5, challenges: 5 } },
+  { id: "5", name: "Elif Çelik", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop", bioCoins: 6700, volume: 88000, streak: 30, challengeWins: 19, winStreak: 6, lastWeekRank: { bioCoins: 4, volume: 6, streak: 4, challenges: 3 } },
+  { id: "6", name: "Oğuz Acar", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop", bioCoins: 6200, volume: 105000, streak: 28, challengeWins: 17, winStreak: 3, lastWeekRank: { bioCoins: 6, volume: 4, streak: 7, challenges: 6 } },
+  { id: "7", name: "Selin Yıldız", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop", bioCoins: 5980, volume: 92000, streak: 33, challengeWins: 22, winStreak: 8, lastWeekRank: { bioCoins: 9, volume: 7, streak: 6, challenges: 7 } },
+  { id: "8", name: "Emre Koç", avatar: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100&h=100&fit=crop", bioCoins: 5600, volume: 99000, streak: 25, challengeWins: 15, winStreak: 2, lastWeekRank: { bioCoins: 7, volume: 8, streak: 9, challenges: 9 } },
+  { id: "9", name: "Deniz Arslan", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop", bioCoins: 5400, volume: 85000, streak: 27, challengeWins: 18, winStreak: 4, lastWeekRank: { bioCoins: 8, volume: 10, streak: 8, challenges: 8 } },
+  { id: "10", name: "Can Özdemir", avatar: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=100&h=100&fit=crop", bioCoins: 5100, volume: 78000, streak: 22, challengeWins: 14, winStreak: 1, lastWeekRank: { bioCoins: 12, volume: 9, streak: 11, challenges: 10 } },
+  { id: "11", name: "Ayşe Polat", avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop", bioCoins: 4800, volume: 72000, streak: 20, challengeWins: 12, winStreak: 3, lastWeekRank: { bioCoins: 10, volume: 11, streak: 10, challenges: 12 } },
+  { id: "12", name: "Murat Kılıç", avatar: "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=100&h=100&fit=crop", bioCoins: 4500, volume: 68000, streak: 19, challengeWins: 11, winStreak: 2, lastWeekRank: { bioCoins: 11, volume: 13, streak: 12, challenges: 11 } },
+  { id: "13", name: "Gizem Erdoğan", avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", bioCoins: 4200, volume: 65000, streak: 18, challengeWins: 10, winStreak: 1, lastWeekRank: { bioCoins: 14, volume: 12, streak: 13, challenges: 14 } },
+  { id: "current", name: "Ahmet Kaya", avatar: "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?w=100&h=100&fit=crop", bioCoins: 3950, volume: 62000, streak: 17, challengeWins: 8, winStreak: 3, isCurrentUser: true, lastWeekRank: { bioCoins: 17, volume: 14, streak: 14, challenges: 16 } },
+  { id: "15", name: "Serkan Yalçın", avatar: "https://images.unsplash.com/photo-1504257432389-52343af06ae3?w=100&h=100&fit=crop", bioCoins: 3700, volume: 58000, streak: 15, challengeWins: 7, winStreak: 0, lastWeekRank: { bioCoins: 13, volume: 15, streak: 16, challenges: 13 } },
+  { id: "16", name: "Burcu Aksoy", avatar: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop", bioCoins: 3500, volume: 55000, streak: 14, challengeWins: 6, winStreak: 2, lastWeekRank: { bioCoins: 15, volume: 16, streak: 15, challenges: 15 } },
+  { id: "17", name: "Tolga Güneş", avatar: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop", bioCoins: 3200, volume: 52000, streak: 12, challengeWins: 5, winStreak: 1, lastWeekRank: { bioCoins: 16, volume: 18, streak: 17, challenges: 17 } },
+  { id: "18", name: "Merve Aslan", avatar: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=100&h=100&fit=crop", bioCoins: 2900, volume: 48000, streak: 10, challengeWins: 4, winStreak: 0, lastWeekRank: { bioCoins: 19, volume: 17, streak: 18, challenges: 18 } },
+  { id: "19", name: "Enes Korkmaz", avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop", bioCoins: 2600, volume: 45000, streak: 8, challengeWins: 3, winStreak: 1, lastWeekRank: { bioCoins: 18, volume: 19, streak: 20, challenges: 19 } },
+  { id: "20", name: "İrem Bakır", avatar: "https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=100&h=100&fit=crop", bioCoins: 2300, volume: 42000, streak: 6, challengeWins: 2, winStreak: 0, lastWeekRank: { bioCoins: 20, volume: 20, streak: 19, challenges: 20 } },
 ];
 
 type MetricType = "bioCoins" | "volume" | "streak" | "challenges";
@@ -62,6 +62,53 @@ const getMetricIcon = (metric: MetricType) => {
     case "streak": return Flame;
     case "challenges": return Swords;
   }
+};
+
+// Rank change indicator component
+const RankChangeIndicator = ({ currentRank, lastWeekRank }: { currentRank: number; lastWeekRank: number }) => {
+  const change = lastWeekRank - currentRank; // Positive = went up, negative = went down
+  
+  if (change === 0) {
+    return (
+      <span className="flex items-center text-muted-foreground text-[10px]">
+        <Minus className="w-3 h-3" />
+      </span>
+    );
+  }
+  
+  if (change > 0) {
+    return (
+      <motion.span 
+        initial={{ opacity: 0, y: 5 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-0.5 text-emerald-400 text-[10px] font-medium"
+      >
+        <motion.div
+          animate={{ y: [0, -2, 0] }}
+          transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+        >
+          <TrendingUp className="w-3 h-3" />
+        </motion.div>
+        <span>+{change}</span>
+      </motion.span>
+    );
+  }
+  
+  return (
+    <motion.span 
+      initial={{ opacity: 0, y: -5 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center gap-0.5 text-red-400 text-[10px] font-medium"
+    >
+      <motion.div
+        animate={{ y: [0, 2, 0] }}
+        transition={{ duration: 1, repeat: Infinity, repeatDelay: 2 }}
+      >
+        <TrendingDown className="w-3 h-3" />
+      </motion.div>
+      <span>{change}</span>
+    </motion.span>
+  );
 };
 
 const getPodiumStyle = (rank: number) => {
@@ -240,6 +287,12 @@ const Leaderboard = () => {
                     {athlete.name.split(" ")[0]}
                   </p>
 
+                  {/* Rank Change */}
+                  <RankChangeIndicator 
+                    currentRank={position} 
+                    lastWeekRank={athlete.lastWeekRank[metric]} 
+                  />
+
                   {/* Score */}
                   <div className="flex items-center gap-1 mt-1">
                     <MetricIcon className="w-3 h-3 text-primary" />
@@ -293,11 +346,17 @@ const Leaderboard = () => {
                   isCurrentUser ? "ring-2 ring-primary/50 bg-primary/5" : ""
                 }`}
               >
-                {/* Rank */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                  isCurrentUser ? "bg-primary text-primary-foreground" : "bg-secondary"
-                }`}>
-                  <span className="font-display text-xs">#{rank}</span>
+                {/* Rank with Change Indicator */}
+                <div className="flex flex-col items-center gap-0.5">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                    isCurrentUser ? "bg-primary text-primary-foreground" : "bg-secondary"
+                  }`}>
+                    <span className="font-display text-xs">#{rank}</span>
+                  </div>
+                  <RankChangeIndicator 
+                    currentRank={rank} 
+                    lastWeekRank={athlete.lastWeekRank[metric]} 
+                  />
                 </div>
 
                 {/* Avatar */}
@@ -367,9 +426,17 @@ const Leaderboard = () => {
       >
         <div className="max-w-[430px] mx-auto p-4">
           <div className="flex items-center gap-4">
-            {/* Rank Badge */}
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
-              <span className="font-display text-lg text-primary-foreground">#{currentUserRank}</span>
+            {/* Rank Badge with Change */}
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-emerald-500 flex items-center justify-center shadow-lg shadow-primary/20">
+                <span className="font-display text-lg text-primary-foreground">#{currentUserRank}</span>
+              </div>
+              {currentUser && (
+                <RankChangeIndicator 
+                  currentRank={currentUserRank} 
+                  lastWeekRank={currentUser.lastWeekRank[metric]} 
+                />
+              )}
             </div>
 
             {/* Avatar */}
