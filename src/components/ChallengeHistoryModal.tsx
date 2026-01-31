@@ -1,324 +1,160 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { 
-  X, Trophy, Swords, Flame, Target, Calendar, 
-  TrendingUp, ChevronRight, Award, Dumbbell
-} from "lucide-react";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { hapticLight } from "@/lib/haptics";
-
-interface ChallengeResult {
-  id: string;
-  type: "pr" | "streak";
-  exercise?: string;
-  opponentId: string;
-  opponentName: string;
-  opponentAvatar: string;
-  result: "won" | "lost";
-  yourValue: number;
-  opponentValue: number;
-  targetValue: number;
-  bioCoinsWon?: number;
-  date: string;
-}
-
-interface Athlete {
-  id: string;
-  name: string;
-  avatar: string;
-  challengeWins: number;
-  winStreak: number;
-}
+import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Trophy, Swords, Flame, Calendar, TrendingUp, X } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface ChallengeHistoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  athlete: Athlete | null;
+  athlete: {
+    id: string;
+    name: string;
+    avatar: string;
+    challengeWins: number;
+    winStreak: number;
+  } | null;
 }
 
-// Generate mock challenge history for any athlete
-const generateChallengeHistory = (athlete: Athlete): ChallengeResult[] => {
-  const opponents = [
-    { id: "1", name: "Ahmet Yılmaz", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" },
-    { id: "2", name: "Mehmet Demir", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
-    { id: "3", name: "Zeynep Kaya", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" },
-    { id: "4", name: "Burak Şahin", avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop" },
-    { id: "5", name: "Elif Çelik", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" },
-    { id: "7", name: "Selin Yıldız", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" },
-  ].filter(o => o.id !== athlete.id);
-
-  const exercises = ["Bench Press", "Squat", "Deadlift", "Overhead Press", "Barbell Row"];
-  const results: ChallengeResult[] = [];
-  
-  // Generate based on athlete's wins
-  const totalChallenges = athlete.challengeWins + Math.floor(Math.random() * 5) + 3;
-  
-  for (let i = 0; i < Math.min(totalChallenges, 15); i++) {
-    const opponent = opponents[i % opponents.length];
-    const isWin = i < athlete.challengeWins;
-    const isPR = Math.random() > 0.3;
-    const baseDate = new Date();
-    baseDate.setDate(baseDate.getDate() - (i * 3 + Math.floor(Math.random() * 5)));
-    
-    results.push({
-      id: `ch-${athlete.id}-${i}`,
-      type: isPR ? "pr" : "streak",
-      exercise: isPR ? exercises[i % exercises.length] : undefined,
-      opponentId: opponent.id,
-      opponentName: opponent.name,
-      opponentAvatar: opponent.avatar,
-      result: isWin ? "won" : "lost",
-      yourValue: isPR ? 100 + Math.floor(Math.random() * 60) : 7 + Math.floor(Math.random() * 14),
-      opponentValue: isPR ? 95 + Math.floor(Math.random() * 55) : 5 + Math.floor(Math.random() * 16),
-      targetValue: isPR ? 120 + Math.floor(Math.random() * 30) : 14,
-      bioCoinsWon: isWin ? 100 + Math.floor(Math.random() * 150) : 0,
-      date: baseDate.toISOString(),
-    });
-  }
-  
-  return results;
-};
-
 const ChallengeHistoryModal = ({ isOpen, onClose, athlete }: ChallengeHistoryModalProps) => {
-  const [activeTab, setActiveTab] = useState<"all" | "wins" | "losses">("all");
-  
-  if (!isOpen || !athlete) return null;
-  
-  const history = generateChallengeHistory(athlete);
-  const wins = history.filter(h => h.result === "won");
-  const losses = history.filter(h => h.result === "lost");
-  const winRate = history.length > 0 ? Math.round((wins.length / history.length) * 100) : 0;
-  
-  const filteredHistory = activeTab === "all" 
-    ? history 
-    : activeTab === "wins" 
-    ? wins 
-    : losses;
+  if (!athlete) return null;
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
-  };
+  // Mock geçmiş verisi - Gerçek veriye bağlanabilir
+  const history = [
+    { id: 1, opponent: "Can Özdemir", result: "win", score: "125 vs 110", date: "28 Oca", type: "Push-up" },
+    { id: 2, opponent: "Merve Aslan", result: "win", score: "140 vs 135", date: "25 Oca", type: "Squat" },
+    { id: 3, opponent: "Burak Şahin", result: "loss", score: "90 vs 95", date: "20 Oca", type: "Plank" },
+    { id: 4, opponent: "Elif Çelik", result: "win", score: "200 vs 180", date: "15 Oca", type: "Pull-up" },
+    { id: 5, opponent: "Ahmet Yılmaz", result: "loss", score: "110 vs 120", date: "10 Oca", type: "Burpee" },
+  ];
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[9998] bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-      />
-      <motion.div
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 100 }}
-        className="fixed bottom-0 left-0 right-0 z-[9999] bg-background rounded-t-3xl border-t border-white/10 max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
-          <div className="flex items-center gap-3">
-            <Avatar className="w-12 h-12 ring-2 ring-primary">
-              <AvatarImage src={athlete.avatar} alt={athlete.name} className="object-cover" />
-              <AvatarFallback className="bg-primary/20 text-primary">
-                {athlete.name.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <h2 className="font-display text-base text-foreground">{athlete.name}</h2>
-              <p className="text-muted-foreground text-xs">Düello Geçmişi</p>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="w-[95vw] max-w-md max-h-[85vh] p-0 bg-[#0a0a0a] border-white/10 gap-0 overflow-hidden rounded-2xl">
+        {/* Header - Sabit Kısım */}
+        <DialogHeader className="p-6 border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent relative">
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative">
+              <Avatar className="w-20 h-20 ring-4 ring-primary/20 shadow-xl">
+                <AvatarImage src={athlete.avatar} alt={athlete.name} className="object-cover" />
+                <AvatarFallback className="bg-primary/20 text-primary text-xl font-display">
+                  {athlete.name.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              {athlete.winStreak > 2 && (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -bottom-2 -right-2 bg-amber-500 text-black text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg flex items-center gap-1"
+                >
+                  <Flame className="w-3 h-3 fill-black" />
+                  {athlete.winStreak}
+                </motion.div>
+              )}
+            </div>
+
+            <div className="text-center space-y-1">
+              <DialogTitle className="font-display text-xl tracking-wide text-foreground">{athlete.name}</DialogTitle>
+              <p className="text-xs text-muted-foreground uppercase tracking-widest">DÜELLO GEÇMİŞİ</p>
+            </div>
+
+            <div className="flex items-center gap-3 w-full justify-center">
+              <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 gap-1.5 py-1 px-3">
+                <Trophy className="w-3.5 h-3.5" />
+                {athlete.challengeWins} Zafer
+              </Badge>
+              <Badge variant="outline" className="bg-white/5 text-muted-foreground border-white/10 gap-1.5 py-1 px-3">
+                <Swords className="w-3.5 h-3.5" />
+                {history.length} Maç
+              </Badge>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full bg-white/5">
-            <X className="w-5 h-5 text-muted-foreground" />
+
+          {/* Kapat Butonu - Sağ Üst */}
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 p-2 rounded-full bg-black/20 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="w-4 h-4" />
+            <span className="sr-only">Kapat</span>
           </button>
-        </div>
+        </DialogHeader>
 
-        {/* Stats Summary */}
-        <div className="p-4 border-b border-white/10 shrink-0">
-          <div className="grid grid-cols-4 gap-2">
-            <div className="glass-card p-3 text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Swords className="w-4 h-4 text-primary" />
-              </div>
-              <p className="font-display text-lg text-foreground">{history.length}</p>
-              <p className="text-muted-foreground text-[10px]">Toplam</p>
-            </div>
-            <div className="glass-card p-3 text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <Trophy className="w-4 h-4 text-emerald-400" />
-              </div>
-              <p className="font-display text-lg text-emerald-400">{wins.length}</p>
-              <p className="text-muted-foreground text-[10px]">Galibiyet</p>
-            </div>
-            <div className="glass-card p-3 text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <X className="w-4 h-4 text-red-400" />
-              </div>
-              <p className="font-display text-lg text-red-400">{losses.length}</p>
-              <p className="text-muted-foreground text-[10px]">Mağlubiyet</p>
-            </div>
-            <div className="glass-card p-3 text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
-                <TrendingUp className="w-4 h-4 text-primary" />
-              </div>
-              <p className="font-display text-lg text-primary">%{winRate}</p>
-              <p className="text-muted-foreground text-[10px]">Başarı</p>
-            </div>
+        {/* Scrollable Content - Kaydırılabilir Kısım */}
+        <div className="overflow-y-auto overscroll-contain p-4 space-y-4 max-h-[50vh]">
+          <div className="flex items-center gap-2 mb-2 px-1">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Son Karşılaşmalar
+            </span>
           </div>
 
-          {/* Current Streak */}
-          {athlete.winStreak > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="mt-3 glass-card p-3 flex items-center justify-between bg-amber-500/10 border-amber-500/30"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center">
-                  <Flame className="w-4 h-4 text-amber-400" />
-                </div>
-                <div>
-                  <p className="text-amber-400 font-display text-sm">Aktif Galibiyet Serisi</p>
-                  <p className="text-muted-foreground text-[10px]">Arka arkaya kazanıyor!</p>
-                </div>
-              </div>
-              <span className="font-display text-2xl text-amber-400">{athlete.winStreak}🔥</span>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="px-4 pt-3 shrink-0">
-          <Tabs value={activeTab} onValueChange={(v) => { hapticLight(); setActiveTab(v as typeof activeTab); }}>
-            <TabsList className="w-full grid grid-cols-3 bg-secondary/50 border border-white/5">
-              <TabsTrigger 
-                value="all"
-                className="font-display text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                Tümü ({history.length})
-              </TabsTrigger>
-              <TabsTrigger 
-                value="wins"
-                className="font-display text-xs data-[state=active]:bg-emerald-500 data-[state=active]:text-white"
-              >
-                Galibiyet ({wins.length})
-              </TabsTrigger>
-              <TabsTrigger 
-                value="losses"
-                className="font-display text-xs data-[state=active]:bg-red-500 data-[state=active]:text-white"
-              >
-                Mağlubiyet ({losses.length})
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
-
-        {/* Challenge History List - Scrollable */}
-        <ScrollArea className="flex-1 min-h-0 px-4 py-3">
-          <div className="space-y-2 pb-8">
-            {filteredHistory.map((challenge, index) => (
+          <div className="space-y-2">
+            {history.map((match, index) => (
               <motion.div
-                key={challenge.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.03 }}
-                className={`glass-card p-3 ${
-                  challenge.result === "won" 
-                    ? "border-l-2 border-l-emerald-500" 
-                    : "border-l-2 border-l-red-500"
-                }`}
+                key={match.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  {/* Result Icon */}
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    challenge.result === "won" 
-                      ? "bg-emerald-500/20" 
-                      : "bg-red-500/20"
-                  }`}>
-                    {challenge.result === "won" 
-                      ? <Trophy className="w-5 h-5 text-emerald-400" />
-                      : <X className="w-5 h-5 text-red-400" />
-                    }
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      match.result === "win" ? "bg-emerald-500/20 text-emerald-500" : "bg-red-500/20 text-red-500"
+                    }`}
+                  >
+                    {match.result === "win" ? <TrendingUp className="w-5 h-5" /> : <Swords className="w-5 h-5" />}
                   </div>
-
-                  {/* Challenge Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm font-medium ${
-                        challenge.result === "won" ? "text-emerald-400" : "text-red-400"
-                      }`}>
-                        {challenge.result === "won" ? "Kazandı" : "Kaybetti"}
-                      </span>
-                      <span className="text-muted-foreground text-xs">vs</span>
-                      <span className="text-foreground text-sm truncate">
-                        {challenge.opponentName.split(" ")[0]}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 text-muted-foreground text-[10px]">
-                      {challenge.type === "pr" ? (
-                        <span className="flex items-center gap-1">
-                          <Dumbbell className="w-3 h-3" />
-                          {challenge.exercise}
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <Flame className="w-3 h-3" />
-                          Antrenman Serisi
-                        </span>
-                      )}
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(challenge.date)}
-                      </span>
-                    </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">vs {match.opponent}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      {match.type} • {match.date}
+                    </p>
                   </div>
+                </div>
 
-                  {/* Score */}
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 justify-end">
-                      <span className={`font-display text-sm ${
-                        challenge.result === "won" ? "text-emerald-400" : "text-red-400"
-                      }`}>
-                        {challenge.yourValue}
-                      </span>
-                      <span className="text-muted-foreground text-xs">-</span>
-                      <span className="text-muted-foreground text-sm">
-                        {challenge.opponentValue}
-                      </span>
-                    </div>
-                    {challenge.result === "won" && challenge.bioCoinsWon && (
-                      <span className="text-yellow-400 text-[10px]">
-                        +{challenge.bioCoinsWon} coin
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Opponent Avatar */}
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={challenge.opponentAvatar} className="object-cover" />
-                    <AvatarFallback className="bg-secondary text-xs">
-                      {challenge.opponentName.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
+                <div className="text-right">
+                  <span
+                    className={`font-display text-sm ${match.result === "win" ? "text-emerald-400" : "text-red-400"}`}
+                  >
+                    {match.result === "win" ? "KAZANDI" : "KAYBETTİ"}
+                  </span>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">{match.score}</p>
                 </div>
               </motion.div>
             ))}
-
-            {filteredHistory.length === 0 && (
-              <div className="text-center py-8">
-                <Swords className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                <p className="text-muted-foreground text-sm">Bu kategoride düello bulunamadı</p>
-              </div>
-            )}
           </div>
-        </ScrollArea>
-      </motion.div>
-    </AnimatePresence>
+
+          <div className="p-4 rounded-xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/10 mt-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-full bg-primary/20">
+                <Flame className="w-4 h-4 text-primary" />
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-foreground">Kazanma Serisi</h4>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Son 5 maçta %{(history.filter((h) => h.result === "win").length / history.length) * 100} galibiyet
+                  oranı yakaladı.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer (Opsiyonel) */}
+        <div className="p-4 border-t border-white/10 bg-background/95">
+          <button
+            onClick={onClose}
+            className="w-full py-3 rounded-xl bg-secondary hover:bg-secondary/80 text-secondary-foreground font-display text-sm transition-colors"
+          >
+            KAPAT
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
