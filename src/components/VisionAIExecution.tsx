@@ -56,6 +56,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [simulatedHeartRate, setSimulatedHeartRate] = useState(72);
   const [showVisionInfo, setShowVisionInfo] = useState(false);
   const [showRpeInfo, setShowRpeInfo] = useState(false);
+  const [showHeartRateInfo, setShowHeartRateInfo] = useState(false);
   
   const exercise = exercises[currentExerciseIndex];
   const rpeColors = getRPEColor(exercise.rpe);
@@ -393,12 +394,14 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             </span>
           </div>
 
-          {/* Live Heart Rate Widget */}
+          {/* Live Heart Rate Widget with Info Button */}
           <div className="flex items-center gap-3">
-            <motion.div
+            <motion.button
+              onClick={() => setShowHeartRateInfo(true)}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/20 border border-red-500/30"
               animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 0.8, repeat: Infinity }}
+              whileTap={{ scale: 0.95 }}
             >
               <motion.div
                 animate={{ scale: [1, 1.3, 1] }}
@@ -410,7 +413,8 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                 {simulatedHeartRate}
               </span>
               <span className="text-[10px] text-red-400/70">bpm</span>
-            </motion.div>
+              <Info className="w-3 h-3 text-red-400/50 ml-0.5" />
+            </motion.button>
 
             <button
               onClick={onClose}
@@ -791,6 +795,109 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                           <p className="text-muted-foreground text-[10px]">Başarısızlığa kadar</p>
                         </div>
                       </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Heart Rate Info Modal */}
+            <AnimatePresence>
+              {showHeartRateInfo && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                  onClick={() => setShowHeartRateInfo(false)}
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="bg-card border border-white/10 rounded-2xl p-4 max-w-xs w-full"
+                  >
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-5 h-5 text-red-400 fill-red-400" />
+                        <h3 className="font-display text-lg text-foreground">NABIZ REHBERİ</h3>
+                      </div>
+                      <button
+                        onClick={() => setShowHeartRateInfo(false)}
+                        className="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center"
+                      >
+                        <X className="w-4 h-4 text-muted-foreground" />
+                      </button>
+                    </div>
+
+                    <div className="bg-secondary/50 rounded-xl p-3 mb-4">
+                      <p className="text-muted-foreground text-xs mb-1">Yaşa Göre Max Nabız (220 - Yaş)</p>
+                      <p className="text-foreground font-display text-xl">192 bpm</p>
+                      <p className="text-muted-foreground text-[10px]">28 yaş için hesaplanmış</p>
+                    </div>
+
+                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">
+                      İdeal nabız aralığı antrenman tipine göre değişir:
+                    </p>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-blue-500/10 border border-blue-500/30">
+                        <div className="text-center w-20">
+                          <span className="font-display text-sm text-blue-400">96-115</span>
+                          <p className="text-[9px] text-blue-400/70">bpm</p>
+                        </div>
+                        <div>
+                          <p className="text-blue-400 text-xs font-medium">Isınma (%50-60)</p>
+                          <p className="text-muted-foreground text-[10px]">Düşük yoğunluk</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-green-500/10 border border-green-500/30">
+                        <div className="text-center w-20">
+                          <span className="font-display text-sm text-green-400">115-134</span>
+                          <p className="text-[9px] text-green-400/70">bpm</p>
+                        </div>
+                        <div>
+                          <p className="text-green-400 text-xs font-medium">Yağ Yakımı (%60-70)</p>
+                          <p className="text-muted-foreground text-[10px]">Orta yoğunluk</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-yellow-500/10 border border-yellow-500/30">
+                        <div className="text-center w-20">
+                          <span className="font-display text-sm text-yellow-400">134-154</span>
+                          <p className="text-[9px] text-yellow-400/70">bpm</p>
+                        </div>
+                        <div>
+                          <p className="text-yellow-400 text-xs font-medium">Kardio (%70-80)</p>
+                          <p className="text-muted-foreground text-[10px]">Yüksek yoğunluk</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-orange-500/10 border border-orange-500/30">
+                        <div className="text-center w-20">
+                          <span className="font-display text-sm text-orange-400">154-173</span>
+                          <p className="text-[9px] text-orange-400/70">bpm</p>
+                        </div>
+                        <div>
+                          <p className="text-orange-400 text-xs font-medium">Anaerobik (%80-90)</p>
+                          <p className="text-muted-foreground text-[10px]">Çok yüksek yoğunluk</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-2 rounded-lg bg-red-500/10 border border-red-500/30">
+                        <div className="text-center w-20">
+                          <span className="font-display text-sm text-red-400">173-192</span>
+                          <p className="text-[9px] text-red-400/70">bpm</p>
+                        </div>
+                        <div>
+                          <p className="text-red-400 text-xs font-medium">Maksimum (%90-100)</p>
+                          <p className="text-muted-foreground text-[10px]">Tüm güç</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 p-2 bg-primary/10 border border-primary/30 rounded-lg">
+                      <p className="text-primary text-[10px] text-center">
+                        💡 Kuvvet antrenmanında nabız 120-160 bpm aralığında optimal performans sağlar
+                      </p>
                     </div>
                   </motion.div>
                 </motion.div>
