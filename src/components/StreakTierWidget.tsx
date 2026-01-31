@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Crown, ChevronRight, Trophy, Dumbbell, Users, Sparkles } from "lucide-react";
+import { Flame, Crown, ChevronRight, Trophy, Dumbbell, Users, Sparkles, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { 
-  userGamificationStats, 
   getCurrentTier, 
   getNextTier, 
   getTierProgress,
@@ -12,6 +11,15 @@ import {
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 import PersonalRecords from "@/components/PersonalRecords";
 import { useAchievements } from "@/hooks/useAchievements";
+import { useStreakTracking } from "@/hooks/useStreakTracking";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from "@/components/ui/dropdown-menu";
 
 interface StreakTierWidgetProps {
   compact?: boolean;
@@ -20,14 +28,14 @@ interface StreakTierWidgetProps {
 const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
   const navigate = useNavigate();
   const { showDemoAchievement } = useAchievements();
+  const { currentStreak, longestStreak, isStreakActive, simulateStreak, recordWorkout, resetStreak } = useStreakTracking();
   const [showPRModal, setShowPRModal] = useState(false);
   
-  const currentTier = getCurrentTier(userGamificationStats.currentXP);
-  const nextTier = getNextTier(userGamificationStats.currentXP);
-  const tierProgress = getTierProgress(userGamificationStats.currentXP);
-
-  // Check if streak is active (mock: within last 24h)
-  const isStreakActive = true; // In real app, calculate from lastWorkoutDate
+  // Use streak data for XP calculation (mock)
+  const currentXP = 875 + (currentStreak * 10);
+  const currentTier = getCurrentTier(currentXP);
+  const nextTier = getNextTier(currentXP);
+  const tierProgress = getTierProgress(currentXP);
 
   const handleNavigateToAchievements = () => {
     hapticLight();
@@ -49,6 +57,16 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
     showDemoAchievement();
   };
 
+  const handleSimulateStreak = (days: number) => {
+    hapticMedium();
+    simulateStreak(days);
+  };
+
+  const handleRecordWorkout = () => {
+    hapticMedium();
+    recordWorkout();
+  };
+
   if (compact) {
     return (
       <motion.button
@@ -67,7 +85,7 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
               <Flame className={`w-5 h-5 ${isStreakActive ? 'text-orange-500' : 'text-muted-foreground'}`} />
             </motion.div>
             <span className={`font-display text-lg ${isStreakActive ? 'text-foreground' : 'text-muted-foreground'}`}>
-              {userGamificationStats.currentStreak}
+              {currentStreak}
             </span>
             <span className="text-muted-foreground text-xs">gün</span>
           </div>
@@ -84,7 +102,7 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">{userGamificationStats.currentXP} XP</span>
+          <span className="text-xs text-muted-foreground">{currentXP} XP</span>
           <ChevronRight className="w-4 h-4 text-muted-foreground" />
         </div>
       </motion.button>
@@ -133,14 +151,54 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
             >
               Rozetler
             </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={handleDemoAchievement}
-              className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium flex items-center gap-1"
-            >
-              <Sparkles className="w-3 h-3" />
-            </motion.button>
+            
+            {/* Streak Test Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 text-xs font-medium flex items-center gap-1"
+                >
+                  <Zap className="w-3 h-3" />
+                  Test
+                </motion.button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-background border-white/10">
+                <DropdownMenuLabel className="text-muted-foreground text-xs">
+                  Seri Simülasyonu
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem 
+                  onClick={handleRecordWorkout}
+                  className="text-foreground cursor-pointer"
+                >
+                  <Flame className="w-4 h-4 mr-2 text-primary" />
+                  +1 Gün Ekle
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleSimulateStreak(7)}
+                  className="text-foreground cursor-pointer"
+                >
+                  <Flame className="w-4 h-4 mr-2 text-orange-400" />
+                  7 Gün Serisi (Rozet)
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleSimulateStreak(30)}
+                  className="text-foreground cursor-pointer"
+                >
+                  <Trophy className="w-4 h-4 mr-2 text-purple-400" />
+                  30 Gün Serisi (Rozet)
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem 
+                  onClick={() => resetStreak()}
+                  className="text-destructive cursor-pointer"
+                >
+                  Seriyi Sıfırla
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
@@ -163,7 +221,7 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
             </motion.div>
             <div>
               <p className={`font-display text-3xl ${isStreakActive ? 'text-foreground' : 'text-muted-foreground'}`}>
-                {userGamificationStats.currentStreak}
+                {currentStreak}
               </p>
               <p className="text-muted-foreground text-xs">gün seri</p>
             </div>
@@ -172,7 +230,7 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
           <div className="text-right">
             <p className="text-muted-foreground text-[10px]">EN UZUN</p>
             <p className="font-display text-lg text-foreground">
-              {userGamificationStats.longestStreak} gün
+              {longestStreak} gün
             </p>
           </div>
         </div>
@@ -231,10 +289,10 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
 
         {/* XP Info */}
         <div className="flex items-center justify-between text-xs">
-          <span className="text-primary font-medium">{userGamificationStats.currentXP} XP</span>
+          <span className="text-primary font-medium">{currentXP} XP</span>
           {nextTier && (
             <span className="text-muted-foreground">
-              {nextTier.minXP - userGamificationStats.currentXP} XP kaldı
+              {nextTier.minXP - currentXP} XP kaldı
             </span>
           )}
         </div>
