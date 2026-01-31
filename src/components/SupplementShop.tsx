@@ -5,17 +5,26 @@ import { Switch } from "@/components/ui/switch";
 import { shopSupplements, ShopSupplement } from "@/lib/mockData";
 import { useCart } from "@/context/CartContext";
 
-// Bio-Coin Discount Calculator
+// Bio-Coin Discount Calculator (GLOBAL RULE: Max 20% discount)
 const COIN_TO_TL_RATE = 0.1; // 1000 Bio-Coin = 100 TL
+const MAX_DISCOUNT_PERCENTAGE = 0.20; // 20% cap on all physical products
 const USER_BIO_COINS = 2450; // Mock user balance
 
 const calculateMaxDiscount = (productPrice: number, userCoins: number): number => {
-  const maxPossibleDiscount = userCoins * COIN_TO_TL_RATE;
-  return Math.min(maxPossibleDiscount, productPrice - 10); // Keep minimum 10 TL price
+  const maxAllowedByPercentage = productPrice * MAX_DISCOUNT_PERCENTAGE;
+  const maxPossibleFromCoins = userCoins * COIN_TO_TL_RATE;
+  return Math.min(maxPossibleFromCoins, maxAllowedByPercentage);
 };
 
 const calculateCoinsNeeded = (discountAmount: number): number => {
   return Math.ceil(discountAmount / COIN_TO_TL_RATE);
+};
+
+// Check if user has more coins than the 20% cap allows
+const hasExcessCoins = (productPrice: number, userCoins: number): boolean => {
+  const maxAllowedByPercentage = productPrice * MAX_DISCOUNT_PERCENTAGE;
+  const maxPossibleFromCoins = userCoins * COIN_TO_TL_RATE;
+  return maxPossibleFromCoins > maxAllowedByPercentage;
 };
 
 const getCategoryLabel = (category: ShopSupplement["category"]): string => {
@@ -180,20 +189,25 @@ const SupplementShop = () => {
                       />
                     </div>
                     {isDiscountActive && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        className="mt-1.5 pt-1.5 border-t border-white/10"
-                      >
-                        <div className="flex justify-between text-[9px]">
-                          <span className="text-muted-foreground">Kullanılacak:</span>
-                          <span className="text-primary font-medium">{coinsNeeded.toLocaleString()} BIO</span>
-                        </div>
-                        <div className="flex justify-between text-[9px]">
-                          <span className="text-muted-foreground">Kalan Bakiye:</span>
-                          <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
-                        </div>
-                      </motion.div>
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              className="mt-1.5 pt-1.5 border-t border-white/10"
+                            >
+                              <div className="flex justify-between text-[9px]">
+                                <span className="text-muted-foreground">Kullanılacak:</span>
+                                <span className="text-primary font-medium">{coinsNeeded.toLocaleString()} BIO</span>
+                              </div>
+                              <div className="flex justify-between text-[9px]">
+                                <span className="text-muted-foreground">Kalan Bakiye:</span>
+                                <span className="text-foreground">{remainingCoins.toLocaleString()} BIO</span>
+                              </div>
+                              {hasExcessCoins(supplement.price, bioCoins) && (
+                                <div className="mt-1 text-[8px] text-primary/70 italic">
+                                  Maksimum %20 indirim uygulanabilir
+                                </div>
+                              )}
+                            </motion.div>
                     )}
                   </div>
                 )}
