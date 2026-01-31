@@ -111,10 +111,11 @@ const Leaderboard = () => {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-white/5">
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between p-4 relative z-50">
           <button 
             onClick={() => { hapticLight(); navigate(-1); }}
-            className="p-2 -ml-2"
+            className="relative z-50 flex items-center justify-center w-10 h-10 rounded-full bg-secondary/80 hover:bg-secondary active:scale-95 transition-all"
+            aria-label="Geri Dön"
           >
             <ChevronLeft className="w-6 h-6 text-foreground" />
           </button>
