@@ -8,11 +8,13 @@ import { motion } from "framer-motion";
 
 import { StoryProvider } from "./context/StoryContext";
 import { CartProvider } from "./context/CartContext";
+import { AchievementProvider } from "./hooks/useAchievements";
 import SplashScreen from "./components/SplashScreen";
 import AppShell from "./components/AppShell";
 import StoryViewer from "./components/StoryViewer";
 import UniversalCartDrawer from "./components/UniversalCartDrawer";
 import FloatingCartButton from "./components/FloatingCartButton";
+import AchievementNotificationLayer from "./components/AchievementNotificationLayer";
 import Kokpit from "./pages/Kokpit";
 import Antrenman from "./pages/Antrenman";
 import Beslenme from "./pages/Beslenme";
@@ -43,8 +45,9 @@ const App = () => {
       <TooltipProvider>
         <CartProvider>
           <StoryProvider>
-            <Toaster />
-            <Sonner />
+            <AchievementProvider>
+              <Toaster />
+              <Sonner />
             
             {/* OVERLAY ARCHITECTURE: Both layers render simultaneously */}
             <div className="relative w-full h-full">
@@ -100,6 +103,10 @@ const App = () => {
             {/* LAYER 4: Universal Cart System */}
             <UniversalCartDrawer />
             <FloatingCartButton />
+
+            {/* LAYER 5: Achievement Unlock Notifications */}
+            <AchievementNotificationLayer />
+            </AchievementProvider>
           </StoryProvider>
         </CartProvider>
       </TooltipProvider>

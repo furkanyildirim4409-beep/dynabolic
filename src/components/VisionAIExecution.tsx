@@ -6,6 +6,7 @@ import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
 import { detailedExercises } from "@/lib/mockData";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface VisionAIExecutionProps {
   workoutTitle: string;
@@ -37,6 +38,7 @@ const getRPEColor = (rpe: number): { bg: string; text: string; border: string } 
 };
 
 const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) => {
+  const { triggerAchievement } = useAchievements();
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const [weight, setWeight] = useState(60);
@@ -131,8 +133,27 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             setIsRunning(true);
           }, 1500);
         } else {
-          // All exercises complete - show summary
+          // All exercises complete - show summary and trigger achievements
           setShowWorkoutSummary(true);
+          
+          // Trigger workout completion achievements
+          triggerAchievement("workout_complete");
+          
+          // Check if it's an early morning workout (before 6 AM)
+          const hour = new Date().getHours();
+          if (hour < 6) {
+            triggerAchievement("early_workout");
+          }
+          
+          // Check if using Vision AI
+          if (visionAIActive) {
+            triggerAchievement("vision_ai_workout");
+          }
+          
+          // Check if heavy lift (100kg+)
+          if (weight >= 100) {
+            triggerAchievement("heavy_lift_100kg");
+          }
         }
       }, 1500);
     } else {

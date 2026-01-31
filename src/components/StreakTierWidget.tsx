@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Flame, Crown, ChevronRight, Trophy, Dumbbell, Users } from "lucide-react";
+import { Flame, Crown, ChevronRight, Trophy, Dumbbell, Users, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { 
   userGamificationStats, 
@@ -11,6 +11,7 @@ import {
 } from "@/lib/gamificationData";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 import PersonalRecords from "@/components/PersonalRecords";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface StreakTierWidgetProps {
   compact?: boolean;
@@ -18,6 +19,7 @@ interface StreakTierWidgetProps {
 
 const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
   const navigate = useNavigate();
+  const { showDemoAchievement } = useAchievements();
   const [showPRModal, setShowPRModal] = useState(false);
   
   const currentTier = getCurrentTier(userGamificationStats.currentXP);
@@ -40,6 +42,11 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
   const handleOpenPRModal = () => {
     hapticMedium();
     setShowPRModal(true);
+  };
+
+  const handleDemoAchievement = () => {
+    hapticMedium();
+    showDemoAchievement();
   };
 
   if (compact) {
@@ -125,6 +132,14 @@ const StreakTierWidget = ({ compact = false }: StreakTierWidgetProps) => {
               className="px-3 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium"
             >
               Rozetler
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleDemoAchievement}
+              className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-medium flex items-center gap-1"
+            >
+              <Sparkles className="w-3 h-3" />
             </motion.button>
           </div>
         </div>
