@@ -25,6 +25,7 @@ import Payments from "./pages/Payments";
 import Services from "./pages/Services";
 import SaglikTrendleri from "./pages/SaglikTrendleri";
 import Achievements from "./pages/Achievements";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ const App = () => {
                     <Route path="/hizmetler" element={<Services />} />
                     <Route path="/saglik-trendleri" element={<SaglikTrendleri />} />
                     <Route path="/achievements" element={<Achievements />} />
+                    <Route path="/leaderboard" element={<Leaderboard />} />
                     
                     {/* Redirects for old routes */}
                     <Route path="/index" element={<Navigate to="/" replace />} />
