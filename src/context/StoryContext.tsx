@@ -17,6 +17,7 @@ interface StoryContextValue {
   categoryLabel?: string;
   categoryIcon?: ReactNode;
   categoryGradient?: string;
+  onComplete?: () => void; // YENİ EKLENDİ
   openStories: (
     stories: Story[],
     initialIndex?: number,
@@ -24,7 +25,8 @@ interface StoryContextValue {
       categoryLabel?: string;
       categoryIcon?: ReactNode;
       categoryGradient?: string;
-    }
+      onComplete?: () => void; // YENİ EKLENDİ
+    },
   ) => void;
   closeStories: () => void;
 }
@@ -42,6 +44,7 @@ export const StoryProvider = ({ children }: StoryProviderProps) => {
   const [categoryLabel, setCategoryLabel] = useState<string>();
   const [categoryIcon, setCategoryIcon] = useState<ReactNode>();
   const [categoryGradient, setCategoryGradient] = useState<string>();
+  const [onComplete, setOnComplete] = useState<(() => void) | undefined>(); // YENİ STATE
 
   const openStories = useCallback(
     (
@@ -51,29 +54,32 @@ export const StoryProvider = ({ children }: StoryProviderProps) => {
         categoryLabel?: string;
         categoryIcon?: ReactNode;
         categoryGradient?: string;
-      }
+        onComplete?: () => void;
+      },
     ) => {
       if (newStories.length === 0) return;
-      
+
       setStories(newStories);
       setInitialIndex(newInitialIndex);
       setCategoryLabel(options?.categoryLabel);
       setCategoryIcon(options?.categoryIcon);
       setCategoryGradient(options?.categoryGradient);
+      setOnComplete(() => options?.onComplete); // Callback'i kaydet
       setIsOpen(true);
     },
-    []
+    [],
   );
 
   const closeStories = useCallback(() => {
     setIsOpen(false);
-    // Reset state after animation
+    // Animasyon sonrası state'i sıfırla
     setTimeout(() => {
       setStories([]);
       setInitialIndex(0);
       setCategoryLabel(undefined);
       setCategoryIcon(undefined);
       setCategoryGradient(undefined);
+      setOnComplete(undefined);
     }, 300);
   }, []);
 
@@ -86,6 +92,7 @@ export const StoryProvider = ({ children }: StoryProviderProps) => {
         categoryLabel,
         categoryIcon,
         categoryGradient,
+        onComplete,
         openStories,
         closeStories,
       }}

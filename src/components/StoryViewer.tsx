@@ -16,6 +16,7 @@ const StoryViewer = () => {
     categoryIcon,
     categoryGradient,
     closeStories,
+    onComplete, // Context'ten bunu çekiyoruz
   } = useStory();
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -47,10 +48,14 @@ const StoryViewer = () => {
       setProgress(0);
       progressRef.current = 0;
     } else {
-      // Last story finished, close viewer
-      closeStories();
+      // SON STORY BİTTİĞİNDE
+      if (onComplete) {
+        onComplete(); // Zincirleme varsa çalıştır (Sonraki kategoriye geç)
+      } else {
+        closeStories(); // Yoksa kapat
+      }
     }
-  }, [currentIndex, stories.length, closeStories, clearTimer]);
+  }, [currentIndex, stories.length, closeStories, clearTimer, onComplete]);
 
   // Go to previous story
   const goPrev = useCallback(() => {
@@ -90,7 +95,7 @@ const StoryViewer = () => {
     return () => clearTimer();
   }, [isOpen, isPaused, isInputFocused, currentIndex, startTimer, clearTimer]);
 
-  // Reset state when opening
+  // Reset state when opening OR when switching categories (stories changed)
   useEffect(() => {
     if (isOpen) {
       setCurrentIndex(initialIndex);
@@ -100,11 +105,10 @@ const StoryViewer = () => {
       setReplyText("");
       setIsInputFocused(false);
     }
-  }, [isOpen, initialIndex]);
+  }, [isOpen, initialIndex, stories]); // "stories" dependency eklendi
 
   // Handle tap zones
   const handleTap = (e: React.MouseEvent | React.TouchEvent) => {
-    // Don't handle taps if input is focused
     if (isInputFocused) return;
     if (!containerRef.current) return;
 
@@ -121,7 +125,6 @@ const StoryViewer = () => {
 
   // Long press handlers
   const handlePressStart = (e: React.MouseEvent | React.TouchEvent) => {
-    // Don't pause if interacting with input area
     const target = e.target as HTMLElement;
     if (target.tagName === "INPUT" || target.closest(".reply-container")) {
       return;
@@ -152,13 +155,11 @@ const StoryViewer = () => {
     inputRef.current?.blur();
   };
 
-  // Handle input focus
   const handleInputFocus = () => {
     setIsInputFocused(true);
     setIsPaused(true);
   };
 
-  // Handle input blur
   const handleInputBlur = () => {
     setIsInputFocused(false);
     setIsPaused(false);
@@ -167,22 +168,14 @@ const StoryViewer = () => {
   if (!isOpen || !currentStory) return null;
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.div
+        key={stories[0]?.id} // Kategori değiştiğinde yeniden render et
         ref={containerRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-[9999] bg-black touch-none select-none"
-        style={{
-          width: "100vw",
-          height: "100vh",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-        }}
         onMouseDown={handlePressStart}
         onMouseUp={handlePressEnd}
         onMouseLeave={handlePressEnd}
@@ -193,19 +186,11 @@ const StoryViewer = () => {
         {/* Progress Bars */}
         <div className="absolute top-4 left-4 right-4 z-20 flex gap-1.5">
           {stories.map((_, idx) => (
-            <div
-              key={idx}
-              className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden"
-            >
+            <div key={idx} className="flex-1 h-[3px] bg-white/30 rounded-full overflow-hidden">
               <div
                 className="h-full bg-white rounded-full transition-none"
                 style={{
-                  width:
-                    idx < currentIndex
-                      ? "100%"
-                      : idx === currentIndex
-                      ? `${progress}%`
-                      : "0%",
+                  width: idx < currentIndex ? "100%" : idx === currentIndex ? `${progress}%` : "0%",
                 }}
               />
             </div>
@@ -224,9 +209,7 @@ const StoryViewer = () => {
             )}
             <div>
               {categoryLabel && (
-                <p className="text-white font-display text-sm tracking-wide">
-                  {categoryLabel.toUpperCase()}
-                </p>
+                <p className="text-white font-display text-sm tracking-wide">{categoryLabel.toUpperCase()}</p>
               )}
               <p className="text-white/60 text-xs">{currentStory.title}</p>
             </div>
@@ -255,7 +238,6 @@ const StoryViewer = () => {
             draggable={false}
           />
 
-          {/* Gradient overlay for readability */}
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
         </div>
 
@@ -268,19 +250,12 @@ const StoryViewer = () => {
             transition={{ delay: 0.15, duration: 0.3 }}
             className="backdrop-blur-xl bg-black/40 border border-white/10 rounded-2xl p-4"
           >
-            <p className="text-white text-sm leading-relaxed">
-              {currentStory.content.text}
-            </p>
+            <p className="text-white text-sm leading-relaxed">{currentStory.content.text}</p>
           </motion.div>
         </div>
 
         {/* Reply Input */}
-        <div
-          className="reply-container absolute bottom-6 left-4 right-4 z-30"
-          onClick={(e) => e.stopPropagation()}
-          onMouseDown={(e) => e.stopPropagation()}
-          onTouchStart={(e) => e.stopPropagation()}
-        >
+        <div className="reply-container absolute bottom-6 left-4 right-4 z-30" onClick={(e) => e.stopPropagation()}>
           <form onSubmit={handleSendReply} className="flex gap-2">
             <div className="flex-1 relative">
               <input
@@ -300,34 +275,13 @@ const StoryViewer = () => {
               whileTap={{ scale: 0.95 }}
               disabled={!replyText.trim()}
               className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                replyText.trim()
-                  ? "bg-primary text-primary-foreground neon-glow-sm"
-                  : "bg-white/10 text-white/40"
+                replyText.trim() ? "bg-primary text-primary-foreground neon-glow-sm" : "bg-white/10 text-white/40"
               }`}
             >
               <Send className="w-5 h-5" />
             </motion.button>
           </form>
         </div>
-
-        {/* Pause indicator - only show when paused by long press, not input focus */}
-        <AnimatePresence>
-          {isPaused && !isInputFocused && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20"
-            >
-              <div className="w-16 h-16 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center border border-white/20">
-                <div className="flex gap-1.5">
-                  <div className="w-2 h-6 bg-white rounded-sm" />
-                  <div className="w-2 h-6 bg-white rounded-sm" />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     </AnimatePresence>
   );
