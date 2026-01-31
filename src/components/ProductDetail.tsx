@@ -46,12 +46,20 @@ const ProductDetail = ({ isOpen, onClose, product, onAddToCart }: ProductDetailP
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={(_, info) => {
+              if (info.offset.y > 100 || info.velocity.y > 500) {
+                onClose();
+              }
+            }}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-md bg-[#1a1a1a] rounded-t-2xl sm:rounded-2xl border border-white/10 max-h-[85vh] flex flex-col overflow-hidden"
+            className="relative w-full max-w-md bg-[#1a1a1a] rounded-t-2xl sm:rounded-2xl border border-white/10 max-h-[85vh] flex flex-col overflow-hidden touch-none"
           >
             {/* Drag Handle (Mobile) */}
             <div className="flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
             </div>
 
             {/* Scrollable Content */}
