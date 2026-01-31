@@ -5,6 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
+import { useAchievements } from "@/hooks/useAchievements";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +60,7 @@ const sliderConfigs: SliderConfig[] = [
 ];
 
 const DailyCheckIn = ({ isOpen, onClose, onSubmit }: DailyCheckInProps) => {
+  const { triggerAchievement } = useAchievements();
   const [values, setValues] = useState({
     mood: 7,
     sleep: 7,
@@ -88,6 +90,9 @@ const DailyCheckIn = ({ isOpen, onClose, onSubmit }: DailyCheckInProps) => {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     onSubmit?.(checkInData);
+    
+    // Trigger achievement check for daily check-in
+    triggerAchievement("daily_checkin");
     
     toast({
       title: "Veriler İşlendi ✓",
