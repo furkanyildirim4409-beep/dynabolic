@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Timer, SkipForward, Volume2 } from "lucide-react";
+import { Timer, SkipForward, Volume2, Plus } from "lucide-react";
+import { hapticLight } from "@/lib/haptics";
 
 interface RestTimerOverlayProps {
   duration: number; // in seconds
@@ -18,7 +19,8 @@ const RestTimerOverlay = ({
   totalSets,
 }: RestTimerOverlayProps) => {
   const [timeLeft, setTimeLeft] = useState(duration);
-  const progress = ((duration - timeLeft) / duration) * 100;
+  const [totalDuration, setTotalDuration] = useState(duration);
+  const progress = ((totalDuration - timeLeft) / totalDuration) * 100;
 
   useEffect(() => {
     if (timeLeft <= 0) {
@@ -66,6 +68,12 @@ const RestTimerOverlay = ({
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const handleAdd30Seconds = () => {
+    hapticLight();
+    setTimeLeft((prev) => prev + 30);
+    setTotalDuration((prev) => prev + 30);
   };
 
   const circumference = 2 * Math.PI * 120;
@@ -163,12 +171,26 @@ const RestTimerOverlay = ({
         </div>
       </div>
 
+      {/* +30 Seconds Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={handleAdd30Seconds}
+        className="mt-6 flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/20 border border-primary/30 text-primary"
+      >
+        <Plus className="w-4 h-4" />
+        <span className="font-display text-sm">+30 SANİYE</span>
+      </motion.button>
+
       {/* Sound Indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="mt-8 flex items-center gap-2 text-muted-foreground"
+        className="mt-4 flex items-center gap-2 text-muted-foreground"
       >
         <Volume2 className="w-4 h-4" />
         <span className="text-xs">Sesli uyarı aktif</span>
