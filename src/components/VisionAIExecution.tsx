@@ -497,42 +497,40 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
           {/* Video/GIF Display */}
           <div className="absolute inset-0 flex items-center justify-center">
             {!visionAIActive ? (
-              // Default: Exercise GIF View
+              // Default: Exercise GIF View - Full Cover
               <div className="relative w-full h-full">
-                {/* Exercise GIF */}
+                {/* Exercise GIF - Full Screen */}
                 {exercise?.videoUrl ? (
                   <motion.div
                     key={exercise.id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="absolute inset-0 flex items-center justify-center p-4"
+                    className="absolute inset-0"
                   >
-                    <div className="relative w-full h-full max-w-[280px] max-h-[280px] mx-auto">
-                      <img
-                        src={exercise.videoUrl}
-                        alt={exercise.name}
-                        className="w-full h-full object-contain rounded-2xl"
-                        loading="eager"
-                      />
-                      {/* Gradient overlay for better text contrast */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 rounded-2xl pointer-events-none" />
-                      
-                      {/* Exercise name overlay */}
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <p className="font-display text-sm text-white/90 tracking-wide drop-shadow-lg">
-                          {exercise.name}
-                        </p>
-                        <p className="text-[10px] text-white/60 mt-0.5">
-                          Set {currentSet}/{exercise.sets} • {exercise.targetReps} tekrar hedef
-                        </p>
-                      </div>
+                    <img
+                      src={exercise.videoUrl}
+                      alt={exercise.name}
+                      className="w-full h-full object-cover"
+                      loading="eager"
+                    />
+                    {/* Gradient overlay for better text contrast */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 pointer-events-none" />
+                    
+                    {/* Exercise name overlay - bottom */}
+                    <div className="absolute bottom-4 left-4 right-4">
+                      <p className="font-display text-lg text-white tracking-wide drop-shadow-lg">
+                        {exercise.name}
+                      </p>
+                      <p className="text-xs text-white/70 mt-1">
+                        Set {currentSet}/{exercise.sets} • {exercise.targetReps} tekrar hedef
+                      </p>
                     </div>
                   </motion.div>
                 ) : (
                   // Fallback when no GIF available
                   <motion.div
-                    className="absolute inset-0 flex items-center justify-center"
+                    className="absolute inset-0 flex items-center justify-center bg-secondary/20"
                     animate={{ opacity: [0.7, 1, 0.7] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   >
@@ -549,9 +547,6 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                     </div>
                   </motion.div>
                 )}
-
-                {/* Grid Pattern Overlay */}
-                <div className="absolute inset-0 grid-pattern opacity-5 pointer-events-none" />
               </div>
             ) : (
               // Vision AI: Skeleton Tracking View
