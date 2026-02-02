@@ -174,21 +174,13 @@ const RestTimerOverlay = ({
       </div>
 
       {/* +30 Seconds Button */}
-      <motion.button
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={handleAdd30Seconds}
-        onTouchEnd={(e) => {
-          e.preventDefault();
-          handleAdd30Seconds();
-        }}
-        className="mt-6 flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/20 border border-primary/30 text-primary active:bg-primary/30 touch-manipulation"
+        className="mt-6 flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/20 border border-primary/30 text-primary active:scale-95 active:bg-primary/30 transition-transform"
       >
         <Plus className="w-5 h-5" />
         <span className="font-display text-base">+30 SANİYE</span>
-      </motion.button>
+      </button>
 
       {/* Sound Indicator */}
       <motion.div
