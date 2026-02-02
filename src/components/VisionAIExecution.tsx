@@ -5,7 +5,7 @@ import RestTimerOverlay from "./RestTimerOverlay";
 import ExerciseRestTimerOverlay from "./ExerciseRestTimerOverlay";
 import ExerciseHistoryModal from "./ExerciseHistoryModal";
 import { toast } from "sonner";
-import { detailedExercises } from "@/lib/mockData";
+import { detailedExercises, assignedWorkouts } from "@/lib/mockData";
 import { hapticLight, hapticMedium } from "@/lib/haptics";
 import { useAchievements } from "@/hooks/useAchievements";
 
@@ -25,10 +25,8 @@ interface Exercise {
   rpe: number;
   notes?: string;
   category?: string;
+  videoUrl?: string;
 }
-
-// Use detailed exercises from mockData
-const exercises: Exercise[] = detailedExercises;
 
 // RPE color coding helper
 const getRPEColor = (rpe: number): { bg: string; text: string; border: string } => {
@@ -38,8 +36,24 @@ const getRPEColor = (rpe: number): { bg: string; text: string; border: string } 
   return { bg: "bg-red-500/20", text: "text-red-400", border: "border-red-500/50" };
 };
 
+// Filter exercises based on workout title
+const getFilteredExercises = (workoutTitle: string): Exercise[] => {
+  const workoutDef = assignedWorkouts.find(w => w.title === workoutTitle);
+  
+  if (workoutDef && workoutDef.categoryFilter && workoutDef.categoryFilter !== "rest") {
+    const filtered = detailedExercises.filter(ex => ex.category === workoutDef.categoryFilter);
+    return filtered.length > 0 ? filtered : detailedExercises;
+  }
+  
+  return detailedExercises;
+};
+
 const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) => {
   const { triggerAchievement } = useAchievements();
+  
+  // Get filtered exercises based on workout title
+  const exercises = getFilteredExercises(workoutTitle);
+  
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(true);
   const [weight, setWeight] = useState(60);
@@ -59,7 +73,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
   const [showHeartRateInfo, setShowHeartRateInfo] = useState(false);
   
   const exercise = exercises[currentExerciseIndex];
-  const rpeColors = getRPEColor(exercise.rpe);
+  const rpeColors = getRPEColor(exercise?.rpe || 5);
 
   // Simulated heart rate effect - varies based on workout intensity
   useEffect(() => {
