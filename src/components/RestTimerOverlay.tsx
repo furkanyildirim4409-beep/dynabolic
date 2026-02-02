@@ -72,8 +72,12 @@ const RestTimerOverlay = ({
   };
 
   const handleAdd30Seconds = () => {
+    console.log("=== +30 SECONDS BUTTON CLICKED ===");
     hapticLight();
-    setTimeLeft((prev) => prev + 30);
+    setTimeLeft((prev) => {
+      console.log("Previous time:", prev, "New time:", prev + 30);
+      return prev + 30;
+    });
     setTotalDuration((prev) => prev + 30);
     toast.success("+30 saniye eklendi", { duration: 1500 });
   };
@@ -175,8 +179,14 @@ const RestTimerOverlay = ({
 
       {/* +30 Seconds Button */}
       <button
-        onClick={handleAdd30Seconds}
-        className="mt-6 flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/20 border border-primary/30 text-primary active:scale-95 active:bg-primary/30 transition-transform"
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          console.log("Button onClick fired");
+          handleAdd30Seconds();
+        }}
+        className="relative z-50 mt-6 flex items-center gap-2 px-6 py-3 rounded-xl bg-primary/20 border border-primary/30 text-primary active:scale-95 active:bg-primary/30 transition-transform cursor-pointer select-none"
+        style={{ pointerEvents: 'auto' }}
       >
         <Plus className="w-5 h-5" />
         <span className="font-display text-base">+30 SANİYE</span>
