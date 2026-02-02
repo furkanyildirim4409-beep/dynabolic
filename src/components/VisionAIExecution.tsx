@@ -514,18 +514,6 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
                       className="w-full h-full object-cover"
                       loading="eager"
                     />
-                    {/* Gradient overlay for better text contrast */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40 pointer-events-none" />
-                    
-                    {/* Exercise name overlay - bottom */}
-                    <div className="absolute bottom-4 left-4 right-4">
-                      <p className="font-display text-lg text-white tracking-wide drop-shadow-lg">
-                        {exercise.name}
-                      </p>
-                      <p className="text-xs text-white/70 mt-1">
-                        Set {currentSet}/{exercise.sets} • {exercise.targetReps} tekrar hedef
-                      </p>
-                    </div>
                   </motion.div>
                 ) : (
                   // Fallback when no GIF available
