@@ -1051,7 +1051,7 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
             completedExerciseName={exercise.name}
             nextExerciseName={exercises[currentExerciseIndex + 1].name}
             nextExerciseSets={exercises[currentExerciseIndex + 1].sets}
-            nextExerciseReps={exercises[currentExerciseIndex + 1].reps}
+            nextExerciseReps={exercises[currentExerciseIndex + 1].targetReps}
             currentExerciseNumber={currentExerciseIndex + 1}
             totalExercises={exercises.length}
           />
