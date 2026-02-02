@@ -494,34 +494,64 @@ const VisionAIExecution = ({ workoutTitle, onClose }: VisionAIExecutionProps) =>
               </motion.button>
             )}
           </AnimatePresence>
-          {/* Video/GIF Placeholder */}
+          {/* Video/GIF Display */}
           <div className="absolute inset-0 flex items-center justify-center">
             {!visionAIActive ? (
-              // Default: Exercise Video/GIF View
+              // Default: Exercise GIF View
               <div className="relative w-full h-full">
-                {/* Simulated Exercise Video Background */}
-                <div className="absolute inset-0 bg-gradient-to-b from-muted/50 to-background/80" />
-                
-                {/* Looping Animation Placeholder */}
-                <motion.div
-                  className="absolute inset-0 flex items-center justify-center"
-                  animate={{ opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  <div className="text-center">
-                    <motion.div
-                      className="w-24 h-24 mx-auto mb-3 rounded-full bg-secondary/50 border border-white/10 flex items-center justify-center"
-                      animate={{ scale: [1, 1.05, 1] }}
-                      transition={{ duration: 2, repeat: Infinity }}
-                    >
-                      <Play className="w-10 h-10 text-primary ml-1" />
-                    </motion.div>
-                    <p className="text-muted-foreground text-xs">Egzersiz Formu</p>
-                  </div>
-                </motion.div>
+                {/* Exercise GIF */}
+                {exercise?.videoUrl ? (
+                  <motion.div
+                    key={exercise.id}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 flex items-center justify-center p-4"
+                  >
+                    <div className="relative w-full h-full max-w-[280px] max-h-[280px] mx-auto">
+                      <img
+                        src={exercise.videoUrl}
+                        alt={exercise.name}
+                        className="w-full h-full object-contain rounded-2xl"
+                        loading="eager"
+                      />
+                      {/* Gradient overlay for better text contrast */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 rounded-2xl pointer-events-none" />
+                      
+                      {/* Exercise name overlay */}
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <p className="font-display text-sm text-white/90 tracking-wide drop-shadow-lg">
+                          {exercise.name}
+                        </p>
+                        <p className="text-[10px] text-white/60 mt-0.5">
+                          Set {currentSet}/{exercise.sets} • {exercise.targetReps} tekrar hedef
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : (
+                  // Fallback when no GIF available
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center"
+                    animate={{ opacity: [0.7, 1, 0.7] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <div className="text-center">
+                      <motion.div
+                        className="w-24 h-24 mx-auto mb-3 rounded-full bg-secondary/50 border border-white/10 flex items-center justify-center"
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        <Play className="w-10 h-10 text-primary ml-1" />
+                      </motion.div>
+                      <p className="font-display text-foreground text-sm mb-1">{exercise?.name}</p>
+                      <p className="text-muted-foreground text-xs">GIF yükleniyor...</p>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Grid Pattern Overlay */}
-                <div className="absolute inset-0 grid-pattern opacity-10" />
+                <div className="absolute inset-0 grid-pattern opacity-5 pointer-events-none" />
               </div>
             ) : (
               // Vision AI: Skeleton Tracking View
